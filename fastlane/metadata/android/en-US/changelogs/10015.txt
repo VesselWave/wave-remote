@@ -1,0 +1,2 @@
+- The touchpad's right-edge strip and two-finger scrolling each have their own direction setting
+- Both start out traditional; pick Natural in Remote settings if you prefer it
