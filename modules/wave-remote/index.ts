@@ -10,7 +10,9 @@ export interface RemoteState {
   volume: number;
   muted: boolean;
   touchpad: boolean;
-  naturalScrolling: boolean;
+  /** Scroll direction for the right-edge strip and for two-finger gestures. */
+  naturalEdge: boolean;
+  naturalTwoFinger: boolean;
   waking: boolean;
   canWakeBluetooth: boolean;
   /** Saved TVs, including the selected one while it pairs. */
@@ -40,14 +42,14 @@ declare class WaveRemoteNative extends NativeModule<Events> {
   startHeld(key: string, pointer: boolean): Promise<void>;
   stopHeld(): Promise<void>;
   power(bluetooth: boolean): Promise<void>;
-  preferences(touchpad: boolean, naturalScrolling: boolean): Promise<void>;
+  preferences(touchpad: boolean, naturalEdge: boolean, naturalTwoFinger: boolean): Promise<void>;
 }
 export const native = requireOptionalNativeModule<WaveRemoteNative>('WaveRemote');
 export const NativeTouchpad = native
-  ? requireNativeView<ViewProps & { naturalScrolling: boolean }>('WaveRemote')
+  ? requireNativeView<ViewProps & { naturalEdge: boolean; naturalTwoFinger: boolean }>('WaveRemote')
   : null;
 export const initialState: RemoteState = {
   host: null, name: null, paired: false, state: 'disconnected', detail: null,
-  volume: -1, muted: false, touchpad: false, naturalScrolling: true,
+  volume: -1, muted: false, touchpad: false, naturalEdge: false, naturalTwoFinger: false,
   waking: false, canWakeBluetooth: false, tvs: [],
 };

@@ -4,7 +4,7 @@ import type { RemoteState } from '../../modules/wave-remote';
 
 const disconnected: RemoteState = {
   host: '192.168.0.1', name: 'LG TV', paired: true, state: 'disconnected', detail: null,
-  volume: -1, muted: false, touchpad: false, naturalScrolling: true, waking: false, canWakeBluetooth: false, tvs: [],
+  volume: -1, muted: false, touchpad: false, naturalEdge: false, naturalTwoFinger: false, waking: false, canWakeBluetooth: false, tvs: [],
 };
 describe('manual connection addresses', () => {
   test('accepts IPv4 addresses and the .N shorthand on a known TV\'s subnet', () => {

@@ -98,7 +98,8 @@ class WaveRemoteModule : Module() {
     Name("WaveRemote")
     Events("onChange")
     View(TvTouchpadView::class) {
-      Prop("naturalScrolling") { view: TvTouchpadView, natural: Boolean -> view.setNaturalScrolling(natural) }
+      Prop("naturalEdge") { view: TvTouchpadView, natural: Boolean -> view.setNaturalEdge(natural) }
+      Prop("naturalTwoFinger") { view: TvTouchpadView, natural: Boolean -> view.setNaturalTwoFinger(natural) }
     }
 
     AsyncFunction("snapshot") {
@@ -171,8 +172,9 @@ class WaveRemoteModule : Module() {
       }
     }.runOnQueue(Queues.MAIN)
     AsyncFunction("stopHeld") { stopHeld() }.runOnQueue(Queues.MAIN)
-    AsyncFunction("preferences") { touchpad: Boolean, natural: Boolean ->
-      prepare(); stopHeld(); prefs.setTouchpad(touchpad); prefs.setNaturalScrolling(natural); emit()
+    AsyncFunction("preferences") { touchpad: Boolean, naturalEdge: Boolean, naturalTwoFinger: Boolean ->
+      prepare(); stopHeld(); prefs.setTouchpad(touchpad); prefs.setNaturalEdge(naturalEdge)
+      prefs.setNaturalTwoFinger(naturalTwoFinger); emit()
     }.runOnQueue(Queues.MAIN)
 
     AsyncFunction("power") { bluetooth: Boolean, promise: Promise ->
@@ -315,7 +317,8 @@ class WaveRemoteModule : Module() {
     "host" to prefs.host(), "name" to (prefs.host()?.let { prefs.label(it) } ?: prefs.name()), "paired" to (prefs.clientKey() != null),
     "state" to (if (quietAttempt) "disconnected" else tv.state().name.lowercase()), "detail" to detail,
     "volume" to volume, "muted" to muted, "touchpad" to prefs.touchpad(),
-    "naturalScrolling" to prefs.naturalScrolling(), "waking" to (wakeUntil != 0L),
+    "naturalEdge" to prefs.naturalEdge(), "naturalTwoFinger" to prefs.naturalTwoFinger(),
+    "waking" to (wakeUntil != 0L),
     "canWakeBluetooth" to (prefs.btMac() != null && prefs.wakeRegistered()),
     "tvs" to prefs.hosts().filter { prefs.paired(it) || it == prefs.host() }
       .map { mapOf("host" to it, "name" to (prefs.label(it) ?: prefs.name(it)), "tvName" to prefs.name(it),

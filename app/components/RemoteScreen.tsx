@@ -44,7 +44,7 @@ export function RemoteScreen({ state, setPanel, power, run }: {
     <View style={styles.modes} accessibilityRole="tablist">
       {([['Buttons', 'gamepad-round-outline'], ['Touchpad', 'gesture-tap']] as const).map(([label, icon], index) => {
         const selected = state.touchpad === (index === 1);
-        return <TouchableRipple key={label} onPress={() => { void run(() => native!.preferences(index === 1, state.naturalScrolling)); }} accessibilityRole="tab" accessibilityState={{ selected }} style={[styles.mode, selected && styles.selectedMode]}>
+        return <TouchableRipple key={label} onPress={() => { void run(() => native!.preferences(index === 1, state.naturalEdge, state.naturalTwoFinger)); }} accessibilityRole="tab" accessibilityState={{ selected }} style={[styles.mode, selected && styles.selectedMode]}>
           <View style={styles.modeContent}>
             <MaterialCommunityIcons name={icon} size={18} color={selected ? palette.text : palette.muted} />
             <Text style={{ color: selected ? palette.text : palette.muted, fontSize: 14 }}>{label}</Text>
@@ -55,7 +55,7 @@ export function RemoteScreen({ state, setPanel, power, run }: {
     <View style={styles.pad}>
       {state.touchpad && NativeTouchpad ? <View style={[styles.touchpad, !ready && styles.offlinePad]}>
         {/* The native pad draws its own hints, so leave it out entirely while it can't be used. */}
-        {ready ? <NativeTouchpad style={styles.nativePad} naturalScrolling={state.naturalScrolling} />
+        {ready ? <NativeTouchpad style={styles.nativePad} naturalEdge={state.naturalEdge} naturalTwoFinger={state.naturalTwoFinger} />
           : <><MaterialCommunityIcons name="television-off" size={28} color={palette.onDisabled} /><Text variant="bodyMedium" style={styles.offlineText}>Connect to use the touchpad</Text></>}
       </View> : <Dpad disabled={!ready} />}
     </View>

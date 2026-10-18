@@ -39,7 +39,7 @@ final class Touchpad extends View {
     private static final long TAP_MS = 250;
 
     private final Pointer pointer;
-    private final int scrollSign;
+    private final int edgeSign, twoFingerSign;
     private final float density;
     private final int slop;
     private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -67,6 +67,7 @@ final class Touchpad extends View {
             pointer.move(dx, dy);
         }
         // Natural scrolling moves content with the fingers: upward travel sends wheel-down.
+        int scrollSign = scrollStrip ? edgeSign : twoFingerSign;
         while (Math.abs(pendScrollY) >= SCROLL_STEP_DP) {
             int notch = pendScrollY > 0 ? 1 : -1;
             pendScrollY -= notch * SCROLL_STEP_DP;
@@ -79,10 +80,11 @@ final class Touchpad extends View {
         }
     }
 
-    Touchpad(Context ctx, int surface, int hintColor, boolean naturalScrolling, Pointer pointer) {
+    Touchpad(Context ctx, int surface, int hintColor, boolean naturalEdge, boolean naturalTwoFinger, Pointer pointer) {
         super(ctx);
         this.pointer = pointer;
-        scrollSign = naturalScrolling ? 1 : -1;
+        edgeSign = naturalEdge ? 1 : -1;
+        twoFingerSign = naturalTwoFinger ? 1 : -1;
         density = getResources().getDisplayMetrics().density;
         slop = ViewConfiguration.get(ctx).getScaledTouchSlop();
         fill.setColor(surface);

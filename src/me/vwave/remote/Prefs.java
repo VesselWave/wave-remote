@@ -53,7 +53,12 @@ final class Prefs {
     String btMac() { return get("btMac"); }
     boolean wakeRegistered() { String k = current("wakeRegistered"); return k != null && sp.getBoolean(k, false); }
     boolean touchpad() { return sp.getBoolean("touchpad", false); }
-    boolean naturalScrolling() { return sp.getBoolean("naturalScrolling", true); }
+    /**
+     * New keys, not the old shared "naturalScrolling": switching to the touchpad saved that key's
+     * natural default, so it doesn't show a real choice, and both now start traditional.
+     */
+    boolean naturalEdge() { return sp.getBoolean("naturalEdge", false); }
+    boolean naturalTwoFinger() { return sp.getBoolean("naturalTwoFinger", false); }
 
     /** Saved TVs in the order they were added. */
     List<String> hosts() {
@@ -120,7 +125,8 @@ final class Prefs {
         if (k != null) sp.edit().putBoolean(k, on).apply();
     }
     void setTouchpad(boolean on) { sp.edit().putBoolean("touchpad", on).apply(); }
-    void setNaturalScrolling(boolean on) { sp.edit().putBoolean("naturalScrolling", on).apply(); }
+    void setNaturalEdge(boolean on) { sp.edit().putBoolean("naturalEdge", on).apply(); }
+    void setNaturalTwoFinger(boolean on) { sp.edit().putBoolean("naturalTwoFinger", on).apply(); }
 
     /** Forgets the selected TV, leaving none selected; other TVs, the wake address and UI settings stay. */
     void forget() {

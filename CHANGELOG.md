@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The touchpad's right-edge strip and two-finger scrolling each have their own direction setting, and both start out traditional. Pick one in Remote settings.
+
 ## 0.6.2 — 2026-10-17
 
 - A button pressed while the remote is still opening its connection for buttons and the touchpad is no longer sent seconds later, when it could land on something else. If the TV never opens that connection, the next press tries again instead of every button doing nothing until you reconnect.
