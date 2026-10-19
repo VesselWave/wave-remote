@@ -3,6 +3,7 @@
   "private": true,
   "main": "index.ts",
   "scripts": {
+    "dev": "bun run --cwd site dev",
     "start": "expo start --port 4000",
     "android": "expo run:android --port 4000",
     "typecheck": "tsc --noEmit",

@@ -8,6 +8,10 @@ https://remote.vwave.me is the one-page download site: name, one line, the Downl
 - **Screenshots:** `public/screens/*.webp` are scaled from `../docs/screenshots`; refresh them when the UI changes. Their `.json` sidecars record where they came from.
 - **Link preview:** `public/og.png` (1200×630) is rendered from [`og/card.html`](og/card.html) with the Buttons screenshot. After editing either, start a Chromium with `--remote-debugging-port=9222`, run `node og/render.cjs` with `playwright-core` available (set `CDP_URL` for another host), and commit the PNG.
 
+Run `bun run dev` from the repository root or this directory to develop the site at
+http://localhost:4000. The Vite dev server renders the UI with generic release text;
+use `bun run preview` in this directory to exercise the Worker and release endpoints.
+
 New releases appear on their own. Redeploy only when the site changes:
 
 ```sh

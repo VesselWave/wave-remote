@@ -94,7 +94,7 @@ export default function App({ release }: { release: Release | null }) {
                   height={1447}
                   fetchPriority={key === 'buttons' ? 'high' : 'low'}
                   className={cn(
-                    'absolute inset-0 size-full object-cover transition-[opacity,filter] duration-300 ease-out motion-reduce:transition-none',
+                    'absolute inset-0 size-full object-contain py-3 transition-[opacity,filter] duration-300 ease-out motion-reduce:transition-none',
                     key === mode ? 'opacity-100 blur-0' : 'opacity-0 blur-[6px]',
                   )}
                 />

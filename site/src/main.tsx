@@ -11,5 +11,5 @@ const release: Release | null = embedded ? JSON.parse(embedded) : null;
 const root = document.getElementById('root')!;
 const app = <StrictMode><App release={release} /></StrictMode>;
 
-if (root.hasChildNodes()) hydrateRoot(root, app);
+if (root.firstElementChild) hydrateRoot(root, app);
 else createRoot(root).render(app);
