@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.4 — 2026-10-20
+
+- A new Wave icon on the home screen and splash screen, including Android 7–7.1 launchers.
+
 ## 0.6.3 — 2026-10-18
 
 - The touchpad's right-edge strip and two-finger scrolling each have their own direction setting, and both start out traditional. Pick one in Remote settings.
