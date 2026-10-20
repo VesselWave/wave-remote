@@ -1,0 +1,12 @@
+config.yml
+*.p12
+*.jks
+*.keystore
+repo/
+archive/
+tmp/
+stats/
+unsigned/
+assets/
+.cache/
+fingerprint.txt

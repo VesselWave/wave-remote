@@ -1,0 +1,13 @@
+Categories:
+  - Internet
+License: GPL-3.0-only
+AuthorName: VesselWave
+WebSite: https://github.com/VesselWave/wave-vpn-android
+SourceCode: https://github.com/VesselWave/wave-vpn-android
+IssueTracker: https://github.com/VesselWave/wave-vpn-android/issues
+Name: WaveVPN
+Summary: Unofficial WireGuard client for AirVPN
+Description: |-
+  Connect to AirVPN over WireGuard. Includes server selection, favorites,
+  per-app split tunneling, a Quick Settings tile, and Android Always-on VPN
+  support. Requires an AirVPN account. Not affiliated with AirVPN.

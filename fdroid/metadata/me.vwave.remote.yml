@@ -1,0 +1,12 @@
+Categories:
+  - Multimedia
+License: MIT
+AuthorName: VesselWave
+WebSite: https://remote.vwave.me
+SourceCode: https://github.com/VesselWave/wave-remote
+IssueTracker: https://github.com/VesselWave/wave-remote/issues
+Name: Wave Remote
+Summary: Control your LG webOS TV from Android
+Description: |-
+  A remote control for LG webOS TVs, with pairing, navigation, volume controls,
+  and app launching over your local network.

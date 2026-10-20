@@ -1,0 +1,13 @@
+{
+  "name": "vwave-fdroid",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-20",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{ "pattern": "f-droid.vwave.me", "custom_domain": true }],
+  "assets": {
+    "directory": "./assets",
+    "binding": "ASSETS",
+    "run_worker_first": ["/fdroid/repo/*.apk"]
+  }
+}
