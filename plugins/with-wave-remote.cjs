@@ -73,6 +73,8 @@ module.exports = function withWaveRemote(config) {
     const copies = [
       ['drawable/ic_launcher_fg.xml', 'drawable/ic_launcher_fg.xml'],
       ['drawable/ic_launcher_fg.xml', 'drawable/splashscreen_logo.xml'],
+      ['mipmap-anydpi/ic_launcher.xml', 'mipmap-anydpi/ic_launcher.xml'],
+      ['mipmap-anydpi/ic_launcher.xml', 'mipmap-anydpi/ic_launcher_round.xml'],
       ['mipmap-anydpi-v26/ic_launcher.xml', 'mipmap-anydpi-v26/ic_launcher.xml'],
       ['mipmap-anydpi-v26/ic_launcher.xml', 'mipmap-anydpi-v26/ic_launcher_round.xml'],
       ['values/colors.xml', 'values/tv_remote_icon.xml'],

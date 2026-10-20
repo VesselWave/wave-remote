@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 108dp adaptive canvas; artwork kept inside the 66dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#FF15171C" android:pathData="M0,0h108v108h-108z" />
+    <!-- Blue TV screen with the Wave family wave motif. -->
+    <path android:fillColor="#FF3D7BFF"
+        android:pathData="M33,36h42a4,4 0 0 1 4,4v24a4,4 0 0 1 -4,4h-42a4,4 0 0 1 -4,-4v-24a4,4 0 0 1 4,-4z" />
+    <path android:fillColor="#FF3D7BFF" android:pathData="M44,73h20v4h-20z" />
+    <path android:fillColor="#00000000" android:strokeColor="#FFFFFFFF" android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:pathData="M38,52C43,47 48,47 53,52S63,57 70,50" />
+</vector>
