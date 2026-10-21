@@ -14,7 +14,8 @@ export function RemoteScreen({ state, setPanel, power, run }: {
   const ready = state.state === 'ready';
   const busy = state.waking || state.state === 'connecting' || state.state === 'pairing';
   const key = (name: string) => () => { void run(() => native!.button(name)); };
-  return <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+  return <View style={styles.screen}>
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
     <View style={styles.header}>
       <Pressable accessibilityRole="button" accessibilityLabel={`${state.name || 'LG TV'}. ${connectionLabel(state)}`} accessibilityHint="Reconnect to your TV" style={styles.titles} onPress={() => { if (!ready && !busy) void run(() => native!.reconnect()); }}>
         <Text style={styles.name} numberOfLines={1}>{state.name || 'LG TV'}</Text>
@@ -52,7 +53,7 @@ export function RemoteScreen({ state, setPanel, power, run }: {
         </TouchableRipple>;
       })}
     </View>
-    <View style={styles.pad}>
+    <View style={[styles.pad, !(state.touchpad && NativeTouchpad) && styles.buttonPad]}>
       {state.touchpad && NativeTouchpad ? <View style={[styles.touchpad, !ready && styles.offlinePad]}>
         {/* The native pad draws its own hints, so leave it out entirely while it can't be used. */}
         {ready ? <NativeTouchpad style={styles.nativePad} naturalEdge={state.naturalEdge} naturalTwoFinger={state.naturalTwoFinger} />
@@ -60,15 +61,18 @@ export function RemoteScreen({ state, setPanel, power, run }: {
       </View> : <Dpad disabled={!ready} />}
     </View>
     <View style={styles.landingZone} />
-    <View style={[styles.row, styles.navigation]}>
+    </ScrollView>
+    <View style={styles.footer}><View style={[styles.row, styles.navigation]}>
       <RemoteButton label="Back" icon="arrow-u-left-top" disabled={!ready} onPress={key('BACK')} style={[styles.weight, styles.navButton]} />
       <RemoteButton label="Home" icon="home-outline" disabled={!ready} onPress={key('HOME')} style={[styles.weight, styles.navButton]} />
       <RemoteButton label="TV settings" icon="cog-outline" disabled={!ready} onPress={key('MENU')} style={[styles.weight, styles.navButton]} />
-    </View>
-  </ScrollView>;
+    </View></View>
+  </View>;
 }
 const styles = StyleSheet.create({
-  content: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12, maxWidth: 600, width: '100%', alignSelf: 'center' },
+  screen: { flex: 1 }, scroll: { flex: 1 },
+  content: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 8, maxWidth: 600, width: '100%', alignSelf: 'center' },
+  footer: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, maxWidth: 600, width: '100%', alignSelf: 'center' },
   header: { minHeight: 48, flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 8 },
   titles: { flex: 1, minHeight: 48, justifyContent: 'center' }, name: { fontSize: 19, fontWeight: '500', color: palette.text },
   status: { fontSize: 12, color: palette.muted, marginTop: 2 }, activity: { marginHorizontal: 4 }, more: { width: 48 },
@@ -77,8 +81,9 @@ const styles = StyleSheet.create({
   modes: { flexDirection: 'row', alignSelf: 'center', minWidth: 240, borderRadius: 28, backgroundColor: palette.surface, padding: 4, marginBottom: 12 },
   mode: { minHeight: 48, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center', borderRadius: 24, flex: 1 }, selectedMode: { backgroundColor: palette.raised },
   modeContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  pad: { flex: 1, minHeight: 268, justifyContent: 'center' },
-  touchpad: { flex: 1, minHeight: 268, borderRadius: 28, overflow: 'hidden' }, nativePad: { flex: 1, minHeight: 268 },
+  pad: { flex: 1, minHeight: 200, justifyContent: 'center' },
+  buttonPad: { minHeight: 268 },
+  touchpad: { flex: 1, minHeight: 200, borderRadius: 28, overflow: 'hidden' }, nativePad: { flex: 1, minHeight: 200 },
   offlinePad: { backgroundColor: palette.disabled, alignItems: 'center', justifyContent: 'center', gap: 12 },
-  offlineText: { color: palette.muted }, landingZone: { height: 72 }, navigation: { marginBottom: 0 }, navButton: { minHeight: 52, backgroundColor: palette.raised },
+  offlineText: { color: palette.muted }, landingZone: { height: 12 }, navigation: { marginBottom: 0 }, navButton: { minHeight: 52, backgroundColor: palette.raised },
 });
