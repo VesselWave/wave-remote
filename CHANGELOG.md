@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.5 — 2026-10-20
+
+- The remote adapts to shorter screens, keeping controls visible without scrolling where they fit. Volume and channel controls sit beside the pad on compact layouts.
+- Menus and setup forms keep their actions reachable above the keyboard and below the status bar.
+- Larger text stays readable in shortcuts, mode selection, scrolling preferences, and touchpad instructions.
+- Scrolling is enabled only when content overflows. A larger-arrow hint briefly points to more content, then disappears on scrolling or after a moment.
+
 ## 0.6.4 — 2026-10-20
 
 - A new Wave icon on the home screen and splash screen, including Android 7–7.1 launchers.

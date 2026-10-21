@@ -124,8 +124,8 @@ It uses no layout space and ignores touches. There is no permanent More bar.
 
 - Android release-mode build and APK signature verification passed.
 - `bun run typecheck`, `bunx eslint app App.tsx`, and all nine Bun tests passed.
-- Full-repository `bun run lint` encounters an existing parser error in
-  `fdroid/worker.js:1:42` (`Unexpected token with`); unrelated files were left alone.
+- Full-repository `bun run lint` now passes. Release preparation enabled ECMAScript
+  2025 parsing for the F-Droid worker's JSON import attributes.
 - `./test.sh` passed held-key and preferences tests and the protocol checks through
   certificate pinning and reachability. It then stopped at `ProtocolTest.java:129`:
   this macOS host cannot bind the test’s unconfigured `127.0.0.2` loopback alias

@@ -1,5 +1,7 @@
 # Contributing
 
+Project shorthand is recorded in [the glossary](GLOSSARY.md).
+
 Small, focused changes are welcome. Open an issue before a large UI or protocol change.
 Keep the app local: no account requirements, analytics, ads, or cloud services. Prefer
 Expo and React Native Paper components over new dependencies, and keep protocol code in

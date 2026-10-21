@@ -1,0 +1,4 @@
+- Compact remote layouts fit shorter screens with less scrolling.
+- Setup and menu actions stay reachable above the keyboard.
+- Larger text remains readable in shortcuts, scrolling preferences, and touchpad instructions.
+- A brief larger-arrow hint appears only when content overflows and disappears on scrolling or after a moment.
