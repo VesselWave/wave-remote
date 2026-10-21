@@ -1,0 +1,5 @@
+Keep volume and channel beside stacked Apps and Keyboard on every screen size.
+Scale controls to the available screen space.
+Use a full-width Buttons/Touchpad switch.
+Keep navigation at the bottom and allow scrolling for larger text.
+Updates 0.6.5 while keeping pairings and settings.

@@ -1,5 +1,7 @@
 # Android phone layout verification
 
+The matrix below records the 0.6.5 compact layout. Version 0.6.6 replaces that arrangement with scaled reference geometry; its verification is recorded in `release-0.6.6.md`.
+
 Tested on 2026-10-20 using the installed release-mode APK on the T3 Pixel emulator
 (Android 16/API 36, arm64), with the repository's local mock webOS TV. These are
 emulated layout configurations, not separate physical devices or Android versions.

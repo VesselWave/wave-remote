@@ -1,4 +1,4 @@
 {
-  "prompt": "Origin: real device screenshot, not generated. Wave Remote 0.6.4 (touchpad mode) captured with adb screencap on a Pixel 7 on 2026-10-20, status bar cropped, scaled to 720px wide WebP. Source: docs/screenshots/touchpad.png.",
-  "createdAt": "2026-10-20T21:47:30.830641+00:00"
+  "prompt": "Origin: actual Android 16 Pixel emulator screenshot of production-signed Wave Remote 0.6.6 (touchpad mode), connected to the local mock TV on 2026-10-21. Cropped from 1080x2400 to 1080x2170 at y=140 and scaled to 720 px wide. Source: docs/screenshots/touchpad.png. Not generated.",
+  "createdAt": "2026-10-21T23:17:00Z"
 }

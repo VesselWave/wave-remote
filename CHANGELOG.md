@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.6 — 2026-10-21
+
+- Keeps volume and channel beside the stacked Apps and Keyboard buttons on every screen size.
+- Scales the remote to the available screen space and gives the Buttons/Touchpad switch the full width.
+- Retains scrolling for larger accessibility text and keeps Back, Home, and TV settings at the bottom.
+
 ## 0.6.5 — 2026-10-20
 
 - The remote adapts to shorter screens, keeping controls visible without scrolling where they fit. Volume and channel controls sit beside the pad on compact layouts.
