@@ -89,6 +89,7 @@ The temporary keystore is removed even when a step fails.
 6. Deploy the site while the workflow runs: `cd site && bun install && bun run typecheck && bun run deploy`.
 7. Once the release is published, verify it: download the APK and `.sha256` into one directory, run `sha256sum --check <filename>.apk.sha256`, and compare the certificate SHA-256 digest in `.certificate.txt` with the previous release's.
 8. Check the site: `curl -fsS https://remote.vwave.me/latest.json` shows the new version (it caches GitHub for up to ten minutes), `curl -fsSI https://remote.vwave.me/download` redirects to the new APK, and `/screens/buttons.webp` and `/og.png` match the committed files.
+9. Update the [signed F-Droid repository](../fdroid/README.md#update-and-deploy) with the published APK. Verify that its live index includes the new version and the same SHA-256 as GitHub, and that its APK route redirects to that release asset. Commit and push the download mapping. Keep the existing repository signing key.
 
 If a release run fails before publishing, fix the cause and rerun the failed job.
 Do not move published tags or replace an already released APK; ship a new version.
