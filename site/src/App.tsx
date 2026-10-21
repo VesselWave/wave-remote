@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { mdiGamepadRoundOutline, mdiGestureTap, mdiGithub, mdiTrayArrowDown } from '@mdi/js';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { REPO_URL, RELEASES_URL, megabytes, releaseDate, type Release } from '@/release';
+import { FDROID_URL, REPO_URL, RELEASES_URL, megabytes, releaseDate, type Release } from '@/release';
 import { cn } from '@/lib/utils';
 
 type Mode = 'buttons' | 'touchpad';
@@ -53,12 +53,20 @@ export default function App({ release }: { release: Release | null }) {
             {'Control your LG\u00a0webOS\u00a0TV from your Android phone, over your own Wi-Fi.'}
           </p>
           <div className="mt-10 flex flex-col items-start gap-4">
-            <Button asChild size="lg">
-              <a href="/download">
-                <Icon path={mdiTrayArrowDown} />
-                Download APK
-              </a>
-            </Button>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button asChild size="lg">
+                <a href="/download">
+                  <Icon path={mdiTrayArrowDown} />
+                  Download APK
+                </a>
+              </Button>
+              <Button asChild variant="ghost" className="h-12 ring-1 ring-secondary">
+                <a href={FDROID_URL}>Add to F-Droid</a>
+              </Button>
+            </div>
+            <p className="max-w-[36ch] text-[15px] leading-relaxed text-muted-foreground">
+              Add our repository in F-Droid to get updates automatically.
+            </p>
             <p className="text-[15px] text-muted-foreground tabular-nums">
               {facts}
             </p>

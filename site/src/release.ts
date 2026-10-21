@@ -11,6 +11,7 @@ export type Release = {
 
 export const REPO_URL = 'https://github.com/VesselWave/wave-remote';
 export const RELEASES_URL = `${REPO_URL}/releases/latest`;
+export const FDROID_URL = 'https://f-droid.vwave.me/fdroid/repo?fingerprint=47841BF725DA7B106B2D05DF097E4898C7B5576411804A23D6A5505C5AD17933';
 
 export function megabytes(bytes: number) {
   return bytes < 1048576 ? `${Math.round(bytes / 1024)} KB` : `${(bytes / 1048576).toFixed(1)} MB`;

@@ -1,6 +1,6 @@
 # Download site
 
-https://remote.vwave.me is the one-page download site: name, one line, the Download button, and the app's Buttons/Touchpad switch flipping between real screenshots.
+https://remote.vwave.me is the one-page download site: the APK download, an Add to F-Droid link with the official repository fingerprint, and the app's Buttons/Touchpad switch flipping between real screenshots.
 
 - **Stack:** React 19, TypeScript, Tailwind CSS v4 and shadcn/ui components (`src/components/ui`, restyled to the app's palette in `src/styles.css`), built with Vite under Bun.
 - **Hosting:** Cloudflare Worker `wave-remote` on the `vwave.me` zone ([`wrangler.jsonc`](wrangler.jsonc)). Static files come from Vite's `dist/`.
