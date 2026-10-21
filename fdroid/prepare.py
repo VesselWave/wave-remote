@@ -20,7 +20,14 @@ for route, url in downloads.items():
 import subprocess
 subprocess.run(['fdroid', 'update'], cwd=root, check=True)
 index = json.loads((repo / 'index-v2.json').read_text())
-for package in index['packages'].values():
+for package_id, package in index['packages'].items():
+    icons = package['metadata'].get('icon', {})
+    if not icons:
+        raise SystemExit(f'Missing repository icon: {package_id}')
+    for icon in icons.values():
+        icon_path = repo / icon['name'].lstrip('/')
+        if hashlib.sha256(icon_path.read_bytes()).hexdigest() != icon['sha256']:
+            raise SystemExit(f'Icon hash mismatch: {package_id}')
     for version in package['versions'].values():
         info = version['file']
         route = '/fdroid/repo/' + info['name'].lstrip('/')

@@ -5,7 +5,7 @@ AuthorName: VesselWave
 WebSite: https://github.com/VesselWave/wave-vpn-android
 SourceCode: https://github.com/VesselWave/wave-vpn-android
 IssueTracker: https://github.com/VesselWave/wave-vpn-android/issues
-Name: WaveVPN
+Name: Wave VPN
 Summary: Unofficial WireGuard client for AirVPN
 Description: |-
   Connect to AirVPN over WireGuard. Includes server selection, favorites,

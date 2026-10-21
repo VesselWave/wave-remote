@@ -30,6 +30,11 @@ reuse this repository key so clients continue to trust updates.
 
 `prepare.py` downloads missing APKs, regenerates signed indexes, verifies indexed
 APK hashes and download mappings, and stages only public files into `assets/`.
+It also requires an indexed icon for each app and verifies the icon hashes.
+Store PNG icons under `metadata/<package-id>/en-US/images/icon.png`: adaptive
+launcher icons alone may not be extracted by fdroidserver. Wave Remote's icon
+comes from the app's Fastlane metadata; Wave VPN's PNG is rendered from
+`icons/wave-vpn.svg`, which preserves its Android launcher artwork.
 New releases currently require running this update command; there is no automatic
 release synchronization. Previously indexed APKs remain available until explicitly
 removed from `repo/` and `downloads.json`.
@@ -37,3 +42,9 @@ removed from `repo/` and `downloads.json`.
 The repository signing fingerprint is distinct from each Android app's signing
 certificate. APKs retain their original signatures, allowing updates over existing
 installations signed by the same app key.
+
+If Android reports `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, an installed copy uses
+a different app signing key. The first Wave VPN production release cannot update
+the earlier debug build. Remove the debug copy from every Android user/profile
+where it is installed before installing the release; uninstalling clears that
+profile's app data. Keep the production signing key for all future updates.
