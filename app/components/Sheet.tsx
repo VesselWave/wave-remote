@@ -3,11 +3,14 @@ import { AccessibilityInfo, KeyboardAvoidingView, Modal, Platform, Pressable, St
 import { IconButton, Snackbar, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { palette } from '../theme';
+import { ScrollFrame } from './ScrollFrame';
 
 export const FeedbackContext = createContext({ message: '', dismiss: () => {} });
 
 export function Sheet({ title, subtitle, open, onClose, children }: {
-  title: string; subtitle?: string; open: boolean; onClose: () => void; children: ReactNode;
+  title: string; subtitle?: string; open: boolean; onClose: () => void;
+  /** Lists can put the heading in their own scroll container to preserve virtualization. */
+  children: ReactNode | ((heading: ReactNode) => ReactNode);
 }) {
   const insets = useSafeAreaInsets();
   const feedback = useContext(FeedbackContext);
@@ -17,17 +20,17 @@ export function Sheet({ title, subtitle, open, onClose, children }: {
     const listener = AccessibilityInfo.addEventListener('reduceMotionChanged', setReducedMotion);
     return () => listener.remove();
   }, []);
+  const heading = <><View style={styles.handle} />
+    <View style={styles.heading}>
+      <View style={styles.title}><Text variant="headlineSmall" accessibilityRole="header">{title}</Text>
+        {subtitle ? <Text variant="bodyMedium" style={styles.subtitle}>{subtitle}</Text> : null}</View>
+      <IconButton icon="close" accessibilityLabel={`Close ${title}`} onPress={onClose} size={24} style={styles.close} />
+    </View></>;
   return <Modal visible={open} transparent animationType={reducedMotion ? 'none' : 'fade'} onRequestClose={onClose} statusBarTranslucent>
-    <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={[styles.overlay, { paddingTop: Math.max(12, insets.top) }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Close menu" accessibilityRole="button" />
       <View style={[styles.sheet, { paddingBottom: Math.max(24, insets.bottom) }]} accessibilityViewIsModal>
-        <View style={styles.handle} />
-        <View style={styles.heading}>
-          <View style={styles.title}><Text variant="headlineSmall" accessibilityRole="header">{title}</Text>
-            {subtitle ? <Text variant="bodyMedium" style={styles.subtitle}>{subtitle}</Text> : null}</View>
-          <IconButton icon="close" accessibilityLabel={`Close ${title}`} onPress={onClose} size={24} style={styles.close} />
-        </View>
-        {children}
+        {typeof children === 'function' ? children(heading) : <ScrollFrame>{heading}{children}</ScrollFrame>}
       </View>
       <Snackbar visible={!!feedback.message} onDismiss={feedback.dismiss} duration={6500} action={{ label: 'Dismiss', onPress: feedback.dismiss }}>{feedback.message}</Snackbar>
     </KeyboardAvoidingView>
@@ -35,7 +38,7 @@ export function Sheet({ title, subtitle, open, onClose, children }: {
 }
 const styles = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#00000099' },
-  sheet: { backgroundColor: palette.surface, maxHeight: '90%', borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingBottom: 28, width: '100%', maxWidth: 600, alignSelf: 'center' },
+  sheet: { backgroundColor: palette.surface, maxHeight: '100%', borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingBottom: 28, width: '100%', maxWidth: 600, alignSelf: 'center', overflow: 'hidden' },
   handle: { width: 32, height: 4, borderRadius: 2, backgroundColor: '#7C8595', alignSelf: 'center', marginTop: 12, marginBottom: 8 },
   heading: { flexDirection: 'row', paddingLeft: 24, paddingRight: 8, alignItems: 'center', paddingBottom: 16 },
   title: { flex: 1 }, subtitle: { color: palette.muted, marginTop: 4 }, close: { width: 48, height: 48 },

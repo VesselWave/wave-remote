@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Button, HelperText, IconButton, List, TextInput } from 'react-native-paper';
 import { native, type RemoteState, type SavedTv } from '../../modules/wave-remote';
 import { palette } from '../theme';
@@ -28,7 +28,7 @@ export function TvSheet({ state, open, onClose, onAdd, run }: {
     </Sheet>;
   }
   return <Sheet open={open} onClose={close} title="Your TVs" subtitle="Pairings for every TV stay on this phone.">
-    <ScrollView contentContainerStyle={styles.content}>
+    <View style={styles.content}>
       {state.tvs.map((tv) => {
         const current = tv.host === state.host;
         return <List.Item key={tv.host} title={tv.name || 'LG TV'} description={tv.paired ? tv.host : `${tv.host} · Not paired yet`}
@@ -45,7 +45,7 @@ export function TvSheet({ state, open, onClose, onAdd, run }: {
           }} style={[styles.item, current && styles.current]} />;
       })}
       <List.Item title="Add a TV" accessibilityLabel="Add a TV" description="Find another TV or enter its IP address" left={(props) => <List.Icon {...props} icon="plus" />} onPress={onAdd} style={styles.item} />
-    </ScrollView>
+    </View>
   </Sheet>;
 }
 const styles = StyleSheet.create({

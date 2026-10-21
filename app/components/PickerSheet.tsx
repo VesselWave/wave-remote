@@ -6,6 +6,7 @@ import { native, type TvApp, type TvInput } from '../../modules/wave-remote';
 import { commands, errorMessage } from '../lib/remote';
 import { palette } from '../theme';
 import { Sheet } from './Sheet';
+import { useScrollCues } from './ScrollFrame';
 
 type Choice = { id: string; title: string; description?: string; params?: Record<string, unknown> };
 const inputStatus = (input: TvInput) => input.connected === false ? 'Nothing connected'
@@ -21,6 +22,7 @@ export function PickerSheet({ kind, onClose, report, ready }: {
   const [retry, setRetry] = useState(0);
   const generation = useRef(0);
   const activeAction = useRef(false);
+  const scroll = useScrollCues();
   useEffect(() => {
     const token = ++generation.current;
     if (!ready) return;
@@ -48,14 +50,14 @@ export function PickerSheet({ kind, onClose, report, ready }: {
   };
   const filtered = items.filter((item) => item.title.toLowerCase().includes(query.toLowerCase()));
   return <Sheet open={!!kind} onClose={onClose} title={kind === 'apps' ? 'Apps' : 'Inputs'} subtitle={kind === 'apps' ? 'Open an app on your TV.' : 'Choose what’s on your screen.'}>
-    {kind === 'apps' && !loading && !error && items.length > 0 ? <Searchbar placeholder="Search apps" accessibilityLabel="Search TV apps" value={query} onChangeText={setQuery} style={styles.search} /> : null}
-    {!ready ? <View style={styles.empty}><Text>Your TV disconnected. Close this menu and reconnect.</Text></View> : loading ? <View style={styles.empty}><ActivityIndicator /><Text style={styles.secondary}>Loading from your TV…</Text></View> : error ? <View style={styles.empty}><Icon source="wifi-alert" size={36} color={palette.muted} /><Text variant="bodyLarge" style={styles.center}>{error}</Text><Button icon="refresh" onPress={() => { setError(''); setLoading(true); setRetry((value) => value + 1); }} disabled={!ready}>Try again</Button></View> :
-      <FlatList data={filtered} keyExtractor={(item) => item.id} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.list} renderItem={({ item }) =>
+    {(heading) => <View {...scroll.frameProps} style={styles.scroll}><FlatList {...scroll.props} style={styles.scroll} data={ready && !loading && !error ? filtered : []} keyExtractor={(item) => item.id} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.list}
+      ListHeaderComponent={<>{heading}{kind === 'apps' && ready && !loading && !error && items.length > 0 ? <Searchbar placeholder="Search apps" accessibilityLabel="Search TV apps" value={query} onChangeText={setQuery} style={styles.search} /> : null}</>}
+      renderItem={({ item }) =>
         <List.Item title={item.title} titleNumberOfLines={2} description={item.description} left={(props) => <List.Icon {...props} icon={kind === 'apps' ? 'view-grid-outline' : 'application-import'} />} right={(props) => acting === item.id ? <ActivityIndicator size={20} style={styles.progress} /> : <List.Icon {...props} icon="chevron-right" />} onPress={() => void choose(item)} disabled={!!acting || !ready} style={styles.item} />
-      } ListEmptyComponent={<View style={styles.empty}><Icon source={kind === 'apps' ? 'view-grid-outline' : 'application-import'} size={40} color={palette.muted} /><Text variant="titleMedium">{query ? 'No matching apps' : kind === 'apps' ? 'No apps reported' : 'No inputs reported'}</Text><Text style={styles.secondary}>{query ? 'Try a different app name.' : 'Your TV returned an empty list.'}</Text></View>} />}
+      } ListEmptyComponent={!ready ? <View style={styles.empty}><Text>Your TV disconnected. Close this menu and reconnect.</Text></View> : loading ? <View style={styles.empty}><ActivityIndicator /><Text style={styles.secondary}>Loading from your TV…</Text></View> : error ? <View style={styles.empty}><Icon source="wifi-alert" size={36} color={palette.muted} /><Text variant="bodyLarge" style={styles.center}>{error}</Text><Button icon="refresh" onPress={() => { setError(''); setLoading(true); setRetry((value) => value + 1); }} disabled={!ready}>Try again</Button></View> : <View style={styles.empty}><Icon source={kind === 'apps' ? 'view-grid-outline' : 'application-import'} size={40} color={palette.muted} /><Text variant="titleMedium">{query ? 'No matching apps' : kind === 'apps' ? 'No apps reported' : 'No inputs reported'}</Text><Text style={styles.secondary}>{query ? 'Try a different app name.' : 'Your TV returned an empty list.'}</Text></View>} />{scroll.cues}</View>}
   </Sheet>;
 }
 const styles = StyleSheet.create({
-  search: { marginHorizontal: 24, marginBottom: 12, backgroundColor: palette.raised }, list: { paddingHorizontal: 12, paddingBottom: 16 },
-  item: { minHeight: 72, borderRadius: 12 }, empty: { alignItems: 'center', padding: 32, gap: 16 }, secondary: { color: palette.muted, textAlign: 'center' }, center: { textAlign: 'center' }, progress: { margin: 16 },
+  scroll: { flexShrink: 1 }, search: { marginHorizontal: 24, marginBottom: 12, backgroundColor: palette.raised }, list: { paddingBottom: 16 },
+  item: { minHeight: 72, borderRadius: 12, marginHorizontal: 12 }, empty: { alignItems: 'center', padding: 32, gap: 16 }, secondary: { color: palette.muted, textAlign: 'center' }, center: { textAlign: 'center' }, progress: { margin: 16 },
 });

@@ -111,8 +111,18 @@ final class Touchpad extends View {
         c.drawRoundRect(bounds, r, r, fill);
         float cy = getHeight() / 2f;
         float centerX = (getWidth() - SCROLL_AREA_DP * density) / 2f;
-        c.drawText("Drag to move · Tap to click", centerX, cy - 4 * density, hint);
-        c.drawText("Slide right edge to scroll", centerX, cy + 16 * density, hint);
+        String moveHint = "Drag to move · Tap to click";
+        String scrollHint = "Slide right edge to scroll";
+        float textWidth = Math.max(0, getWidth() - (SCROLL_AREA_DP + 16) * density);
+        if (Math.max(hint.measureText(moveHint), hint.measureText(scrollHint)) <= textWidth) {
+            c.drawText(moveHint, centerX, cy - 4 * density, hint);
+            c.drawText(scrollHint, centerX, cy + 16 * density, hint);
+        } else {
+            float lineHeight = Math.max(20 * density, hint.getFontSpacing());
+            c.drawText("Drag to move", centerX, cy - lineHeight, hint);
+            c.drawText("Tap to click", centerX, cy, hint);
+            c.drawText("Edge: scroll", centerX, cy + lineHeight, hint);
+        }
         // A recessed strip and rounded grip distinguish scrolling from the pointer area.
         boolean active = scrollStrip && touchX >= 0;
         float lineX = getWidth() - SCROLL_AREA_DP * density / 2f;

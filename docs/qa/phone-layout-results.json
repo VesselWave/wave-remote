@@ -1,0 +1,173 @@
+{
+  "date": "2026-10-20",
+  "platform": "Android 16 / API 36 emulator, arm64",
+  "matrix": [
+    {
+      "profile": "large-text-320x480",
+      "sizePx": [
+        640,
+        960
+      ],
+      "density": 320,
+      "fontScale": 2,
+      "checks": {
+        "check_remote": "pass",
+        "check_settings": "pass",
+        "check_rename": "pass",
+        "check_pickers": "pass",
+        "check_keyboard": "pass",
+        "check_setup": "pass"
+      }
+    },
+    {
+      "profile": "large-text-360x640",
+      "sizePx": [
+        720,
+        1280
+      ],
+      "density": 320,
+      "fontScale": 2,
+      "checks": {
+        "check_remote": "pass",
+        "check_settings": "pass",
+        "check_rename": "pass",
+        "check_pickers": "pass",
+        "check_keyboard": "pass",
+        "check_setup": "pass"
+      }
+    },
+    {
+      "profile": "small-320x480",
+      "sizePx": [
+        640,
+        960
+      ],
+      "density": 320,
+      "fontScale": 1,
+      "checks": {
+        "check_remote": "pass",
+        "check_settings": "pass",
+        "check_rename": "pass",
+        "check_pickers": "pass",
+        "check_keyboard": "pass",
+        "check_setup": "pass"
+      }
+    },
+    {
+      "profile": "compact-320x568",
+      "sizePx": [
+        640,
+        1136
+      ],
+      "density": 320,
+      "fontScale": 1,
+      "checks": {
+        "check_remote": "pass",
+        "check_settings": "pass",
+        "check_rename": "pass",
+        "check_pickers": "pass",
+        "check_keyboard": "pass",
+        "check_setup": "pass"
+      }
+    },
+    {
+      "profile": "standard-360x640",
+      "sizePx": [
+        720,
+        1280
+      ],
+      "density": 320,
+      "fontScale": 1,
+      "checks": {
+        "check_remote": "pass",
+        "check_settings": "pass",
+        "check_rename": "pass",
+        "check_pickers": "pass",
+        "check_keyboard": "pass",
+        "check_setup": "pass"
+      }
+    },
+    {
+      "profile": "modern-393x873",
+      "sizePx": [
+        786,
+        1746
+      ],
+      "density": 320,
+      "fontScale": 1,
+      "checks": {
+        "check_remote": "pass",
+        "check_settings": "pass",
+        "check_rename": "pass",
+        "check_pickers": "pass",
+        "check_keyboard": "pass",
+        "check_setup": "pass"
+      }
+    },
+    {
+      "profile": "large-412x915",
+      "sizePx": [
+        824,
+        1830
+      ],
+      "density": 320,
+      "fontScale": 1,
+      "checks": {
+        "check_remote": "pass",
+        "check_settings": "pass",
+        "check_rename": "pass",
+        "check_pickers": "pass",
+        "check_keyboard": "pass",
+        "check_setup": "pass"
+      }
+    },
+    {
+      "profile": "wide-480x800",
+      "sizePx": [
+        960,
+        1600
+      ],
+      "density": 320,
+      "fontScale": 1,
+      "checks": {
+        "check_remote": "pass",
+        "check_settings": "pass",
+        "check_rename": "pass",
+        "check_pickers": "pass",
+        "check_keyboard": "pass",
+        "check_setup": "pass"
+      }
+    },
+    {
+      "profile": "foldable-600x960",
+      "sizePx": [
+        1200,
+        1920
+      ],
+      "density": 320,
+      "fontScale": 1,
+      "checks": {
+        "check_remote": "pass",
+        "check_settings": "pass",
+        "check_rename": "pass",
+        "check_pickers": "pass",
+        "check_keyboard": "pass",
+        "check_setup": "pass"
+      }
+    }
+  ],
+  "spotChecks": {
+    "native_touchpad": "pass",
+    "search_filter": "pass",
+    "text_send": "pass",
+    "narrow_cutout_threebutton": "pass",
+    "portrait_lock": "pass",
+    "pointer_dispatch": "pass",
+    "typed_text_dispatch": "pass",
+    "compact_touchpad_hint_fit": "pass",
+    "hint_timeout_visual_check": "pass",
+    "hint_first_scroll_visual_check": "pass"
+  },
+  "matrixPassed": 54,
+  "matrixFailed": 0
+}

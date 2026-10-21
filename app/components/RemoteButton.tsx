@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
-import { AppState, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { AppState, Pressable, StyleSheet, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Text } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
@@ -56,24 +56,28 @@ export function RemoteButton({ label, icon, caption, onPress, repeat, disabled, 
     >
       {icon ? <>
         <MaterialCommunityIcons name={icon} color={color} size={26} />
-        {caption ? <Text style={[styles.caption, { color }]} numberOfLines={1}>{caption}</Text> : null}
+        {caption ? <Text style={[styles.caption, { color }]}>{caption}</Text> : null}
       </> : <Text style={[styles.label, { color, fontSize: label === 'OK' ? 20 : 15, fontWeight: label === 'OK' ? '700' : '400' }]}>{label}</Text>}
     </Pressable>
   );
 }
-export function Dpad({ disabled }: { disabled: boolean }) {
-  return <View style={styles.dpad} accessibilityLabel="Directional controls">
-    <View style={styles.dpadRow}><View style={styles.spacer} /><RemoteButton label="Up" icon="chevron-up" repeat={{ key: 'UP', pointer: true }} disabled={disabled} style={styles.round} /><View style={styles.spacer} /></View>
-    <View style={styles.dpadRow}>
-      <RemoteButton label="Left" icon="chevron-left" repeat={{ key: 'LEFT', pointer: true }} disabled={disabled} style={styles.round} />
-      <RemoteButton label="OK" onPress={() => void native?.button('ENTER')} disabled={disabled} accent style={styles.round} />
-      <RemoteButton label="Right" icon="chevron-right" repeat={{ key: 'RIGHT', pointer: true }} disabled={disabled} style={styles.round} />
+export function Dpad({ disabled, size = 84, gap = 8 }: { disabled: boolean; size?: number; gap?: number }) {
+  const round = [styles.round, { width: size, height: size, borderRadius: size / 2 }];
+  const spacer = { width: size, height: size };
+  const row = [styles.dpadRow, { gap }];
+  return <View style={[styles.dpad, { gap }]} accessibilityLabel="Directional controls">
+    <View style={row}><View style={spacer} /><RemoteButton label="Up" icon="chevron-up" repeat={{ key: 'UP', pointer: true }} disabled={disabled} style={round} /><View style={spacer} /></View>
+    <View style={row}>
+      <RemoteButton label="Left" icon="chevron-left" repeat={{ key: 'LEFT', pointer: true }} disabled={disabled} style={round} />
+      <RemoteButton label="OK" onPress={() => void native?.button('ENTER')} disabled={disabled} accent style={round} />
+      <RemoteButton label="Right" icon="chevron-right" repeat={{ key: 'RIGHT', pointer: true }} disabled={disabled} style={round} />
     </View>
-    <View style={styles.dpadRow}><View style={styles.spacer} /><RemoteButton label="Down" icon="chevron-down" repeat={{ key: 'DOWN', pointer: true }} disabled={disabled} style={styles.round} /><View style={styles.spacer} /></View>
+    <View style={row}><View style={spacer} /><RemoteButton label="Down" icon="chevron-down" repeat={{ key: 'DOWN', pointer: true }} disabled={disabled} style={round} /><View style={spacer} /></View>
   </View>;
 }
-export function Rocker({ label, up, down, disabled }: { label: string; up: string; down: string; disabled: boolean }) {
-  return <View style={[styles.rocker, disabled && styles.disabled]}>
+export function Rocker({ label, up, down, disabled, compact, narrow }: { label: string; up: string; down: string; disabled: boolean; compact?: boolean; narrow?: boolean }) {
+  const { fontScale } = useWindowDimensions();
+  return <View style={[styles.rocker, compact && { height: Math.max(narrow ? 128 : 113, 96 + Math.ceil(17 * fontScale)) }, narrow && { width: 48 }, disabled && styles.disabled]}>
     <RemoteButton label={`${label} up`} icon={label === 'Volume' ? 'plus' : 'chevron-up'} repeat={{ key: up }} disabled={disabled} style={styles.rockerButton} />
     <Text style={[styles.rockerLabel, disabled && styles.disabledText]}>{label === 'Volume' ? 'VOL' : 'CH'}</Text>
     <RemoteButton label={`${label} down`} icon={label === 'Volume' ? 'minus' : 'chevron-down'} repeat={{ key: down }} disabled={disabled} style={styles.rockerButton} />
@@ -81,10 +85,10 @@ export function Rocker({ label, up, down, disabled }: { label: string; up: strin
 }
 const styles = StyleSheet.create({
   button: { minHeight: 48, borderRadius: 18, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingHorizontal: 4 },
-  label: { textAlign: 'center' }, caption: { fontSize: 12, marginTop: 2, textAlign: 'center' }, pressed: { backgroundColor: palette.raised },
+  label: { textAlign: 'center' }, caption: { fontSize: 12, marginTop: 2, textAlign: 'center', flexShrink: 1 }, pressed: { backgroundColor: palette.raised },
   disabled: { backgroundColor: palette.disabled }, disabledText: { color: palette.onDisabled },
   dpad: { alignSelf: 'center', gap: 8 }, dpadRow: { flexDirection: 'row', gap: 8 },
-  round: { width: 84, height: 84, borderRadius: 42 }, spacer: { width: 84, height: 84 },
+  round: { width: 84, height: 84, borderRadius: 42 },
   rocker: { width: 84, height: 144, borderRadius: 42, backgroundColor: palette.surface, overflow: 'hidden' },
   rockerButton: { flex: 1, borderRadius: 42 }, rockerLabel: { color: palette.muted, textAlign: 'center', fontSize: 12 },
 });

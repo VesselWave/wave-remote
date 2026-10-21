@@ -1,15 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
-import { BackHandler, ScrollView, StyleSheet, View } from 'react-native';
+import { BackHandler, KeyboardAvoidingView, Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ActivityIndicator, Button, HelperText, Icon, IconButton, List, Surface, Text, TextInput } from 'react-native-paper';
 import { native, type FoundTv, type RemoteState } from '../../modules/wave-remote';
 import { errorMessage, normalizeHost } from '../lib/remote';
 import { palette } from '../theme';
+import { ScrollFrame } from './ScrollFrame';
 
 /** `onBack` is set while adding another TV; the current TV's connection state is not shown then. */
 export function SetupScreen({ state, run, onConnect, onBack }: {
   state: RemoteState; run: (action: () => Promise<unknown>) => Promise<boolean>;
   onConnect?: () => void; onBack?: () => void;
 }) {
+  const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
+  const compact = height - insets.top - insets.bottom < 700;
   const [host, setHost] = useState(onBack ? '' : state.host || '');
   const [invalid, setInvalid] = useState(false);
   const [searching, setSearching] = useState(!!native);
@@ -53,11 +58,12 @@ export function SetupScreen({ state, run, onConnect, onBack }: {
     onConnect?.();
     void run(() => native!.connect(address, device?.name || 'LG TV', device?.btMac || null));
   };
-  return <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+  return <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={insets.top}>
+    <ScrollFrame style={styles.screen} contentContainerStyle={[styles.content, compact && styles.compactContent]}>
     {onBack ? <IconButton icon="arrow-left" accessibilityLabel="Back to the remote" onPress={onBack} style={styles.back} /> : null}
-    <View style={styles.logo}><Icon source="television" size={36} color="#ADC6FF" /></View>
-    <Text variant="headlineLarge" accessibilityRole="header">{onBack ? 'Add a TV' : 'Pick your TV'}</Text>
-    <Text variant="bodyLarge" style={styles.intro}>Your phone and TV need to be on the same Wi-Fi network.</Text>
+    <View style={[styles.logo, compact && styles.compactLogo]}><Icon source="television" size={36} color="#ADC6FF" /></View>
+    <Text variant={compact ? 'headlineMedium' : 'headlineLarge'} accessibilityRole="header">{onBack ? 'Add a TV' : 'Pick your TV'}</Text>
+    <Text variant="bodyLarge" style={[styles.intro, compact && { marginTop: 8, marginBottom: 12 }]}>Your phone and TV need to be on the same Wi-Fi network.</Text>
     {!native ? <Surface elevation={1} style={styles.notice}>
       <Text variant="titleMedium">Android development build required</Text>
       <Text variant="bodyMedium" style={styles.secondary}>TV control uses a custom native module. Open the installed Wave Remote app; Expo Go cannot connect to your TV.</Text>
@@ -81,22 +87,24 @@ export function SetupScreen({ state, run, onConnect, onBack }: {
     </View>
     <View style={styles.devices}>
       {devices.map((device) => <List.Item key={device.host} title={device.name} description={savedHosts.has(device.host) ? `${device.host} · Paired` : device.host} accessibilityLabel={`${device.name}, ${device.host}${savedHosts.has(device.host) ? ', paired' : ''}`} titleNumberOfLines={2} left={(props) => <List.Icon {...props} icon="television" />} right={(props) => <List.Icon {...props} icon="chevron-right" />} onPress={() => connect(device)} disabled={busy} style={styles.device} />)}
-      {searching ? <Text variant="bodyMedium" style={styles.empty}>Looking for LG webOS TVs…</Text> : null}
-      {!searching && !devices.length && searched ? <Text variant="bodyMedium" style={styles.empty}>{searchError || 'No TVs found. Turn your TV on, check Wi-Fi, or enter its IP address below.'}</Text> : null}
+      {searching ? <Text variant="bodyMedium" style={[styles.empty, compact && { paddingVertical: 12 }]}>Looking for LG webOS TVs…</Text> : null}
+      {!searching && !devices.length && searched ? <Text variant="bodyMedium" style={[styles.empty, compact && { paddingVertical: 12 }]}>{searchError || 'No TVs found. Turn your TV on, check Wi-Fi, or enter its IP address below.'}</Text> : null}
     </View>
-    <Text variant="titleMedium" style={styles.manualHeading} accessibilityRole="header">Connect by IP address</Text>
+    <Text variant="titleMedium" style={[styles.manualHeading, compact && { marginTop: 16, marginBottom: 8 }]} accessibilityRole="header">Connect by IP address</Text>
     <TextInput label="TV IP address" placeholder="192.168.0.1" mode="outlined" value={host} onChangeText={(value) => { setHost(value); setInvalid(false); }} keyboardType="decimal-pad" autoCorrect={false} autoCapitalize="none" returnKeyType="go" onSubmitEditing={() => connect()} error={invalid} disabled={!native || busy} />
     <HelperText type={invalid ? 'error' : 'info'}>{invalid ? 'Enter a valid IP address, such as 192.168.0.1.' : 'Find it in your TV’s Settings → Network.'}</HelperText>
     <Button mode="contained" icon="lan-connect" onPress={() => connect()} disabled={!native || busy || !host.trim()} contentStyle={styles.connect}>Connect</Button>
-  </ScrollView>;
+  </ScrollFrame></KeyboardAvoidingView>;
 }
 const styles = StyleSheet.create({
+  screen: { flex: 1 },
   content: { padding: 24, paddingTop: 32, flexGrow: 1, maxWidth: 600, width: '100%', alignSelf: 'center' },
+  compactContent: { padding: 16, paddingTop: 16 }, compactLogo: { width: 48, height: 48, borderRadius: 14, marginBottom: 12 },
   back: { marginLeft: -12, marginTop: -16, marginBottom: 8 },
   logo: { width: 72, height: 72, borderRadius: 20, backgroundColor: '#164788', alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
   intro: { color: palette.muted, marginTop: 12, marginBottom: 24 }, notice: { borderRadius: 16, padding: 20, marginBottom: 20, gap: 12 },
   secondary: { color: palette.muted }, busyHeading: { flexDirection: 'row', alignItems: 'center', gap: 12, flexWrap: 'wrap' },
-  sectionHeading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 48 },
+  sectionHeading: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', minHeight: 48, columnGap: 12 },
   devices: { gap: 8 }, device: { backgroundColor: palette.surface, borderRadius: 16, minHeight: 80 }, empty: { color: palette.muted, paddingVertical: 20, lineHeight: 22 },
   savedHeading: { minHeight: 48, textAlignVertical: 'center', marginBottom: 8 },
   manualHeading: { marginTop: 32, marginBottom: 16 }, connect: { minHeight: 52 },

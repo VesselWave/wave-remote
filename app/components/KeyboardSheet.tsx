@@ -1,6 +1,6 @@
 import { request } from '../lib/transport';
 import { useEffect, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Button, HelperText, TextInput } from 'react-native-paper';
 import { errorMessage } from '../lib/remote';
 import { Sheet } from './Sheet';
@@ -28,14 +28,14 @@ export function KeyboardSheet({ open, ready, onClose }: { open: boolean; ready: 
     finally { pending.current = false; if (mounted.current) setSending(false); }
   };
   return <Sheet open={open} onClose={onClose} title="Keyboard" subtitle="Type into the focused field on your TV.">
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <View style={styles.content}>
       <TextInput mode="outlined" label="Text for your TV" placeholder="Search for something to watch" value={text} onChangeText={setText} multiline numberOfLines={3} autoFocus={open} disabled={sending || !ready} />
       <HelperText type={error || !ready ? 'error' : 'info'}>{!ready ? 'Your TV disconnected. Reconnect to send text.' : error || 'Select a text field on the TV before sending.'}</HelperText>
       <View style={styles.actions}>
         <Button mode="outlined" icon="send" disabled={sending || !ready || !text} onPress={() => void send(false)} contentStyle={styles.button}>Send</Button>
         <Button mode="contained" icon="keyboard-return" loading={sending} disabled={sending || !ready} onPress={() => void send(true)} contentStyle={styles.button}>Send + Enter</Button>
       </View>
-    </ScrollView>
+    </View>
   </Sheet>;
 }
 const styles = StyleSheet.create({ content: { paddingHorizontal: 24, gap: 12 }, actions: { flexDirection: 'row', gap: 12, justifyContent: 'flex-end', flexWrap: 'wrap' }, button: { minHeight: 48 } });

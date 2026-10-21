@@ -182,15 +182,15 @@ The remote retains its own title, ordinary label and bold OK sizes. Status and r
 
 ## Layout
 
-The safe-area app contains a centered, scrollable phone layout capped at 600 native units. Remote side padding is 16, setup and menu content generally use 24. Remote rows use a 10-unit gap, while vertical groups commonly use 12. Setup begins with 32 top padding. Scroll and wrapping action rows accommodate available space; there is no custom breakpoint system.
+The safe-area app contains a centered phone layout capped at 600 native units. Remote side padding is 16; setup and menu content generally use 24. The remote uses a compact arrangement below 760 units of measured available height, and setup reduces decorative space below 700. Fitting content has scrolling disabled. Overflow shows a native scrollbar and a temporary More below hint with a 28-unit chevron. The hint ignores touches, reserves no space, fades after 2.6 seconds, and disappears immediately on scrolling. There is no permanent More bar.
 
-**The Remote Order Rule.** Keep header → power/input/mute → volume/apps/keyboard/channel → playback → mode selector → central pad → 72-unit landing zone → back/home/TV settings.
+**The Remote Order Rule.** Keep header → power/input/mute → shortcuts → playback → mode selector → central pad → back/home/TV settings. Spacious layouts keep volume/channel alongside Apps/Keyboard. Short screens at ordinary text sizes move the volume/channel rockers beside the pad and put Apps/Keyboard in one row. Navigation remains fixed below the scrolling area.
 
-The D-pad is a three-by-three arrangement of 84-unit circular cells with 8-unit gaps; the pad region has a minimum height of 268. Volume and channel rockers are 84 wide (matching the D-pad cells) and 144 tall; Apps and Keyboard take the remaining width. Remote buttons have a minimum height of 48; bottom navigation uses 52. Sheets occupy at most 90% of screen height, cap width at 600, and pad their bottom by the larger of 24 or the safe-area inset. These are current geometry, not a claim of tested behavior at every font scale or device size.
+The spacious D-pad uses 84-unit circular cells with 8-unit gaps. Compact cells adapt to available width and height, never falling below 48, with 6-unit gaps. Side rockers are 48 wide; spacious rockers remain 84 wide and 144 tall. Large text can move shortcuts below the rockers and use vertical scrolling choices instead of truncated segments. Remote buttons and navigation retain at least 48-unit touch targets. Sheets cap width at 600, respect the top safe area, and pad their bottom by the larger of 24 or the safe-area inset. Headings and forms scroll together when needed; app/input lists retain virtualization. Keyboard-aware containers keep form actions reachable.
 
 ## Elevation & Depth
 
-The custom remote uses tonal layering with no authored drop shadows. Setup notices use Paper Surface elevation 1; Paper supplies its native elevation behavior. The web download site is equally flat: its phone frame is a surface-toned bezel with a raised one-pixel ring around a canvas-toned screen, and nothing on the page casts a shadow. Sheets separate from the canvas through their surface tone and a translucent black scrim. Preserve the theme's elevation ramp rather than inventing a web shadow system.
+The custom remote uses tonal layering. Its temporary scroll hint uses native elevation 3; setup notices use Paper Surface elevation 1. The web download site is flat: its phone frame is a surface-toned bezel with a raised one-pixel ring around a canvas-toned screen, and nothing on the page casts a shadow. Sheets separate from the canvas through their surface tone and a translucent black scrim. Preserve the theme's elevation ramp rather than inventing a web shadow system.
 
 ## Shapes
 
@@ -199,7 +199,7 @@ Remote keys are rounded rectangles; D-pad controls and rockers use the circular-
 ## Components
 
 - **Remote buttons:** centered text or MaterialCommunityIcons (26), clipped ripple, selection haptic and a raised pressed fill. Disabled controls use the `disabled` fill and `on-disabled` foreground instead of fading, so differently filled controls dim to the same tone. While disconnected the touchpad is replaced by a `disabled` panel; the native pad isn't mounted. Repeat controls expose a hold hint and stop on release or app backgrounding.
-- **D-pad and rockers:** retain the source geometry. OK carries the blue accent; rocker labels remain muted between plus and minus keys.
+- **D-pad and rockers:** adapt their geometry to available space while preserving touch targets. OK carries the blue accent; rocker labels remain muted between plus and minus keys. Native touchpad instructions switch to shorter stacked lines when their measured text cannot fit beside the scroll strip.
 - **Mode selector and navigation:** mode choices have a minimum height of 48, with raised selected fill and muted unselected text. Bottom navigation retains raised fill and source order.
 - **Material buttons and fields:** contained primary actions, outlined secondary actions and text actions use Paper defaults. IP and keyboard inputs are outlined with labels and HelperText; errors and disabled state remain visible. Forget TV requires its existing confirmation step and error-colored action.
 - **Cards and lists:** setup devices use surface cards, settings device summaries use raised cards, and app/input menus use Paper list rows with icons and trailing chevrons or progress. Search uses a raised Searchbar. No chip component is currently implemented.
