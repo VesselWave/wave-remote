@@ -4,6 +4,7 @@ Verified on 2026-10-21 with the production-signed APK, an Android 16 Pixel emula
 and the local mock webOS TV. No physical phone or real TV was available for this run.
 
 - The final APK installed over an earlier production-signed 0.6.6 test APK and retained its mock TV pairing.
+- An additional exact-upgrade check installed the published GitHub 0.6.5 APK, paired it with the mock TV, then installed 0.6.6 as an update. Android accepted the update and the app reconnected without pairing again.
 - At the default 1080 × 2400 / 420 dpi configuration, Buttons and Touchpad modes keep volume/channel beside vertically stacked Apps/Keyboard, above playback and the full-width mode switch. Footer navigation stays at the bottom.
 - At 360 × 640 dp, both modes retain the same arrangement; no compact branch moves rockers beside the pad or shortcuts into one row.
 - At 360 × 640 dp and 200% text, captions remain readable and the remote scrolls to the remaining controls while footer navigation stays fixed.
