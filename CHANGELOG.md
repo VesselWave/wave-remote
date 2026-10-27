@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Closes a TV connection that sends a fragmented message larger than 16 MiB, preventing unbounded message buffering.
+
 ## 0.6.6 — 2026-10-21
 
 - Keeps volume and channel beside the stacked Apps and Keyboard buttons on every screen size.

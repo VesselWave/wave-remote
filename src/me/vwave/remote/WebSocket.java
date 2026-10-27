@@ -27,6 +27,7 @@ final class WebSocket {
         void onClose(Exception cause);
     }
 
+    /** Bound both an individual frame and the complete reassembled message. */
     private static final int MAX_FRAME = 16 * 1024 * 1024;
     /** For the TLS handshake and HTTP upgrade; after that the caller's keepalive notices silence. */
     static final int HANDSHAKE_TIMEOUT_MS = 5000;
@@ -176,6 +177,9 @@ final class WebSocket {
                 for (int i = 0; i < 8; i++) len = (len << 8) | readByte(in);
             }
             if (len < 0 || len > MAX_FRAME) throw new IOException("Frame too large");
+            // Continuations can each fit the frame limit while their message grows without bound.
+            // Check before allocating the next payload or appending it to the message buffer.
+            if (op == 0x0 && len > MAX_FRAME - message.size()) throw new IOException("Message too large");
             byte[] mask = null;
             if ((b1 & 0x80) != 0) {
                 mask = new byte[4];
