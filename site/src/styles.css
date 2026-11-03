@@ -1,31 +1,28 @@
 @import 'tailwindcss';
 
-.phone-screen {
-  width: min(350px, calc(100vw - 70px));
-}
-
-@media (min-width: 1024px) {
-  .phone-screen {
-    width: auto;
-    /* Header, footer, main padding, mode toggle, gap, and bezel stay visible. */
-    height: min(700px, max(200px, calc(100dvh - 294px)));
-  }
-}
-
-/* The app's palette (../DESIGN.md) mapped onto shadcn's semantic roles. */
+/* ---------------------------------------------------------------------------
+   Shared web family. Wave VPN and Wave Remote each carry an identical copy
+   of this block so both sites build standalone. Display type is Tenor Sans,
+   text is Montserrat, following the creator's Upholst site; the plain dark
+   ground comes from the original Wave Remote site.
+--------------------------------------------------------------------------- */
 @theme inline {
   --color-background: #0f1115;
-  --color-foreground: #e9ecf2;
-  --color-card: #1e222a;
-  --color-secondary: #2a2f3a;
-  --color-muted-foreground: #a4adbe;
-  --color-primary: #3d7bff;
-  --color-primary-hover: #5a8fff;
+  --color-foreground: #eaf0f8;
+  --color-card: #171b23;
+  --color-secondary: #272d39;
+  --color-border-strong: #3a4252;
+  --color-muted-foreground: #a8b1c1;
+  --color-faint: #848d9e;
+  --color-primary: #2d66c8;
+  --color-primary-hover: #336fd2;
   --color-primary-foreground: #ffffff;
-  --color-ring: #adc6ff;
+  --color-accent-fg: #86c3e8;
+  --color-ring: #86c3e8;
+  --color-warning: #f0c06a;
   --color-power: #ff5a5f;
-  --font-sans: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Montserrat Variable', 'Segoe UI', sans-serif;
+  --font-display: 'Tenor Sans', 'Montserrat Variable', serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   --spacing-15: 3.75rem;
 }
@@ -34,17 +31,108 @@
   html {
     color-scheme: dark;
     background: var(--color-background);
-    scrollbar-color: var(--color-secondary) var(--color-background);
+    scrollbar-color: var(--color-border-strong) var(--color-background);
+    scroll-behavior: smooth;
+    scroll-padding-top: 24px;
+    overflow-x: clip;
   }
   body {
     @apply bg-background font-sans text-foreground antialiased;
-    font-size: 17px;
+    font-size: 16px;
+    line-height: 1.65;
+    font-weight: 450;
+    caret-color: var(--color-accent-fg);
   }
-  ::selection {
-    background: rgb(61 123 255 / 0.4);
-    color: var(--color-foreground);
-  }
-  a {
-    text-underline-offset: 3px;
+  ::selection { background: rgb(45 102 200 / 0.55); color: #fff; }
+  a { text-underline-offset: 4px; text-decoration-thickness: 1px; }
+  h1, h2, h3 { text-wrap: balance; }
+  p { text-wrap: pretty; }
+  figure { margin: 0; }
+  strong { font-weight: 650; }
+}
+
+/* Page ground: plain dark, no decoration behind the content. */
+.family-shell { position: relative; isolation: isolate; overflow-x: clip; }
+.family-frame { width: min(1200px, 100% - 32px); margin-inline: auto; }
+
+/* Header: the creator's wordmark on the left, app chips on the right. */
+.family-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 24px; padding-block: 28px; }
+.family-brand { display: inline-flex; align-items: center; gap: 10px; border-radius: 999px; font-family: var(--font-sans); font-size: 17px; font-weight: 600; letter-spacing: -0.01em; line-height: 1; color: var(--color-foreground); white-space: nowrap; }
+.family-brand svg { flex: none; }
+.family-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; height: 38px; padding-inline: 16px;
+  border-radius: 999px; border: 1px solid rgb(134 195 232 / 0.16); background: rgb(134 195 232 / 0.06);
+  font-size: 14px; font-weight: 600; color: var(--color-muted-foreground);
+  transition: background-color 180ms ease-out, color 180ms ease-out, border-color 180ms ease-out;
+}
+.chip:hover { color: var(--color-foreground); background: rgb(134 195 232 / 0.12); }
+.chip[aria-current='page'] { color: #fff; background: var(--color-primary); border-color: transparent; }
+.chip svg { width: 14px; height: 14px; flex: none; }
+
+/* Hero card: the frosted panel from Upholst, holding the product's name and actions. */
+.hero-card {
+  position: relative;
+  container-type: inline-size;
+  padding: clamp(28px, 4.5vw, 52px);
+  border-radius: 34px;
+  border: 1px solid rgb(160 190 230 / 0.1);
+  background: linear-gradient(160deg, #1b2029, #15191f);
+  box-shadow: 0 30px 80px -20px rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.05);
+}
+.product-name { display: flex; align-items: center; gap: 0.24em; font-family: var(--font-display); font-weight: 400; font-size: clamp(1.75rem, 13cqi, 4.5rem); line-height: 1; letter-spacing: -0.01em; white-space: nowrap; }
+.product-name img { width: 0.8em; height: 0.8em; flex: none; border-radius: 0.2em; }
+.hero-rule { height: 1px; margin-block: 26px 22px; background: linear-gradient(90deg, rgb(134 195 232 / 0.55), rgb(134 195 232 / 0.08) 70%, transparent); }
+.lede { max-width: 30ch; font-size: clamp(1.125rem, 1.8vw, 1.3rem); line-height: 1.5; font-weight: 450; color: var(--color-foreground); }
+.fine-print { max-width: 46ch; font-size: 14px; line-height: 1.6; color: var(--color-muted-foreground); }
+.fine-print a { color: var(--color-accent-fg); text-decoration: underline; text-decoration-color: rgb(134 195 232 / 0.4); }
+.fine-print a:hover { text-decoration-color: currentColor; }
+
+/* Fact chips under the hero card. */
+.facts { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (min-width: 1024px) { .facts { flex-wrap: nowrap; } }
+.fact { display: inline-flex; white-space: nowrap; align-items: center; gap: 8px; min-height: 34px; padding: 6px 14px; border-radius: 999px; background: rgb(134 195 232 / 0.07); border: 1px solid rgb(134 195 232 / 0.12); font-size: 13px; font-weight: 600; color: var(--color-muted-foreground); font-variant-numeric: tabular-nums; }
+.fact-warn { color: var(--color-warning); background: rgb(240 192 106 / 0.08); border-color: rgb(240 192 106 / 0.22); }
+.fact-warn::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* Product screenshots sit in soft device frames. */
+.shot-frame { border-radius: 18px; padding: 6px; background: var(--color-card); border: 1px solid rgb(160 200 255 / 0.1); box-shadow: 0 30px 70px -24px rgb(0 0 0 / 0.7); }
+.shot-frame img { display: block; width: 100%; height: auto; border-radius: 12px; }
+
+.section-title { font-family: var(--font-display); font-weight: 400; font-size: clamp(2rem, 4.2vw, 2.9rem); line-height: 1.1; letter-spacing: -0.005em; }
+.surface { border-radius: 28px; background: var(--color-card); border: 1px solid rgb(160 190 230 / 0.07); box-shadow: 0 24px 60px -30px rgb(0 0 0 / 0.6); }
+
+.family-footer { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding-block: 28px 36px; border-top: 1px solid var(--color-secondary); font-size: 13px; color: var(--color-muted-foreground); }
+.family-footer a { display: inline-flex; align-items: center; gap: 5px; transition: color 160ms ease-out; }
+.family-footer a:hover { color: var(--color-foreground); }
+.family-footer svg { width: 13px; height: 13px; }
+
+a:focus-visible, button:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 4px; }
+.chip:focus-visible, .family-brand:focus-visible { outline-offset: 3px; }
+
+@media (max-width: 640px) {
+  .family-header { padding-block: 18px 8px; }
+  .chip { height: 36px; padding-inline: 14px; }
+  .hero-card { border-radius: 26px; }
+}
+@media (max-width: 380px) {
+  .family-nav { gap: 6px; }
+  .chip { height: 34px; padding-inline: 12px; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .chip, .family-footer a { transition: none; }
+}
+
+/* Wave Remote */
+.remote-hero { display: grid; gap: 48px; align-items: center; padding-block: clamp(8px, 3vw, 24px) 48px; }
+.remote-hero > figure { justify-self: center; }
+.phone-screen { width: min(320px, calc(100vw - 72px)); }
+@media (min-width: 1024px) {
+  .remote-hero { grid-template-columns: minmax(0, 1fr) auto; gap: 72px; padding-block: 0 24px; }
+  .phone-screen {
+    width: auto;
+    /* Header, footer, mode toggle, gap and bezel stay on screen. */
+    height: min(660px, max(240px, calc(100dvh - 304px)));
   }
 }

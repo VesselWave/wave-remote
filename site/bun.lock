@@ -5,7 +5,8 @@
     "": {
       "name": "wave-remote-site",
       "dependencies": {
-        "@fontsource-variable/archivo": "^5.3.0",
+        "@fontsource-variable/montserrat": "^5.3.0",
+        "@fontsource/tenor-sans": "^5.3.0",
         "@mdi/js": "^7.4.47",
         "@radix-ui/react-slot": "^1.5.0",
         "@radix-ui/react-toggle-group": "^1.2.1",
@@ -102,7 +103,9 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.28.2", "", { "os": "win32", "cpu": "x64" }, "sha512-5ebpxr3nWMzrL/rnUI755Jkuee0bHL/Gq0WTF9lvcpv73wAp5eu8MfBUgWK9bhWvZjj7yX8etf/8tI8Ney695g=="],
 
-    "@fontsource-variable/archivo": ["@fontsource-variable/archivo@5.3.0", "", {}, "sha512-HogK8FJelrD1o7TlZlkIVtHgc20bO5PZRWE7mUeUTdMN055alznQV6/00J00IBeu8FQAH4s3zW9UJNvKExXf+g=="],
+    "@fontsource-variable/montserrat": ["@fontsource-variable/montserrat@5.3.0", "", {}, "sha512-7PaZoxaxrWLAyrhO46v65An9LhUhfkTExWLhfbywYZCnZEgg/W1rEHnlNmZKjNZ3nJTVYyicqxlJt10z/26yTA=="],
+
+    "@fontsource/tenor-sans": ["@fontsource/tenor-sans@5.3.0", "", {}, "sha512-NsWBgS+0loYeptDAcQgMqApUJdlBCLAN8u89e7tY5ez4pnXnvCOQvIk2+QkQrykRBt9BCLTtmzuynIv/boPQnw=="],
 
     "@img/colour": ["@img/colour@1.1.0", "", {}, "sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ=="],
 

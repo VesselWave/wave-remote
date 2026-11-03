@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { mdiGamepadRoundOutline, mdiGestureTap, mdiGithub, mdiTrayArrowDown } from '@mdi/js';
+import { mdiArrowTopRight, mdiGamepadRoundOutline, mdiGestureTap, mdiTrayArrowDown } from '@mdi/js';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { FDROID_URL, REPO_URL, RELEASES_URL, megabytes, releaseDate, type Release } from '@/release';
@@ -18,6 +18,22 @@ const screens: Record<Mode, { src: string; alt: string }> = {
   },
 };
 
+// The VesselWave mark, identical to vwave.me/favicon.svg.
+function VesselWaveMark() {
+  return (
+    <svg width="34" height="26" viewBox="8 30 84 64" aria-hidden="true" shapeRendering="geometricPrecision">
+      <defs>
+        <linearGradient id="vesselwave-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#22d3ee" />
+          <stop offset="100%" stopColor="#0891b2" />
+        </linearGradient>
+      </defs>
+      <path d="M 15 52 Q 32.5 27, 50 52 T 85 52" fill="none" stroke="url(#vesselwave-grad)" strokeWidth="12" strokeLinecap="round" />
+      <path d="M 15 72 Q 32.5 47, 50 72 T 85 72" fill="none" stroke="url(#vesselwave-grad)" strokeWidth="12" strokeLinecap="round" opacity="0.6" />
+    </svg>
+  );
+}
+
 function Icon({ path, className }: { path: string; className?: string }) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
@@ -31,49 +47,50 @@ export default function App({ release }: { release: Release | null }) {
   const facts = release ? `Version ${release.version} · ${megabytes(release.size)} · Android 7+` : 'Latest release · Android 7+';
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[1180px] flex-col px-6 sm:px-10">
-      <header className="flex h-20 shrink-0 items-center justify-between">
-        <a href="/" className="-m-1 rounded-[14px] p-1 outline-none focus-visible:ring-2 focus-visible:ring-ring">
-          <img src="/icon.svg" alt="Wave Remote" width={40} height={40} className="size-10 rounded-[11px]" />
+    <div className="family-shell flex min-h-dvh flex-col">
+      <header className="family-frame family-header">
+        <a href="https://vwave.me" className="family-brand">
+          <VesselWaveMark />
+          VesselWave
         </a>
-        <Button asChild variant="ghost" className="-mr-3">
-          <a href={REPO_URL}>
-            <Icon path={mdiGithub} />
-            GitHub
-          </a>
-        </Button>
+        <nav aria-label="Apps" className="family-nav">
+          <a href="/" className="chip" aria-current="page">Remote</a>
+          <a href="https://vpn.vwave.me" className="chip">VPN</a>
+        </nav>
       </header>
 
-      <main className="grid flex-1 items-center gap-x-20 gap-y-14 pt-6 pb-16 lg:grid-cols-[minmax(0,1fr)_auto] lg:py-6">
-        <div className="max-w-[34rem]">
-          <h1 className="font-display text-[clamp(3.5rem,9vw,6rem)] leading-[0.9] font-[780] tracking-[-0.035em] [font-stretch:112%]">
-            Wave Remote
-          </h1>
-          <p className="mt-6 max-w-[30ch] text-balance text-[clamp(1.125rem,2vw,1.3125rem)] leading-snug text-muted-foreground">
-            {'Control your LG\u00a0webOS\u00a0TV from your Android phone, over your own Wi-Fi.'}
-          </p>
-          <div className="mt-10 flex flex-col items-start gap-4">
-            <div className="flex flex-wrap items-center gap-3">
+      <main className="family-frame remote-hero flex-1">
+        <div className="flex max-w-[36rem] flex-col gap-5">
+          <div className="hero-card">
+            <h1 className="product-name">
+              <img src="/icon.svg" alt="" width={64} height={64} />
+              Wave Remote
+            </h1>
+            <div className="hero-rule" />
+            <p className="lede text-balance">{'Control your LG\u00a0webOS\u00a0TV from your Android phone, over your own Wi-Fi.'}</p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button asChild size="lg">
                 <a href="/download">
                   <Icon path={mdiTrayArrowDown} />
                   Download APK
                 </a>
               </Button>
-              <Button asChild variant="ghost" className="h-12 ring-1 ring-secondary">
+              <Button asChild size="lg" variant="soft">
                 <a href={FDROID_URL}>Add to F-Droid</a>
               </Button>
             </div>
-            <p className="max-w-[36ch] text-[15px] leading-relaxed text-muted-foreground">
-              Add our repository in F-Droid to get updates automatically.
+            <p className="fine-print mt-6">
+              Add our repository in F-Droid to get updates automatically. The source is on{' '}
+              <a href={REPO_URL}>GitHub</a>.
             </p>
-            <p className="text-[15px] text-muted-foreground tabular-nums">
-              {facts}
-            </p>
+          </div>
+          <div className="facts">
+            <span className="fact">{facts}</span>
+            <span className="fact">No account, no cloud, no ads</span>
           </div>
         </div>
 
-        <figure className="flex flex-col items-center gap-5 justify-self-center">
+        <figure className="flex flex-col items-center gap-5">
           <ToggleGroup
             type="single"
             value={mode}
@@ -90,7 +107,7 @@ export default function App({ release }: { release: Release | null }) {
               Touchpad
             </ToggleGroupItem>
           </ToggleGroup>
-          <div className="rounded-[44px] bg-card p-2.5 ring-1 ring-secondary">
+          <div className="rounded-[44px] bg-card p-2.5 shadow-[0_30px_70px_-24px_rgb(0_0_0/0.7)] ring-1 ring-[rgb(160_200_255/0.1)]">
             <div className="phone-screen relative aspect-[720/1447] overflow-hidden rounded-[34px] bg-background">
               {(Object.keys(screens) as Mode[]).map((key) => (
                 <img
@@ -112,19 +129,18 @@ export default function App({ release }: { release: Release | null }) {
         </figure>
       </main>
 
-      <footer className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-2 border-t border-secondary py-6 text-[13px] text-muted-foreground">
+      <footer className="family-frame family-footer">
         {release ? (
-          <a href={release.page} className="hover:text-foreground">
-            Released {releaseDate(release.published)}
-          </a>
+          <a href={release.page}>Released {releaseDate(release.published)}</a>
         ) : (
-          <a href={RELEASES_URL} className="hover:text-foreground">Release notes</a>
+          <a href={RELEASES_URL}>Release notes</a>
         )}
         {release?.sha256 ? (
           <span className="font-mono tabular-nums" title={release.sha256}>
             SHA-256 {release.sha256.slice(0, 8)}…{release.sha256.slice(-8)}
           </span>
         ) : null}
+        <a href="https://vwave.me">VesselWave<Icon path={mdiArrowTopRight} /></a>
         <span className="sm:ml-auto">Independent project, not affiliated with LG.</span>
       </footer>
     </div>

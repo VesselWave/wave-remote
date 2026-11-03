@@ -4,28 +4,28 @@
 <head>
 <meta charset="utf-8">
 <style>
-  @font-face { font-family: 'Archivo'; src: url('../node_modules/@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2') format('woff2'); font-weight: 100 900; font-stretch: 62% 125%; }
+  @font-face { font-family: 'Tenor Sans'; src: url('../node_modules/@fontsource/tenor-sans/files/tenor-sans-latin-400-normal.woff2') format('woff2'); font-weight: 400; }
+  @font-face { font-family: 'Montserrat'; src: url('../node_modules/@fontsource-variable/montserrat/files/montserrat-latin-wght-normal.woff2') format('woff2'); font-weight: 100 900; }
   * { margin: 0; box-sizing: border-box; }
   html, body { width: 1200px; height: 630px; overflow: hidden; }
-  body { background: #0f1115; color: #e9ecf2; font-family: 'Archivo', sans-serif; position: relative; -webkit-font-smoothing: antialiased; }
-  .glow { position: absolute; right: -120px; top: -160px; width: 760px; height: 760px; border-radius: 50%;
-    background: radial-gradient(closest-side, rgb(61 123 255 / 0.20), rgb(61 123 255 / 0) 70%); }
-  .copy { position: absolute; left: 80px; top: 72px; width: 640px; }
-  .brand { display: flex; align-items: center; gap: 16px; font-size: 24px; font-weight: 600; color: #a4adbe; }
-  .brand img { width: 52px; height: 52px; border-radius: 14px; }
-  h1 { margin-top: 52px; font-size: 116px; line-height: 0.88; font-weight: 780; font-stretch: 112%; letter-spacing: -0.035em; }
-  p { margin-top: 28px; font-size: 30px; line-height: 1.3; color: #a4adbe; max-width: 17em; }
-  .chips { margin-top: 36px; display: flex; gap: 12px; }
-  .chips span { padding: 10px 20px; border-radius: 999px; background: #1e222a; box-shadow: inset 0 0 0 1px #2a2f3a; font-size: 22px; font-weight: 500; color: #e9ecf2; }
-  .phone { position: absolute; left: 812px; top: 64px; width: 316px; padding: 10px; border-radius: 44px; background: #1e222a; box-shadow: inset 0 0 0 1px #2a2f3a, 0 30px 80px rgb(0 0 0 / 0.5); }
+  body { color: #eaf0f8; font-family: 'Montserrat', sans-serif; position: relative; -webkit-font-smoothing: antialiased;
+    background: #0f1115; }
+  .card { position: absolute; left: 60px; top: 50%; transform: translateY(-50%); width: 620px; padding: 44px; border-radius: 32px; border: 1px solid rgb(160 200 255 / 0.11);
+    background: linear-gradient(160deg, #1b2029, #15191f); box-shadow: 0 30px 80px -20px rgb(0 0 0 / 0.55); }
+  h1 { display: flex; align-items: center; gap: 18px; font-family: 'Tenor Sans', serif; font-weight: 400; font-size: 66px; line-height: 1; white-space: nowrap; }
+  h1 img { width: 60px; height: 60px; border-radius: 15px; }
+  .rule { height: 1px; margin: 28px 0 24px; background: linear-gradient(90deg, rgb(134 195 232 / 0.55), rgb(134 195 232 / 0.08) 70%, transparent); }
+  p { font-size: 28px; line-height: 1.45; font-weight: 450; max-width: 21em; }
+  .chips { margin-top: 28px; display: flex; gap: 10px; }
+  .chips span { padding: 8px 16px; border-radius: 999px; background: rgb(134 195 232 / 0.08); border: 1px solid rgb(134 195 232 / 0.16); font-size: 18px; font-weight: 600; color: #a8b1c1; }
+  .phone { position: absolute; left: 812px; top: 52px; width: 300px; padding: 10px; border-radius: 44px; background: #171b23; box-shadow: inset 0 0 0 1px rgb(160 200 255 / 0.1), 0 30px 80px rgb(0 0 0 / 0.55); }
   .phone img { display: block; width: 100%; border-radius: 34px; }
 </style>
 </head>
 <body>
-  <div class="glow"></div>
-  <div class="copy">
-    <div class="brand"><img src="../public/icon.svg" alt="">remote.vwave.me</div>
-    <h1>Wave<br>Remote</h1>
+  <div class="card">
+    <h1><img src="../public/icon.svg" alt="">Wave Remote</h1>
+    <div class="rule"></div>
     <p>Control your LG webOS TV from your Android phone, over your own Wi-Fi.</p>
     <div class="chips"><span>No account</span><span>No cloud</span><span>No ads</span></div>
   </div>
