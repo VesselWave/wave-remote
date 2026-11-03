@@ -1,13 +1,30 @@
 Categories:
   - Internet
-License: GPL-3.0-only
+License: GPL-3.0-or-later
 AuthorName: VesselWave
-WebSite: https://github.com/VesselWave/wave-vpn-android
-SourceCode: https://github.com/VesselWave/wave-vpn-android
-IssueTracker: https://github.com/VesselWave/wave-vpn-android/issues
+WebSite: https://vpn.vwave.me
+SourceCode: https://github.com/VesselWave/wave-vpn-mobile
+IssueTracker: https://github.com/VesselWave/wave-vpn-mobile/issues
 Name: Wave VPN
-Summary: Unofficial WireGuard client for AirVPN
+Summary: Experimental unofficial WireGuard client for AirVPN
 Description: |-
+  EXPERIMENTAL TEST BUILD: not production-qualified VPN protection. Stock
+  Samsung Android 16 captures show cleartext DNS outside the tunnel during
+  crash, Wi-Fi recovery and force-stop despite Always-on VPN and blocking.
+  Packet origin remains unassigned. Do not rely on this build where that
+  exposure is unacceptable. See the release notes and verification reports:
+  https://github.com/VesselWave/wave-vpn-mobile/releases/tag/v0.1.0
+
   Connect to AirVPN over WireGuard. Includes server selection, favorites,
   per-app split tunneling, a Quick Settings tile, and Android Always-on VPN
   support. Requires an AirVPN account. Not affiliated with AirVPN.
+  No analytics, ads or third-party trackers. Account credentials and keys
+  are encrypted locally with Android Keystore and excluded from backups.
+
+  Version 0.1.0 uses the published production signing certificate. The old
+  repository version 0.1 used a different development certificate and cannot
+  update in place. Uninstall that old copy in every Android user/profile
+  before installing this release; uninstalling clears that profile's app data.
+  Existing production-signed installations retain the same signing identity.
+CurrentVersion: 0.1.0
+CurrentVersionCode: 3
