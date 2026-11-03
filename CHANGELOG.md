@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Normalizes zero-padded TV IP addresses so manual entry does not create a separate saved TV for the same address.
+
 - Closes a TV connection that sends a fragmented message larger than 16 MiB, preventing unbounded message buffering.
 
 ## 0.6.6 — 2026-10-21

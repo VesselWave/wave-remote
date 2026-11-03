@@ -13,6 +13,12 @@ describe('manual connection addresses', () => {
     expect(normalizeHost('.20', '10.1.2.3')).toBe('10.1.2.20');
     expect(normalizeHost('.20')).toBeNull();
   });
+  test('canonicalizes zero-padded addresses so one TV has one saved identity', () => {
+    expect(normalizeHost('192.168.086.028')).toBe('192.168.86.28');
+    expect(normalizeHost('.028', '192.168.086.1')).toBe('192.168.86.28');
+    expect(normalizeHost('010.001.002.008')).toBe('10.1.2.8');
+    expect(normalizeHost('000.000.000.000')).toBe('0.0.0.0');
+  });
   test('rejects malformed, out-of-range and non-address input before native calls', () => {
     for (const host of ['', '.256', '.-1', '256.1.2.3', '192.168.1', '1.2.3.4:3001', 'http://1.2.3.4', '1.2.3.4/path', '1.2.3.-1', '1.2.3.4\nextra']) {
       expect(normalizeHost(host)).toBeNull();
