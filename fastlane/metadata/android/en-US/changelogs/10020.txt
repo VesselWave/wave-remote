@@ -1,0 +1,2 @@
+- Softly tilted oval press highlights for volume and channel controls.
+- Buttons/Touchpad ripples stay inside each rounded choice.

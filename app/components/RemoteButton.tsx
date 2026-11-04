@@ -17,10 +17,11 @@ type Props = {
   repeat?: { key: string; pointer?: boolean };
   disabled?: boolean;
   accent?: boolean;
+  rockerEnd?: 'top' | 'bottom';
   color?: string;
   style?: StyleProp<ViewStyle>;
 };
-export function RemoteButton({ label, icon, caption, onPress, repeat, disabled, accent, color: enabledColor = palette.text, style }: Props) {
+export function RemoteButton({ label, icon, caption, onPress, repeat, disabled, accent, rockerEnd, color: enabledColor = palette.text, style }: Props) {
   const scale = useContext(RemoteScaleContext);
   const styles = makeStyles(scale);
   const [pressed, setPressed] = useState(false);
@@ -42,7 +43,7 @@ export function RemoteButton({ label, icon, caption, onPress, repeat, disabled, 
       accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!disabled }}
       accessibilityHint={repeat ? 'Touch and hold to repeat' : undefined}
       disabled={disabled}
-      android_ripple={{ color: '#FFFFFF22', foreground: true }}
+      android_ripple={rockerEnd ? undefined : { color: '#FFFFFF22', foreground: true }}
       onPressIn={() => {
         setPressed(true);
         void Haptics.selectionAsync().catch(() => {});
@@ -56,8 +57,9 @@ export function RemoteButton({ label, icon, caption, onPress, repeat, disabled, 
         else if (repeat) void native?.request(repeat.key, null).catch(() => {});
       }}
       style={[styles.button, { backgroundColor: accent ? palette.accent : palette.surface }, style,
-        pressed && !disabled && styles.pressed, disabled && styles.disabled]}
+        pressed && !disabled && !rockerEnd && styles.pressed, disabled && styles.disabled]}
     >
+      {pressed && !disabled && rockerEnd ? <View pointerEvents="none" style={[styles.rockerFeedback, { transform: [{ rotate: rockerEnd === 'top' ? '-6deg' : '6deg' }] }]} /> : null}
       {icon ? <>
         <MaterialCommunityIcons name={icon} color={color} size={26 * scale} />
         {caption ? <Text style={[styles.caption, { color }]}>{caption}</Text> : null}
@@ -80,9 +82,9 @@ export function Dpad({ disabled }: { disabled: boolean }) {
 export function Rocker({ label, up, down, disabled }: { label: string; up: string; down: string; disabled: boolean }) {
   const styles = makeStyles(useContext(RemoteScaleContext));
   return <View style={[styles.rocker, disabled && styles.disabled]}>
-    <RemoteButton label={`${label} up`} icon={label === 'Volume' ? 'plus' : 'chevron-up'} repeat={{ key: up }} disabled={disabled} style={styles.rockerButton} />
+    <RemoteButton label={`${label} up`} icon={label === 'Volume' ? 'plus' : 'chevron-up'} repeat={{ key: up }} disabled={disabled} rockerEnd="top" style={styles.rockerButton} />
     <Text style={[styles.rockerLabel, disabled && styles.disabledText]}>{label === 'Volume' ? 'VOL' : 'CH'}</Text>
-    <RemoteButton label={`${label} down`} icon={label === 'Volume' ? 'minus' : 'chevron-down'} repeat={{ key: down }} disabled={disabled} style={styles.rockerButton} />
+    <RemoteButton label={`${label} down`} icon={label === 'Volume' ? 'minus' : 'chevron-down'} repeat={{ key: down }} disabled={disabled} rockerEnd="bottom" style={styles.rockerButton} />
   </View>;
 }
 const makeStyles = (scale: number) => StyleSheet.create({
@@ -92,5 +94,8 @@ const makeStyles = (scale: number) => StyleSheet.create({
   dpad: { alignSelf: 'center', gap: 8 * scale }, dpadRow: { flexDirection: 'row', gap: 8 * scale },
   round: { width: 84 * scale, height: 84 * scale, borderRadius: 42 * scale }, spacer: { width: 84 * scale, height: 84 * scale },
   rocker: { width: 84 * scale, height: 144 * scale, borderRadius: 42 * scale, backgroundColor: palette.surface, overflow: 'hidden' },
-  rockerButton: { flex: 1, borderRadius: 42 * scale }, rockerLabel: { color: palette.muted, textAlign: 'center', fontSize: 12 * scale },
+  // Keep the full rocker end tappable, with feedback focused around its icon.
+  rockerButton: { flex: 1, borderRadius: 0 },
+  rockerFeedback: { position: 'absolute', width: 72 * scale, height: 50 * scale, borderRadius: 36 * scale, backgroundColor: palette.raised },
+  rockerLabel: { color: palette.muted, textAlign: 'center', fontSize: 12 * scale },
 });

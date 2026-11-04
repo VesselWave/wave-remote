@@ -1,4 +1,4 @@
 {
-  "prompt": "Origin: actual Android 17 emulator screenshot of Wave Remote 0.6.7 debug build, touchpad mode, connected to the local mock TV. Cropped to 1080x2170 at y=140 and scaled to 720 px wide. Source: docs/screenshots/touchpad.png. Not generated.",
-  "createdAt": "2026-11-04T05:43:00Z"
+  "prompt": "Origin: direct PNG screenshot from the Android 17 emulator running Wave Remote 0.6.8 debug build, touchpad mode, connected to the local mock TV. Cropped to 1080x2170 at y=140 and scaled to 720 px wide. Source: docs/screenshots/touchpad.png. No video conversion; not generated.",
+  "createdAt": "2026-11-04T06:52:51.582758+00:00"
 }

@@ -52,12 +52,12 @@ export function RemoteScreen({ state, setPanel, power, run }: {
     <View style={styles.modes} accessibilityRole="tablist">
       {([['Buttons', 'gamepad-round-outline'], ['Touchpad', 'gesture-tap']] as const).map(([label, icon], index) => {
         const selected = state.touchpad === (index === 1);
-        return <TouchableRipple key={label} onPress={() => { void run(() => native!.preferences(index === 1, state.naturalEdge, state.naturalTwoFinger)); }} accessibilityRole="tab" accessibilityState={{ selected }} style={[styles.mode, selected && styles.selectedMode]}>
+        return <View key={label} style={[styles.mode, selected && styles.selectedMode]}><TouchableRipple onPress={() => { void run(() => native!.preferences(index === 1, state.naturalEdge, state.naturalTwoFinger)); }} accessibilityRole="tab" accessibilityState={{ selected }} style={styles.modeTouch}>
           <View style={styles.modeContent}>
             <MaterialCommunityIcons name={icon} size={18 * scale} color={selected ? palette.text : palette.muted} />
             <Text style={{ color: selected ? palette.text : palette.muted, fontSize: 14 * scale }}>{label}</Text>
           </View>
-        </TouchableRipple>;
+        </TouchableRipple></View>;
       })}
     </View>
     <View style={[styles.pad, !(state.touchpad && NativeTouchpad) && styles.buttonPad]}>
@@ -86,7 +86,9 @@ const makeStyles = (scale: number) => StyleSheet.create({
   row: { flexDirection: 'row', gap: 10 * scale, marginHorizontal: 5 * scale, marginBottom: 12 * scale }, weight: { flex: 1 },
   controls: { flexDirection: 'row', marginBottom: 12 * scale }, shortcuts: { flex: 1, marginHorizontal: 12 * scale, gap: 12 * scale }, shortcut: { minHeight: 66 * scale, flex: 1 },
   modes: { flexDirection: 'row', alignSelf: 'stretch', marginHorizontal: 10 * scale, borderRadius: radius.pill, backgroundColor: palette.surface, padding: 4 * scale, marginBottom: 12 * scale },
-  mode: { minHeight: 48 * scale, paddingHorizontal: 16 * scale, alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill, flex: 1 }, selectedMode: { backgroundColor: palette.raised },
+  // Clip the native ripple from a parent: Android can draw its own ripple outside its corners.
+  mode: { minHeight: 48 * scale, borderRadius: radius.pill, overflow: 'hidden', flex: 1 }, selectedMode: { backgroundColor: palette.raised },
+  modeTouch: { flex: 1, minHeight: 48 * scale, paddingHorizontal: 16 * scale, alignItems: 'center', justifyContent: 'center' },
   modeContent: { flexDirection: 'row', alignItems: 'center', gap: 8 * scale },
   pad: { flex: 1, minHeight: 200 * scale, justifyContent: 'center' },
   buttonPad: { minHeight: 268 * scale },
