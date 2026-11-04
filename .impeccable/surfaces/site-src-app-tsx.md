@@ -13,7 +13,7 @@ Scope: the public download page (Persuade). Visitor: an LG webOS TV owner with a
 
 THESIS: The page is the app's own mode switch. One real control, the Buttons/Touchpad pill, swaps the phone between the two real screenshots. It refuses the category default of a feature-card grid under a centered gradient hero.
 
-OWN-WORLD: The app's dark tonal stack (#0F1115 canvas, #1E222A surface, #2A2F3A raised), #E9ECF2 text, #A4ADBE muted, and #3D7BFF as the only filled action, the OK blue. #FF5A5F appears only as the icon's power glyph. Shapes are the app's: 18px keys, a 28px pill with a 24px inner selection, and fully rounded actions. No gradients, glows, glass or drop shadows: depth comes from tonal steps alone.
+OWN-WORLD: The app's dark tonal stack (#090B10 canvas, #1A1E27 surface, #222731 raised), #ECEEF3 text, #9FA6B5 muted, and #2F6BFF as the only filled action, the OK blue. #FF5C5C appears only as the icon's power glyph. Shapes are the app's: 18px keys, a 28px pill with a 24px inner selection, and fully rounded actions. No gradients, glows, glass or drop shadows: depth comes from tonal steps alone.
 
 STORY: The visitor sees the phone running the remote, flips Buttons to Touchpad and sees both ways to drive the TV, then taps Download. Version, size and Android 7+ confirm what they're getting.
 

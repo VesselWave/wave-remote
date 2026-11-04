@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Animated, ScrollView, StyleSheet, useAnimatedValue, View, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent, type ScrollViewProps } from 'react-native';
 import { Text } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { palette } from '../theme';
+import { palette, radius } from '../theme';
 
 /** Fitting screens stay still; overflowing screens briefly explain that they scroll. */
 export function useScrollCues() {
@@ -54,6 +54,6 @@ export function ScrollFrame({ children, style, ...props }: ScrollViewProps & { c
 
 const styles = StyleSheet.create({
   frame: { flexShrink: 1 }, scroll: { flexShrink: 1 },
-  cue: { position: 'absolute', right: 12, bottom: 8, flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 24, paddingHorizontal: 12, paddingVertical: 4, backgroundColor: palette.raised, elevation: 3 },
+  cue: { position: 'absolute', right: 12, bottom: 8, flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 4, backgroundColor: palette.raised, elevation: 3 },
   label: { color: palette.text, fontSize: 14 },
 });

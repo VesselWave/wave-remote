@@ -75,8 +75,8 @@
       }
     ],
     "nativeStates": {
-      "remoteDisabledFill": "#171A20",
-      "remoteDisabledForeground": "#4E5564",
+      "remoteDisabledFill": "#12151C",
+      "remoteDisabledForeground": "#6A7182",
       "remoteRipple": "#FFFFFF22",
       "sheetScrim": "#00000099"
     },
@@ -146,25 +146,25 @@
         "mono": "ui-monospace stack, footer checksum only"
       },
       "shadcnRoleMapping": {
-        "background": "#0F1115",
-        "foreground": "#E9ECF2",
-        "card": "#1E222A",
-        "secondary": "#2A2F3A",
-        "muted-foreground": "#A4ADBE",
-        "primary": "#3D7BFF",
-        "primary-hover": "#5A8FFF",
+        "background": "#090B10",
+        "foreground": "#ECEEF3",
+        "card": "#1A1E27",
+        "secondary": "#222731",
+        "muted-foreground": "#9FA6B5",
+        "primary": "#2F6BFF",
+        "primary-hover": "#4A7FFF",
         "primary-foreground": "#FFFFFF",
-        "ring": "#ADC6FF",
-        "power": "#FF5A5F"
+        "ring": "#2F6BFF",
+        "power": "#FF5C5C"
       },
       "browserSurfaces": {
         "colorScheme": "dark",
-        "themeColor": "#0F1115",
-        "selection": "rgb(61 123 255 / 0.4) under #E9ECF2",
-        "scrollbar": "#2A2F3A thumb on #0F1115",
-        "focusRing": "2px #ADC6FF; 3px canvas offset on buttons, inset on toggle choices"
+        "themeColor": "#090B10",
+        "selection": "rgb(61 123 255 / 0.4) under #ECEEF3",
+        "scrollbar": "#222731 thumb on #090B10",
+        "focusRing": "2px #2F6BFF; 3px canvas offset on buttons, inset on toggle choices"
       },
-      "contrast": "White on #3D7BFF about 3.8:1, on #5A8FFF about 3.1:1: large text only (19px bold).",
+      "contrast": "White on #2F6BFF about 3.8:1, on #4A7FFF about 3.1:1: large text only (19px bold).",
       "layout": {
         "maxWidth": "1180px",
         "sidePadding": "24px, 40px from 640px",
@@ -180,7 +180,7 @@
       "kind": "button",
       "description": "Panel translation; native behavior remains authoritative.",
       "html": "<button class=\"ds-remote\">Inputs</button>",
-      "css": ".ds-remote{font-family:sans-serif;cursor:pointer;background:#1E222A;color:#E9ECF2;border:0;border-radius:18px;min-height:48px;padding:0 4px;font-size:15px;}.ds-remote:hover,.ds-remote:active{background:#2A2F3A}.ds-remote:disabled{background:#171A20;color:#4E5564}.ds-remote:focus-visible{outline:2px solid #ADC6FF;outline-offset:2px}",
+      "css": ".ds-remote{font-family:sans-serif;cursor:pointer;background:#1A1E27;color:#ECEEF3;border:0;border-radius:18px;min-height:48px;padding:0 4px;font-size:15px;}.ds-remote:hover,.ds-remote:active{background:#222731}.ds-remote:disabled{background:#12151C;color:#6A7182}.ds-remote:focus-visible{outline:2px solid #2F6BFF;outline-offset:2px}",
       "refersTo": "remote-button"
     },
     {
@@ -188,7 +188,7 @@
       "kind": "button",
       "description": "Panel translation; native behavior remains authoritative.",
       "html": "<button class=\"ds-ok\">OK</button>",
-      "css": ".ds-ok{font-family:sans-serif;cursor:pointer;background:#1E222A;color:#E9ECF2;border:0;border-radius:18px;min-height:48px;padding:0 4px;font-size:15px;width:84px;height:84px;border-radius:42px;background:#3D7BFF;font-size:20px;font-weight:700}.ds-ok:hover,.ds-ok:active{background:#2A2F3A}.ds-ok:focus-visible{outline:2px solid #ADC6FF;outline-offset:2px}",
+      "css": ".ds-ok{font-family:sans-serif;cursor:pointer;background:#1A1E27;color:#ECEEF3;border:0;border-radius:18px;min-height:48px;padding:0 4px;font-size:15px;width:84px;height:84px;border-radius:42px;background:#2F6BFF;font-size:20px;font-weight:700}.ds-ok:hover,.ds-ok:active{background:#222731}.ds-ok:focus-visible{outline:2px solid #2F6BFF;outline-offset:2px}",
       "refersTo": "remote-ok"
     },
     {
@@ -197,14 +197,14 @@
       "refersTo": "button-contained",
       "description": "Contained setup action translated for the panel; platform ripple remains native.",
       "html": "<button class=\"ds-connect\">Connect</button>",
-      "css": ".ds-connect{background:#ADC6FF;color:#002E69;border:0;border-radius:20px;min-height:52px;padding:0 24px;font:500 14px/20px sans-serif;letter-spacing:.1px;cursor:pointer}.ds-connect:hover,.ds-connect:active{background:#ADC6FF;background-image:linear-gradient(#002E6914,#002E6914)}.ds-connect:focus-visible{outline:2px solid #ADC6FF;outline-offset:2px}"
+      "css": ".ds-connect{background:#2F6BFF;color:#FFFFFF;border:0;border-radius:20px;min-height:52px;padding:0 24px;font:500 14px/20px sans-serif;letter-spacing:.1px;cursor:pointer}.ds-connect:hover,.ds-connect:active{background:#2F6BFF;background-image:linear-gradient(#FFFFFF14,#FFFFFF14)}.ds-connect:focus-visible{outline:2px solid #2F6BFF;outline-offset:2px}"
     },
     {
       "name": "Remote Navigation",
       "kind": "nav",
       "description": "Panel translation; native behavior remains authoritative.",
       "html": "<nav class=\"ds-nav\" aria-label=\"TV navigation\"><button>Back</button><button>Home</button><button>Settings</button></nav>",
-      "css": ".ds-nav{display:flex;gap:10px}.ds-nav button{font-family:sans-serif;cursor:pointer;background:#1E222A;color:#E9ECF2;border:0;border-radius:18px;min-height:48px;padding:0 4px;font-size:15px;flex:1;min-height:52px;background:#2A2F3A}.ds-nav button:hover{outline:1px solid #7C8595}.ds-nav button:active{background:#1E222A}.ds-nav button:focus-visible{outline:2px solid #ADC6FF;outline-offset:2px}",
+      "css": ".ds-nav{display:flex;gap:10px}.ds-nav button{font-family:sans-serif;cursor:pointer;background:#1A1E27;color:#ECEEF3;border:0;border-radius:18px;min-height:48px;padding:0 4px;font-size:15px;flex:1;min-height:52px;background:#222731}.ds-nav button:hover{outline:1px solid #383E4B}.ds-nav button:active{background:#1A1E27}.ds-nav button:focus-visible{outline:2px solid #2F6BFF;outline-offset:2px}",
       "refersTo": "remote-navigation"
     },
     {
@@ -212,7 +212,7 @@
       "kind": "nav",
       "description": "Panel translation; native behavior remains authoritative.",
       "html": "<div class=\"ds-modes\" role=\"tablist\"><button role=\"tab\" aria-selected=\"true\">Buttons</button><button role=\"tab\" aria-selected=\"false\">Touchpad</button></div>",
-      "css": ".ds-modes{display:flex;min-width:240px;border-radius:28px;background:#1E222A;padding:4px}.ds-modes button{font-family:sans-serif;cursor:pointer;flex:1;min-height:48px;padding:0 16px;border:0;border-radius:24px;font-size:14px;background:transparent;color:#A4ADBE}.ds-modes [aria-selected=\"true\"]{background:#2A2F3A;color:#E9ECF2}.ds-modes button:hover,.ds-modes button:active{background:#2A2F3A}.ds-modes button:focus-visible{outline:2px solid #ADC6FF;outline-offset:2px}",
+      "css": ".ds-modes{display:flex;min-width:240px;border-radius:28px;background:#1A1E27;padding:4px}.ds-modes button{font-family:sans-serif;cursor:pointer;flex:1;min-height:48px;padding:0 16px;border:0;border-radius:24px;font-size:14px;background:transparent;color:#9FA6B5}.ds-modes [aria-selected=\"true\"]{background:#222731;color:#ECEEF3}.ds-modes button:hover,.ds-modes button:active{background:#222731}.ds-modes button:focus-visible{outline:2px solid #2F6BFF;outline-offset:2px}",
       "refersTo": "mode-selected"
     },
     {
@@ -220,7 +220,7 @@
       "kind": "card",
       "description": "Panel translation; native behavior remains authoritative.",
       "html": "<div class=\"ds-device\"><strong>LG TV</strong><span>192.168.0.1</span><small>Connected</small></div>",
-      "css": ".ds-device{display:flex;flex-direction:column;gap:4px;background:#2A2F3A;color:#E9ECF2;border-radius:16px;padding:20px;font-family:sans-serif}.ds-device strong{font-size:16px;font-weight:500;line-height:24px}.ds-device span{font-size:14px;line-height:20px;color:#A4ADBE}.ds-device small{font-size:12px;line-height:16px;color:#A4ADBE}",
+      "css": ".ds-device{display:flex;flex-direction:column;gap:4px;background:#222731;color:#ECEEF3;border-radius:16px;padding:20px;font-family:sans-serif}.ds-device strong{font-size:16px;font-weight:500;line-height:24px}.ds-device span{font-size:14px;line-height:20px;color:#9FA6B5}.ds-device small{font-size:12px;line-height:16px;color:#9FA6B5}",
       "refersTo": "device-card"
     },
     {
@@ -228,7 +228,7 @@
       "kind": "input",
       "description": "Panel translation; native behavior remains authoritative.",
       "html": "<fieldset class=\"ds-field\"><legend>TV IP address</legend><input aria-label=\"TV IP address\" placeholder=\"192.168.0.1\" inputmode=\"decimal\"></fieldset>",
-      "css": ".ds-field{border:1px solid #7C8595;border-radius:4px;background:#1E222A;color:#A4ADBE;font:16px sans-serif;padding:8px 16px}.ds-field legend{font-size:12px}.ds-field input{background:transparent;color:#E9ECF2;border:0;font:16px sans-serif;width:100%;outline:none}.ds-field:hover{border-color:#E9ECF2}.ds-field:focus-within{border-color:#ADC6FF;outline:1px solid #ADC6FF;color:#ADC6FF}"
+      "css": ".ds-field{border:1px solid #383E4B;border-radius:4px;background:#1A1E27;color:#9FA6B5;font:16px sans-serif;padding:8px 16px}.ds-field legend{font-size:12px}.ds-field input{background:transparent;color:#ECEEF3;border:0;font:16px sans-serif;width:100%;outline:none}.ds-field:hover{border-color:#ECEEF3}.ds-field:focus-within{border-color:#2F6BFF;outline:1px solid #2F6BFF;color:#2F6BFF}"
     },
     {
       "name": "Web Download Button",
@@ -236,7 +236,7 @@
       "refersTo": "web-button-primary",
       "description": "Download page primary action; large text only on filled blue.",
       "html": "<a class=\"ds-web-dl\" href=\"#\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M2 12H4V17H20V12H22V17A2 2 0 0 1 20 19H4A2 2 0 0 1 2 17V12M12 15L17.55 9.54L16.13 8.13L13 11.25V2H11V11.25L7.88 8.13L6.46 9.55L12 15Z\"/></svg>Download APK</a>",
-      "css": ".ds-web-dl{font-family:'Archivo Variable',ui-sans-serif,system-ui,sans-serif;display:inline-flex;align-items:center;gap:10px;height:60px;padding:0 32px 0 24px;border-radius:9999px;background:#3D7BFF;color:#FFFFFF;font-size:19px;font-weight:700;text-decoration:none;transition:background-color .15s ease-out,transform .15s ease-out}.ds-web-dl svg{width:24px;height:24px}.ds-web-dl:hover{background:#5A8FFF}.ds-web-dl:active{transform:scale(.98)}.ds-web-dl:focus-visible{outline:none;box-shadow:0 0 0 3px #0F1115,0 0 0 5px #ADC6FF}@media (prefers-reduced-motion:reduce){.ds-web-dl{transition:none}.ds-web-dl:active{transform:none}}"
+      "css": ".ds-web-dl{font-family:'Archivo Variable',ui-sans-serif,system-ui,sans-serif;display:inline-flex;align-items:center;gap:10px;height:60px;padding:0 32px 0 24px;border-radius:9999px;background:#2F6BFF;color:#FFFFFF;font-size:19px;font-weight:700;text-decoration:none;transition:background-color .15s ease-out,transform .15s ease-out}.ds-web-dl svg{width:24px;height:24px}.ds-web-dl:hover{background:#4A7FFF}.ds-web-dl:active{transform:scale(.98)}.ds-web-dl:focus-visible{outline:none;box-shadow:0 0 0 3px #090B10,0 0 0 5px #2F6BFF}@media (prefers-reduced-motion:reduce){.ds-web-dl{transition:none}.ds-web-dl:active{transform:none}}"
     },
     {
       "name": "Web Ghost Button",
@@ -244,7 +244,7 @@
       "refersTo": "web-button-ghost",
       "description": "Quiet header link on the download page.",
       "html": "<a class=\"ds-web-ghost\" href=\"#\">GitHub</a>",
-      "css": ".ds-web-ghost{font-family:'Archivo Variable',ui-sans-serif,system-ui,sans-serif;display:inline-flex;align-items:center;height:44px;padding:0 20px;border-radius:9999px;color:#A4ADBE;font-size:15px;font-weight:600;text-decoration:none;transition:background-color .15s ease-out}.ds-web-ghost:hover{background:#2A2F3A;color:#E9ECF2}.ds-web-ghost:focus-visible{outline:none;box-shadow:0 0 0 3px #0F1115,0 0 0 5px #ADC6FF}"
+      "css": ".ds-web-ghost{font-family:'Archivo Variable',ui-sans-serif,system-ui,sans-serif;display:inline-flex;align-items:center;height:44px;padding:0 20px;border-radius:9999px;color:#9FA6B5;font-size:15px;font-weight:600;text-decoration:none;transition:background-color .15s ease-out}.ds-web-ghost:hover{background:#222731;color:#ECEEF3}.ds-web-ghost:focus-visible{outline:none;box-shadow:0 0 0 3px #090B10,0 0 0 5px #2F6BFF}"
     },
     {
       "name": "Web Mode Toggle",
@@ -252,7 +252,7 @@
       "refersTo": "web-mode-toggle",
       "description": "Web mirror of the app's mode selector; swaps the phone screenshot.",
       "html": "<div class=\"ds-web-modes\" role=\"group\" aria-label=\"Remote mode\"><button aria-pressed=\"true\">Buttons</button><button aria-pressed=\"false\">Touchpad</button></div>",
-      "css": ".ds-web-modes{display:flex;width:min(100%,300px);border-radius:28px;background:#1E222A;padding:4px}.ds-web-modes button{font-family:'Archivo Variable',ui-sans-serif,system-ui,sans-serif;flex:1;min-height:48px;padding:0 20px;border:0;border-radius:24px;background:transparent;color:#A4ADBE;font-size:15px;font-weight:500;cursor:pointer;transition:color .2s ease-out,background-color .2s ease-out}.ds-web-modes button:hover{color:#E9ECF2}.ds-web-modes [aria-pressed=\"true\"]{background:#2A2F3A;color:#E9ECF2}.ds-web-modes button:focus-visible{outline:none;box-shadow:inset 0 0 0 2px #ADC6FF}"
+      "css": ".ds-web-modes{display:flex;width:min(100%,300px);border-radius:28px;background:#1A1E27;padding:4px}.ds-web-modes button{font-family:'Archivo Variable',ui-sans-serif,system-ui,sans-serif;flex:1;min-height:48px;padding:0 20px;border:0;border-radius:24px;background:transparent;color:#9FA6B5;font-size:15px;font-weight:500;cursor:pointer;transition:color .2s ease-out,background-color .2s ease-out}.ds-web-modes button:hover{color:#ECEEF3}.ds-web-modes [aria-pressed=\"true\"]{background:#222731;color:#ECEEF3}.ds-web-modes button:focus-visible{outline:none;box-shadow:inset 0 0 0 2px #2F6BFF}"
     },
     {
       "name": "Web Phone Frame",
@@ -260,7 +260,7 @@
       "refersTo": "web-phone-frame",
       "description": "Flat tonal bezel around the app screenshot; no shadow.",
       "html": "<div class=\"ds-web-phone\"><div></div></div>",
-      "css": ".ds-web-phone{display:inline-block;border-radius:44px;background:#1E222A;padding:10px;box-shadow:0 0 0 1px #2A2F3A}.ds-web-phone div{width:150px;aspect-ratio:720/1447;border-radius:34px;background:#0F1115}"
+      "css": ".ds-web-phone{display:inline-block;border-radius:44px;background:#1A1E27;padding:10px;box-shadow:0 0 0 1px #222731}.ds-web-phone div{width:150px;aspect-ratio:720/1447;border-radius:34px;background:#090B10}"
     }
   ],
   "narrative": {

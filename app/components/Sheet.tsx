@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { AccessibilityInfo, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { IconButton, Snackbar, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { palette } from '../theme';
+import { palette, radius } from '../theme';
 import { ScrollFrame } from './ScrollFrame';
 
 export const FeedbackContext = createContext({ message: '', dismiss: () => {} });
@@ -38,8 +38,8 @@ export function Sheet({ title, subtitle, open, onClose, children }: {
 }
 const styles = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#00000099' },
-  sheet: { backgroundColor: palette.surface, maxHeight: '100%', borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingBottom: 28, width: '100%', maxWidth: 600, alignSelf: 'center', overflow: 'hidden' },
-  handle: { width: 32, height: 4, borderRadius: 2, backgroundColor: '#7C8595', alignSelf: 'center', marginTop: 12, marginBottom: 8 },
+  sheet: { backgroundColor: palette.surface, maxHeight: '100%', borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, paddingBottom: 28, width: '100%', maxWidth: 600, alignSelf: 'center', overflow: 'hidden' },
+  handle: { width: 32, height: 4, borderRadius: radius.pill, backgroundColor: palette.faint, alignSelf: 'center', marginTop: 12, marginBottom: 8 },
   heading: { flexDirection: 'row', paddingLeft: 24, paddingRight: 8, alignItems: 'center', paddingBottom: 16 },
   title: { flex: 1 }, subtitle: { color: palette.muted, marginTop: 4 }, close: { width: 48, height: 48 },
 });

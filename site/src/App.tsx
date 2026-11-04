@@ -60,7 +60,7 @@ export default function App({ release }: { release: Release | null }) {
       </header>
 
       <main className="family-frame remote-hero flex-1">
-        <div className="flex max-w-[36rem] flex-col gap-5">
+        <div className="hero-col">
           <div className="hero-card">
             <h1 className="product-name">
               <img src="/icon.svg" alt="" width={64} height={64} />
@@ -103,8 +103,8 @@ export default function App({ release }: { release: Release | null }) {
               Touchpad
             </ToggleGroupItem>
           </ToggleGroup>
-          <div className="rounded-[44px] bg-card p-2.5 shadow-[0_30px_70px_-24px_rgb(0_0_0/0.7)] ring-1 ring-[rgb(160_200_255/0.1)]">
-            <div className="phone-screen relative aspect-[720/1447] overflow-hidden rounded-[34px] bg-background">
+          <div className="rounded-[16px] bg-card p-1 shadow-[0_30px_70px_-24px_rgb(0_0_0/0.7)] ring-1 ring-[rgb(255_255_255/0.08)]">
+            <div className="phone-screen relative aspect-[720/1447] overflow-hidden rounded-[12px] bg-background">
               {(Object.keys(screens) as Mode[]).map((key) => (
                 <img
                   key={key}

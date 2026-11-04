@@ -4,7 +4,7 @@ import { ActivityIndicator, Text, TouchableRipple } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { native, NativeTouchpad, type RemoteState } from '../../modules/wave-remote';
 import { commands, connectionLabel } from '../lib/remote';
-import { palette } from '../theme';
+import { palette, radius } from '../theme';
 import { ScrollFrame } from './ScrollFrame';
 import { Dpad, RemoteButton, RemoteScaleContext, Rocker } from './RemoteButton';
 
@@ -85,12 +85,12 @@ const makeStyles = (scale: number) => StyleSheet.create({
   status: { fontSize: 12 * scale, color: palette.muted, marginTop: 2 * scale }, activity: { marginHorizontal: 4 * scale }, more: { width: 48 * scale },
   row: { flexDirection: 'row', gap: 10 * scale, marginHorizontal: 5 * scale, marginBottom: 12 * scale }, weight: { flex: 1 },
   controls: { flexDirection: 'row', marginBottom: 12 * scale }, shortcuts: { flex: 1, marginHorizontal: 12 * scale, gap: 12 * scale }, shortcut: { minHeight: 66 * scale, flex: 1 },
-  modes: { flexDirection: 'row', alignSelf: 'stretch', marginHorizontal: 10 * scale, borderRadius: 28 * scale, backgroundColor: palette.surface, padding: 4 * scale, marginBottom: 12 * scale },
-  mode: { minHeight: 48 * scale, paddingHorizontal: 16 * scale, alignItems: 'center', justifyContent: 'center', borderRadius: 24 * scale, flex: 1 }, selectedMode: { backgroundColor: palette.raised },
+  modes: { flexDirection: 'row', alignSelf: 'stretch', marginHorizontal: 10 * scale, borderRadius: radius.pill, backgroundColor: palette.surface, padding: 4 * scale, marginBottom: 12 * scale },
+  mode: { minHeight: 48 * scale, paddingHorizontal: 16 * scale, alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill, flex: 1 }, selectedMode: { backgroundColor: palette.raised },
   modeContent: { flexDirection: 'row', alignItems: 'center', gap: 8 * scale },
   pad: { flex: 1, minHeight: 200 * scale, justifyContent: 'center' },
   buttonPad: { minHeight: 268 * scale },
-  touchpad: { flex: 1, minHeight: 200 * scale, borderRadius: 28 * scale, overflow: 'hidden' }, nativePad: { flex: 1, minHeight: 200 * scale },
+  touchpad: { flex: 1, minHeight: 200 * scale, borderRadius: radius.xl * scale, overflow: 'hidden' }, nativePad: { flex: 1, minHeight: 200 * scale },
   offlinePad: { backgroundColor: palette.disabled, alignItems: 'center', justifyContent: 'center', gap: 12 * scale },
   offlineText: { color: palette.muted }, landingZone: { height: 12 * scale }, navigation: { marginBottom: 0 }, navButton: { minHeight: 52 * scale, backgroundColor: palette.raised },
 });

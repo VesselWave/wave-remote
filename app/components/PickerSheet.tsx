@@ -4,7 +4,7 @@ import { FlatList, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Icon, List, Searchbar, Text } from 'react-native-paper';
 import { native, type TvApp, type TvInput } from '../../modules/wave-remote';
 import { commands, errorMessage } from '../lib/remote';
-import { palette } from '../theme';
+import { palette, radius } from '../theme';
 import { Sheet } from './Sheet';
 import { useScrollCues } from './ScrollFrame';
 
@@ -59,5 +59,5 @@ export function PickerSheet({ kind, onClose, report, ready }: {
 }
 const styles = StyleSheet.create({
   scroll: { flexShrink: 1 }, search: { marginHorizontal: 24, marginBottom: 12, backgroundColor: palette.raised }, list: { paddingBottom: 16 },
-  item: { minHeight: 72, borderRadius: 12, marginHorizontal: 12 }, empty: { alignItems: 'center', padding: 32, gap: 16 }, secondary: { color: palette.muted, textAlign: 'center' }, center: { textAlign: 'center' }, progress: { margin: 16 },
+  item: { minHeight: 72, borderRadius: radius.md, marginHorizontal: 12 }, empty: { alignItems: 'center', padding: 32, gap: 16 }, secondary: { color: palette.muted, textAlign: 'center' }, center: { textAlign: 'center' }, progress: { margin: 16 },
 });

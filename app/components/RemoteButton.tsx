@@ -4,7 +4,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Text } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
 import { native } from '../../modules/wave-remote';
-import { palette } from '../theme';
+import { palette, radius } from '../theme';
 
 export const RemoteScaleContext = createContext(1);
 
@@ -86,7 +86,7 @@ export function Rocker({ label, up, down, disabled }: { label: string; up: strin
   </View>;
 }
 const makeStyles = (scale: number) => StyleSheet.create({
-  button: { minHeight: 48 * scale, borderRadius: 18 * scale, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingHorizontal: 4 * scale },
+  button: { minHeight: 48 * scale, borderRadius: radius.lg * scale, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingHorizontal: 4 * scale },
   label: { textAlign: 'center' }, caption: { fontSize: 12 * scale, marginTop: 2 * scale, textAlign: 'center' }, pressed: { backgroundColor: palette.raised },
   disabled: { backgroundColor: palette.disabled }, disabledText: { color: palette.onDisabled },
   dpad: { alignSelf: 'center', gap: 8 * scale }, dpadRow: { flexDirection: 'row', gap: 8 * scale },

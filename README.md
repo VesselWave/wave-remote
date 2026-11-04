@@ -3,8 +3,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/VesselWave/wave-remote/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/VesselWave/wave-remote?style=flat-square&amp;color=3d7bff"></a>
-  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-3d7bff?style=flat-square"></a>
+  <a href="https://github.com/VesselWave/wave-remote/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/VesselWave/wave-remote?style=flat-square&amp;color=2f6bff"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-2f6bff?style=flat-square"></a>
 </p>
 
 Control your LG webOS TV from your Android phone, over your own Wi-Fi. It talks to the TV directly: no account, no cloud, no ads, no analytics.

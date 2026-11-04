@@ -10,7 +10,7 @@ const buttonVariants = cva(
       variant: {
         default: 'bg-primary text-primary-foreground hover:bg-primary-hover',
         ghost: 'text-muted-foreground hover:bg-secondary hover:text-foreground',
-        soft: 'bg-[rgb(134_195_232/0.1)] text-accent-fg ring-1 ring-[rgb(134_195_232/0.18)] hover:bg-[rgb(134_195_232/0.16)] hover:text-foreground',
+        soft: 'bg-[rgb(110_155_255/0.1)] text-accent-fg ring-1 ring-[rgb(110_155_255/0.18)] hover:bg-[rgb(110_155_255/0.16)] hover:text-foreground',
       },
       size: {
         default: 'h-11 rounded-full px-5 text-[15px] [&_svg]:size-5',

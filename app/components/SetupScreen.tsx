@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ActivityIndicator, Button, HelperText, Icon, IconButton, List, Surface, Text, TextInput } from 'react-native-paper';
 import { native, type FoundTv, type RemoteState } from '../../modules/wave-remote';
 import { errorMessage, normalizeHost } from '../lib/remote';
-import { palette } from '../theme';
+import { palette, radius } from '../theme';
 import { ScrollFrame } from './ScrollFrame';
 
 /** `onBack` is set while adding another TV; the current TV's connection state is not shown then. */
@@ -61,7 +61,7 @@ export function SetupScreen({ state, run, onConnect, onBack }: {
   return <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={insets.top}>
     <ScrollFrame style={styles.screen} contentContainerStyle={[styles.content, compact && styles.compactContent]}>
     {onBack ? <IconButton icon="arrow-left" accessibilityLabel="Back to the remote" onPress={onBack} style={styles.back} /> : null}
-    <View style={[styles.logo, compact && styles.compactLogo]}><Icon source="television" size={36} color="#ADC6FF" /></View>
+    <View style={[styles.logo, compact && styles.compactLogo]}><Icon source="television" size={36} color={palette.accentFg} /></View>
     <Text variant={compact ? 'headlineMedium' : 'headlineLarge'} accessibilityRole="header">{onBack ? 'Add a TV' : 'Pick your TV'}</Text>
     <Text variant="bodyLarge" style={[styles.intro, compact && { marginTop: 8, marginBottom: 12 }]}>Your phone and TV need to be on the same Wi-Fi network.</Text>
     {!native ? <Surface elevation={1} style={styles.notice}>
@@ -99,13 +99,13 @@ export function SetupScreen({ state, run, onConnect, onBack }: {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { padding: 24, paddingTop: 32, flexGrow: 1, maxWidth: 600, width: '100%', alignSelf: 'center' },
-  compactContent: { padding: 16, paddingTop: 16 }, compactLogo: { width: 48, height: 48, borderRadius: 14, marginBottom: 12 },
+  compactContent: { padding: 16, paddingTop: 16 }, compactLogo: { width: 48, height: 48, borderRadius: radius.md, marginBottom: 12 },
   back: { marginLeft: -12, marginTop: -16, marginBottom: 8 },
-  logo: { width: 72, height: 72, borderRadius: 20, backgroundColor: '#164788', alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
-  intro: { color: palette.muted, marginTop: 12, marginBottom: 24 }, notice: { borderRadius: 16, padding: 20, marginBottom: 20, gap: 12 },
+  logo: { width: 72, height: 72, borderRadius: radius.lg, backgroundColor: palette.accentSoft, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
+  intro: { color: palette.muted, marginTop: 12, marginBottom: 24 }, notice: { borderRadius: radius.md, padding: 20, marginBottom: 20, gap: 12 },
   secondary: { color: palette.muted }, busyHeading: { flexDirection: 'row', alignItems: 'center', gap: 12, flexWrap: 'wrap' },
   sectionHeading: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', minHeight: 48, columnGap: 12 },
-  devices: { gap: 8 }, device: { backgroundColor: palette.surface, borderRadius: 16, minHeight: 80 }, empty: { color: palette.muted, paddingVertical: 20, lineHeight: 22 },
+  devices: { gap: 8 }, device: { backgroundColor: palette.surface, borderRadius: radius.md, minHeight: 80 }, empty: { color: palette.muted, paddingVertical: 20, lineHeight: 22 },
   savedHeading: { minHeight: 48, textAlignVertical: 'center', marginBottom: 8 },
   manualHeading: { marginTop: 32, marginBottom: 16 }, connect: { minHeight: 52 },
 });

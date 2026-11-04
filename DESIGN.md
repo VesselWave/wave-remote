@@ -2,27 +2,30 @@
 name: Wave Remote
 description: A familiar dark Android remote with Material setup and menus.
 colors:
-  background: "#0F1115"
-  surface: "#1E222A"
-  raised: "#2A2F3A"
-  text: "#E9ECF2"
-  muted: "#A4ADBE"
-  accent: "#3D7BFF"
-  power: "#FF5A5F"
-  disabled: "#171A20"
-  on-disabled: "#4E5564"
-  primary: "#ADC6FF"
-  on-primary: "#002E69"
-  primary-container: "#164788"
-  on-primary-container: "#D8E2FF"
-  secondary: "#BDC7DC"
-  outline: "#7C8595"
-  outline-variant: "#424957"
-  error: "#FFB4AB"
-  on-error: "#690005"
-  error-container: "#51262B"
-  on-error-container: "#FFDAD6"
-  web-primary-hover: "#5A8FFF"
+  background: "#090B10"
+  surface: "#1A1E27"
+  raised: "#222731"
+  text: "#ECEEF3"
+  muted: "#9FA6B5"
+  faint: "#6A7182"
+  accent: "#2F6BFF"
+  accent-fg: "#6E9BFF"
+  accent-soft: "#0F1A36"
+  power: "#FF5C5C"
+  disabled: "#12151C"
+  on-disabled: "#6A7182"
+  primary: "#2F6BFF"
+  on-primary: "#FFFFFF"
+  primary-container: "#0F1A36"
+  on-primary-container: "#6E9BFF"
+  secondary: "#ECEEF3"
+  outline: "#383E4B"
+  outline-variant: "#252A35"
+  error: "#FF5C5C"
+  on-error: "#FFFFFF"
+  error-container: "#221318"
+  on-error-container: "#FF5C5C"
+  web-primary-hover: "#4A7FFF"
   web-on-primary: "#FFFFFF"
 typography:
   headline-large: {fontFamily: sans-serif, fontSize: "32px", fontWeight: 400, lineHeight: "40px", letterSpacing: "0px"}
@@ -44,15 +47,16 @@ typography:
   web-small: {fontFamily: "Archivo Variable, ui-sans-serif, system-ui, sans-serif", fontSize: "13px", fontWeight: 400}
 rounded:
   row: "12px"
-  card: "16px"
-  remote-button: "18px"
-  material-button: "20px"
-  mode: "24px"
-  sheet: "28px"
+  card: "12px"
+  remote-button: "16px"
+  sheet: "16px"
+  touchpad: "24px"
   round-control: "42px"
+  material-button: "20px"
   web-full: "9999px"
-  web-phone-screen: "34px"
-  web-phone-frame: "44px"
+  web-card: "24px"
+  web-phone-frame: "16px"
+  web-phone-screen: "12px"
 spacing:
   compact: "4px"
   small: "8px"
@@ -97,7 +101,7 @@ components:
   mode-selected:
     backgroundColor: "{colors.raised}"
     textColor: "{colors.text}"
-    rounded: "{rounded.mode}"
+    rounded: "{rounded.web-full}"
   sheet:
     backgroundColor: "{colors.surface}"
   web-button-primary:
@@ -121,17 +125,17 @@ components:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.muted}"
     typography: "{typography.web-label}"
-    rounded: "{rounded.sheet}"
+    rounded: "{rounded.web-full}"
     padding: "4px"
   web-mode-toggle-selected:
     backgroundColor: "{colors.raised}"
     textColor: "{colors.text}"
-    rounded: "{rounded.mode}"
+    rounded: "{rounded.web-full}"
     height: "48px"
   web-phone-frame:
     backgroundColor: "{colors.surface}"
     rounded: "{rounded.web-phone-frame}"
-    padding: "10px"
+    padding: "4px"
 ---
 
 # Design System: Wave Remote
@@ -140,13 +144,13 @@ components:
 
 **Creative North Star: "The familiar Android remote"**
 
-Keep the existing remote's dark palette, control geometry and button order. Setup, settings and menus use React Native Paper's Android Material 3 components. PRODUCT.md supplies this binding direction; `app/components/RemoteScreen.tsx` is the reference for the remote, ahead of older saved screenshots.
+Keep the remote's control geometry and button order. Colors and corners follow the VesselWave family: Wave VPN's dark tokens (blue-black greys, one electric-blue accent) and one shared corner scale, the same in the VPN apps and both websites. Setup, settings and menus use React Native Paper's Android Material 3 components. PRODUCT.md supplies this binding direction; `app/components/RemoteScreen.tsx` is the reference for the remote, ahead of older saved screenshots.
 
 This is a code-derived record of the Expo implementation, not a runtime visual approval. Sources are `app/theme.ts`, `app/components/`, `App.tsx` and the installed Paper Android theme. Frontmatter uses portable px strings for numeric native dimensions; interpret them as React Native layout units and native text sizes, not browser sizing requirements.
 
 **Key Characteristics:**
 
-- Dark tonal surfaces with a blue central confirmation control.
+- Blue-black surfaces with one blue accent on the central confirmation control.
 - Familiar Material forms, lists and modal menus.
 - Preserved remote order and generous central controls.
 
@@ -154,11 +158,11 @@ This is a code-derived record of the Expo implementation, not a runtime visual a
 
 ### Primary
 
-`accent` is the saturated blue OK control. `primary` is the lighter Material action, selection and icon color; its container pair supports setup imagery. Keep these distinct roles.
+`accent` is the family blue: the OK control and Paper's `primary` for contained actions. `accent-fg` is the lighter blue for icons, section titles and selection marks on dark surfaces; `accent-soft` (the accent at 16% over the canvas) is its container, as behind the setup logo.
 
 ### Secondary
 
-`secondary` is the Paper secondary role. Secondary containers reuse `raised` with `text` foreground.
+`secondary` is the Paper secondary role and equals `text`. Secondary containers reuse `raised` with `text` foreground.
 
 ### Neutral
 
@@ -166,9 +170,9 @@ This is a code-derived record of the Expo implementation, not a runtime visual a
 
 `power` marks power, active mute and disconnected remote status.
 
-`disabled` and `on-disabled` are the one look for TV controls the TV can't take: every key, rocker (with its VOL/CH label), the OK control and the navigation row switch to them, whatever their usual fill. Power keeps its own look whenever it can act, so it stands alone as the way back. The softer `error` pair marks Material errors and the explicit Forget TV action; error containers retain their own foreground pair.
+`disabled` and `on-disabled` are the one look for TV controls the TV can't take: every key, rocker (with its VOL/CH label), the OK control and the navigation row switch to them, whatever their usual fill. Power keeps its own look whenever it can act, so it stands alone as the way back. The `error` pair (the family danger red) marks Material errors and the explicit Forget TV action.
 
-**The Two Blues Rule.** Preserve the remote's accent blue; use Paper primary for Material actions and selections.
+**The One Blue Rule.** One accent, `#2F6BFF`, everywhere; `accent-fg` is the same hue lightened for text and icons. Values come from Wave VPN's `Theme.kt`; change them there first, then here.
 
 ## Typography
 
@@ -176,9 +180,9 @@ Android Paper uses native sans-serif and sans-serif-medium. The implemented setu
 
 The remote retains its own title, ordinary label and bold OK sizes. Status and rocker labels are small (12); mode labels use 14. These inherit Paper text defaults unless overridden; do not invent a new type ramp or normalize them into large marketing headings.
 
-**Web download site (`site/`) only.** Archivo Variable, self-hosted with its width axis (`@fontsource-variable/archivo/wdth.css`; `public/fonts/archivo-latin-wdth.woff2` for the static 404), serves display and body; ui-monospace serves only the footer checksum. `web-display` sets the product name once, widened (font-stretch 112%), heavy and tightly tracked; the 404 heading reuses the weight and width at 32px. `web-lede` carries the one sentence in muted text, capped near 30ch; `web-body` is the page base; `web-action` labels the download; `web-label` serves mode choices, facts and the ghost link; `web-small` the footer. Version and size use tabular numerals.
+**Web download site (`site/`) only.** Inter Variable (`@fontsource-variable/inter`) serves all text, shared with the Wave VPN site; ui-monospace serves only the footer checksum. The `web-*` typography entries in the frontmatter predate the switch and are historical; `site/src/styles.css` is authoritative.
 
-**The Archivo Stays On The Web Rule.** Archivo belongs to the browser surface; native screens keep Paper's system faces.
+**The Web Face Stays On The Web Rule.** Inter belongs to the browser surface; native screens keep Paper's system faces.
 
 ## Layout
 
@@ -194,7 +198,7 @@ The custom remote uses tonal layering. Its temporary scroll hint uses native ele
 
 ## Shapes
 
-Remote keys are rounded rectangles; D-pad controls and rockers use the circular-control radius. Cards use the card radius, list/radio rows use the row radius, and the mode selector uses rounded inner choices inside a sheet-radius outer pill. Sheets round only their upper corners. Paper theme roundness is 4, which produces the Material button radius in frontmatter; it is not a universal 4-unit corner rule.
+One corner scale for the whole VesselWave family (`radius` in `app/theme.ts`): 8 rows and inputs, 12 cards and list items, 16 sheets and remote keys, 24 large surfaces such as the touchpad, pills for buttons, toggles and cues, circles for round controls. Remote keys use 16; D-pad controls are circles and rockers are pills. The mode selector is a pill holding pill choices. Sheets round only their upper corners (16). Paper theme roundness is 4, which makes Paper buttons pills at 40 units and cards 12; it is not a universal 4-unit corner rule.
 
 ## Components
 
@@ -209,24 +213,24 @@ The sidecar's HTML/CSS samples translate selected native controls for the design
 
 ### Web download site (`site/`)
 
-A single download page and static 404 built inside this world with shadcn/ui primitives. `site/src/styles.css` maps shadcn's semantic roles onto the app palette: background → `background`, foreground → `text`, card → `surface`, secondary → `raised`, muted-foreground → `muted`, primary → `accent`, ring → `primary`. Note the inversion: shadcn "primary" is the OK blue, and the Material action blue appears only as the focus ring.
+A single download page and static 404 built inside this world with shadcn/ui primitives. `site/src/styles.css` carries the family token block shared byte-for-byte with the Wave VPN site (blue-black greys, `accent` as shadcn primary, `accent-fg` for links and the focus ring).
 
 - **Download button:** fully rounded, filled OK blue with white `web-action` text and a 24px leading icon; hover lightens to `web-primary-hover`; press scales to 0.98 over 150ms (off under reduced motion). The 404 repeats it at 56px tall.
 - **Ghost link button:** fully rounded, 44px, muted 15px semibold text and 20px icon; hover fills `raised` and lifts text to `text`.
-- **Mode toggle:** the web mirror of the app's mode selector: a surface pill (28px radius, 4px inset) holding two choices of at least 48px with 24px corners and 18px icons; the selected choice fills `raised`. Capped at 300px wide.
-- **Phone frame:** 44px-radius surface bezel, 10px padding, one-pixel `raised` ring, 34px-radius screen at the screenshot's 720:1447 ratio, mobile screen width min(350px, 100vw − 70px); from 1024px, screen height min(700px, max(200px, 100dvh − 294px)) reserves space for the header, footer, mode selector, bezel and main padding. Very short windows retain natural scrolling.
+- **Mode toggle:** the web mirror of the app's mode selector: a surface pill (4px inset) holding two pill choices of at least 48px with 18px icons; the selected choice fills `raised`. Capped at 300px wide.
+- **Phone frame:** the family screenshot frame, as on the Wave VPN site: 16px-radius card with 4px padding, a one-pixel hairline ring and a 12px-radius screen at the screenshot's 720:1447 ratio. Width min(320px, 100vw − 72px) when stacked, min(280px, 32vw) beside the copy from 768px; from 1024px the screen height fits the window so header and footer stay on screen.
 - **Screenshot framing and crossfade:** fit the full screenshot inside the screen with 12px of vertical padding so the rounded frame clears the header and bottom navigation buttons. Switching modes fades the outgoing screen to 0 opacity with a 6px blur and the incoming one in, 300ms ease-out; reduced motion removes the transition.
 - **Browser surfaces:** dark color-scheme and theme-color canvas, selection in OK blue at 40% under `text`, scrollbar thumb `raised` on the canvas track, focus rings 2px in `primary` (offset 3px from the canvas on buttons, inset on toggle choices).
-- **Layout:** content capped at 1180px with 24px side padding (40px from 640px); two columns from 1024px (copy column max 34rem, figure on the right), otherwise copy then figure; desktop main padding 24px above and below; 80px header, hairline `raised` rule above the footer.
+- **Layout:** the shared family frame (1200px max, 16px side gutters); two columns from 768px (copy column max 36rem, figure on the right); below that the copy column is centered above the figure, never left-aligned beside empty space; hairline rule above the footer.
 
-**The Large Blue Text Rule.** White on the filled OK blue measures about 3.8:1 (about 3.1:1 on hover), so it carries only large text: 19px bold or bigger. Smaller labels never sit on filled blue.
+**The Blue Text Rule.** White on the filled accent measures about 4.5:1, but only about 3.6:1 on hover, so filled blue carries labels of 15px semibold or bigger.
 
 ## Do's and Don'ts
 
 ### Do:
 
 - **Do** preserve the remote control order, central geometry and landing zone.
-- **Do** reuse the dark palette and Paper theme for new setup or menu surfaces.
+- **Do** reuse the family palette, corner scale and Paper theme for new setup or menu surfaces.
 - **Do** retain accessible labels, selected/disabled states and reduced-motion handling.
 - **Do** build web surfaces from the app palette through the shadcn role mapping, with OK blue as the only filled action.
 

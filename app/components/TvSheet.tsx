@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, HelperText, IconButton, List, TextInput } from 'react-native-paper';
 import { native, type RemoteState, type SavedTv } from '../../modules/wave-remote';
-import { palette } from '../theme';
+import { palette, radius } from '../theme';
 import { Sheet } from './Sheet';
 
 export function TvSheet({ state, open, onClose, onAdd, run }: {
@@ -34,9 +34,9 @@ export function TvSheet({ state, open, onClose, onAdd, run }: {
         return <List.Item key={tv.host} title={tv.name || 'LG TV'} description={tv.paired ? tv.host : `${tv.host} · Not paired yet`}
           titleNumberOfLines={2} accessibilityState={{ selected: current }}
           accessibilityLabel={`${tv.name || 'LG TV'}, ${tv.host}${tv.paired ? '' : ', not paired yet'}${current ? ', current TV' : ''}`}
-          left={(props) => <List.Icon {...props} icon="television" color={current ? '#ADC6FF' : palette.muted} />}
+          left={(props) => <List.Icon {...props} icon="television" color={current ? palette.accentFg : palette.muted} />}
           right={() => <View style={styles.trailing}>
-            {current ? <List.Icon icon="check" color="#ADC6FF" /> : null}
+            {current ? <List.Icon icon="check" color={palette.accentFg} /> : null}
             <IconButton icon="pencil-outline" accessibilityLabel={`Rename ${tv.name || 'LG TV'}`} onPress={() => edit(tv)} style={styles.rename} />
           </View>}
           onPress={() => {
@@ -50,7 +50,7 @@ export function TvSheet({ state, open, onClose, onAdd, run }: {
 }
 const styles = StyleSheet.create({
   content: { paddingHorizontal: 12, paddingBottom: 8, gap: 4 },
-  item: { paddingHorizontal: 12, minHeight: 72, borderRadius: 16 }, current: { backgroundColor: palette.raised },
+  item: { paddingHorizontal: 12, minHeight: 72, borderRadius: radius.md }, current: { backgroundColor: palette.raised },
   trailing: { flexDirection: 'row', alignItems: 'center', gap: 4 }, rename: { width: 48, height: 48, margin: 0 },
   form: { paddingHorizontal: 24, gap: 4 }, actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 12 },
 });

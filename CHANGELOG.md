@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Takes on the VesselWave family look shared with Wave VPN: blue-black surfaces, the same electric blue, one corner scale (pill toggles, 16-unit keys and sheets) and a matching launcher icon.
+
 - Normalizes zero-padded TV IP addresses so manual entry does not create a separate saved TV for the same address.
 
 - Closes a TV connection that sends a fragmented message larger than 16 MiB, preventing unbounded message buffering.
