@@ -80,8 +80,8 @@
   background: linear-gradient(160deg, #1b2029, #15191f);
   box-shadow: 0 30px 80px -20px rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.05);
 }
-.product-name { display: flex; align-items: center; gap: 0.24em; font-family: var(--font-display); font-weight: 400; font-size: clamp(1.75rem, 13cqi, 4.5rem); line-height: 1; letter-spacing: -0.01em; white-space: nowrap; }
-.product-name img { width: 0.8em; height: 0.8em; flex: none; border-radius: 0.2em; }
+.product-name { display: flex; align-items: center; gap: 0.24em; font-family: var(--font-display); font-weight: 400; font-size: clamp(1.375rem, 10.5cqi, 4.5rem); line-height: 1; letter-spacing: -0.01em; white-space: nowrap; }
+.product-name img { width: 2.2em; height: 2.2em; flex: none; border-radius: 0.2em; }
 .hero-rule { height: 1px; margin-block: 26px 22px; background: linear-gradient(90deg, rgb(134 195 232 / 0.55), rgb(134 195 232 / 0.08) 70%, transparent); }
 .lede { max-width: 30ch; font-size: clamp(1.125rem, 1.8vw, 1.3rem); line-height: 1.5; font-weight: 450; color: var(--color-foreground); }
 .fine-print { max-width: 46ch; font-size: 14px; line-height: 1.6; color: var(--color-muted-foreground); }
