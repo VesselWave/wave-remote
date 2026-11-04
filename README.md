@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/brand/cover.svg" alt="Wave Remote: control your LG webOS TV from your Android phone, over your own Wi-Fi." width="100%">
+  <img src="docs/brand/cover.png" alt="Wave Remote: control your LG webOS TV from your Android phone, over your own Wi-Fi." width="100%">
 </p>
 
 <p align="center">

@@ -73,7 +73,7 @@ Do every step, in order. A version isn't done until the download site shows it.
    - `docs/screenshots/buttons.png` and `touchpad.png`: `adb exec-out screencap -p`, cropped to 1080×2170 from the top of the header to the bottom of the Back/Home/Settings row (on a 1080×2400 Pixel 7, `crop=1080:2170:0:140`).
    - `fastlane/metadata/android/en-US/images/phoneScreenshots/1.png` and `2.png`: copies of `buttons.png` and `touchpad.png`, for F-Droid and IzzyOnDroid.
    - `site/public/screens/*.webp`: scaled from those to 720 px wide, e.g. `ffmpeg -i ../docs/screenshots/buttons.png -vf scale=720:-1:flags=lanczos -c:v libwebp -quality 85 buttons.webp`. Update the version and date in each `.webp.json` sidecar.
-   - `site/public/og.png`: re-render with `node og/render.cjs` (see [site/README.md](../site/README.md)) and look at the result.
+   - `site/public/og.png` and `docs/brand/cover.png`: re-render with `og/render.sh` (see [site/README.md](../site/README.md)) and look at the result.
 5. Commit and push `main`, then create and push the matching tag:
 
 ```sh
