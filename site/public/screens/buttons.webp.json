@@ -1,4 +1,4 @@
 {
-  "prompt": "Origin: actual Android 17 Pixel emulator screenshot of a debug build of Wave Remote from main after 0.6.6 (buttons mode, VesselWave family colors and corners), connected to the local mock TV on 2026-11-04. Cropped from 1080x2400 to 1080x2170 at y=140 and scaled to 720 px wide. Source: docs/screenshots/buttons.png. Not generated.",
-  "createdAt": "2026-11-04T04:00:00Z"
+  "prompt": "Origin: actual Android 17 emulator screenshot of Wave Remote 0.6.7 debug build, buttons mode, connected to the local mock TV. Cropped to 1080x2170 at y=140 and scaled to 720 px wide. Source: docs/screenshots/buttons.png. Not generated.",
+  "createdAt": "2026-11-04T05:43:00Z"
 }
