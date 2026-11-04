@@ -2,9 +2,8 @@
 
 /* ---------------------------------------------------------------------------
    Shared web family. Wave VPN and Wave Remote each carry an identical copy
-   of this block so both sites build standalone. Display type is Tenor Sans,
-   text is Montserrat, following the creator's Upholst site; the plain dark
-   ground comes from the original Wave Remote site.
+   of this block so both sites build standalone. All type is Inter, a plain
+   sans serif; the plain dark ground comes from the original Wave Remote site.
 --------------------------------------------------------------------------- */
 @theme inline {
   --color-background: #0f1115;
@@ -21,8 +20,8 @@
   --color-ring: #86c3e8;
   --color-warning: #f0c06a;
   --color-power: #ff5a5f;
-  --font-sans: 'Montserrat Variable', 'Segoe UI', sans-serif;
-  --font-display: 'Tenor Sans', 'Montserrat Variable', serif;
+  --font-sans: 'Inter Variable', system-ui, 'Segoe UI', sans-serif;
+  --font-display: var(--font-sans);
   --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   --spacing-15: 3.75rem;
 }
@@ -39,8 +38,8 @@
   body {
     @apply bg-background font-sans text-foreground antialiased;
     font-size: 16px;
-    line-height: 1.65;
-    font-weight: 450;
+    line-height: 1.6;
+    font-weight: 400;
     caret-color: var(--color-accent-fg);
   }
   ::selection { background: rgb(45 102 200 / 0.55); color: #fff; }
@@ -48,7 +47,7 @@
   h1, h2, h3 { text-wrap: balance; }
   p { text-wrap: pretty; }
   figure { margin: 0; }
-  strong { font-weight: 650; }
+  strong { font-weight: 600; }
 }
 
 /* Page ground: plain dark, no decoration behind the content. */
@@ -80,10 +79,10 @@
   background: linear-gradient(160deg, #1b2029, #15191f);
   box-shadow: 0 30px 80px -20px rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.05);
 }
-.product-name { display: flex; align-items: center; gap: 0.24em; font-family: var(--font-display); font-weight: 400; font-size: clamp(1.375rem, 10.5cqi, 4.5rem); line-height: 1; letter-spacing: -0.01em; white-space: nowrap; }
+.product-name { display: flex; align-items: center; gap: 0.24em; font-family: var(--font-display); font-weight: 650; font-size: clamp(1.375rem, 10cqi, 4.25rem); line-height: 1; letter-spacing: -0.035em; white-space: nowrap; }
 .product-name img { width: 2.2em; height: 2.2em; flex: none; border-radius: 0.2em; }
 .hero-rule { height: 1px; margin-block: 26px 22px; background: linear-gradient(90deg, rgb(134 195 232 / 0.55), rgb(134 195 232 / 0.08) 70%, transparent); }
-.lede { max-width: 30ch; font-size: clamp(1.125rem, 1.8vw, 1.3rem); line-height: 1.5; font-weight: 450; color: var(--color-foreground); }
+.lede { max-width: 30ch; font-size: clamp(1.125rem, 1.8vw, 1.3rem); line-height: 1.5; font-weight: 400; color: var(--color-foreground); }
 .fine-print { max-width: 46ch; font-size: 14px; line-height: 1.6; color: var(--color-muted-foreground); }
 .fine-print a { color: var(--color-accent-fg); text-decoration: underline; text-decoration-color: rgb(134 195 232 / 0.4); }
 .fine-print a:hover { text-decoration-color: currentColor; }
@@ -99,7 +98,7 @@
 .shot-frame { border-radius: 18px; padding: 6px; background: var(--color-card); border: 1px solid rgb(160 200 255 / 0.1); box-shadow: 0 30px 70px -24px rgb(0 0 0 / 0.7); }
 .shot-frame img { display: block; width: 100%; height: auto; border-radius: 12px; }
 
-.section-title { font-family: var(--font-display); font-weight: 400; font-size: clamp(2rem, 4.2vw, 2.9rem); line-height: 1.1; letter-spacing: -0.005em; }
+.section-title { font-family: var(--font-display); font-weight: 650; font-size: clamp(1.75rem, 3.6vw, 2.4rem); line-height: 1.15; letter-spacing: -0.03em; }
 .surface { border-radius: 28px; background: var(--color-card); border: 1px solid rgb(160 190 230 / 0.07); box-shadow: 0 24px 60px -30px rgb(0 0 0 / 0.6); }
 
 .family-footer { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding-block: 28px 36px; border-top: 1px solid var(--color-secondary); font-size: 13px; color: var(--color-muted-foreground); }

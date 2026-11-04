@@ -67,7 +67,7 @@ export default function App({ release }: { release: Release | null }) {
               Wave Remote
             </h1>
             <div className="hero-rule" />
-            <p className="lede text-balance">{'Control your LG\u00a0webOS\u00a0TV from your Android phone, over your own Wi-Fi.'}</p>
+            <p className="lede text-balance">{'Control your LG\u00a0webOS\u00a0TV from your Android phone.'}</p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button asChild size="lg">
                 <a href="/download">
@@ -79,10 +79,6 @@ export default function App({ release }: { release: Release | null }) {
                 <a href={FDROID_URL}>Add to F-Droid</a>
               </Button>
             </div>
-            <p className="fine-print mt-6">
-              Add our repository in F-Droid to get updates automatically. The source is on{' '}
-              <a href={REPO_URL}>GitHub</a>.
-            </p>
           </div>
           <div className="facts">
             <span className="fact">{facts}</span>
@@ -140,8 +136,9 @@ export default function App({ release }: { release: Release | null }) {
             SHA-256 {release.sha256.slice(0, 8)}…{release.sha256.slice(-8)}
           </span>
         ) : null}
+        <a href={REPO_URL}>Source</a>
         <a href="https://vwave.me">VesselWave<Icon path={mdiArrowTopRight} /></a>
-        <span className="sm:ml-auto">Independent project, not affiliated with LG.</span>
+        <span className="sm:ml-auto">Not affiliated with LG.</span>
       </footer>
     </div>
   );
