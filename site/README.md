@@ -25,3 +25,17 @@ bun run deploy        # vite build + wrangler deploy
 `bun run preview` builds and serves the Worker locally with `wrangler dev`.
 
 Verify with `curl -fsS https://remote.vwave.me/latest.json` and `curl -fsSI https://remote.vwave.me/download`. The second should return a 302 to the release APK.
+
+## Automatic deployment
+
+Cloudflare Workers Builds is connected to this GitHub repository. Pushes to
+`main` deploy the production Worker `wave-remote` automatically. Configure it in
+**Workers & Pages → wave-remote → Settings → Builds**.
+
+- Root directory: `site`.
+- Build command: `bun install --frozen-lockfile && bun run typecheck && bun run build`.
+- Deploy command: `bunx wrangler deploy`.
+- Build variable: `BUN_VERSION=1.4.2`.
+- Dedicated build token managed by Cloudflare; no GitHub deployment secret required.
+
+Local `bun run deploy` remains available with Wrangler login.
