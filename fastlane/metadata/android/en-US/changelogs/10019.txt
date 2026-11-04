@@ -1,0 +1,3 @@
+- VesselWave family styling: blue-black surfaces, electric blue controls, consistent corners, and a matching launcher icon.
+- Zero-padded TV IP addresses now match the same saved TV.
+- Oversized fragmented TV messages close the connection to keep buffering bounded.

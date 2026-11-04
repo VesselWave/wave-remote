@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.6.7 — 2026-11-03
 
 - Takes on the VesselWave family look shared with Wave VPN: blue-black surfaces, the same electric blue, one corner scale (pill toggles, 16-unit keys and sheets) and a matching launcher icon.
 
