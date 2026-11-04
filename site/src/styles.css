@@ -88,7 +88,7 @@
 .hero-col { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 36rem; justify-self: center; }
 .product-name { display: flex; align-items: center; gap: 0.24em; font-family: var(--font-display); font-weight: 650; font-size: clamp(1.375rem, 10cqi, 4.25rem); line-height: 1; letter-spacing: -0.035em; white-space: nowrap; }
 .product-name img { width: 2.2em; height: 2.2em; flex: none; border-radius: 0.2em; }
-.hero-rule { height: 1px; margin-block: 26px 22px; background: linear-gradient(90deg, rgb(110 155 255 / 0.55), rgb(110 155 255 / 0.08) 70%, transparent); }
+.hero-rule { height: 1px; margin-block: 26px 22px; background: rgb(110 155 255 / 0.55); }
 .lede { max-width: 30ch; font-size: clamp(1.125rem, 1.8vw, 1.3rem); line-height: 1.5; font-weight: 400; color: var(--color-foreground); }
 .fine-print { max-width: 46ch; font-size: 14px; line-height: 1.6; color: var(--color-muted-foreground); }
 .fine-print a { color: var(--color-accent-fg); text-decoration: underline; text-decoration-color: rgb(110 155 255 / 0.4); }
