@@ -33,7 +33,7 @@ export function RemoteScreen({ state, setPanel, power, run }: {
       <RemoteButton label="Remote settings" icon="dots-horizontal" onPress={() => setPanel('settings')} style={styles.more} />
     </View>
     <View style={styles.row}>
-      <RemoteButton label={ready ? 'Power off' : 'Wake TV'} icon="power" color={palette.power} disabled={busy} onPress={power} style={styles.weight} />
+      <RemoteButton label={ready ? 'Power off' : 'Wake TV'} icon="power" color={palette.power} disabled={state.waking || state.state === 'pairing'} onPress={power} style={styles.weight} />
       <RemoteButton label="Inputs" icon="application-import" caption="Inputs" disabled={!ready} onPress={() => setPanel('inputs')} style={styles.weight} />
       <RemoteButton label={state.muted ? 'Unmute' : 'Mute'} icon={state.muted ? 'volume-off' : 'volume-high'} color={state.muted ? palette.power : palette.text} disabled={!ready} onPress={() => { void run(() => native!.request('ssap://audio/setMute', { mute: !state.muted })); }} style={styles.weight} />
     </View>
