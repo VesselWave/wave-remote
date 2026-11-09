@@ -16,6 +16,26 @@ for route, url in downloads.items():
         with urllib.request.urlopen(url) as response, apk.open('wb') as output:
             shutil.copyfileobj(response, output)
 
+# Derive recommended versions from the actual APKs, never a stale hand-edited pin.
+from fdroidserver import common
+import re
+common.get_config()
+latest = {}
+for apk in repo.glob('*.apk'):
+    package, code, version = common.get_apk_id(str(apk))
+    if package not in latest or int(code) > latest[package][0]:
+        latest[package] = (int(code), version)
+for package, (code, version) in latest.items():
+    metadata = root / 'metadata' / (package + '.yml')
+    text = metadata.read_text()
+    for field, value in [('CurrentVersion', version), ('CurrentVersionCode', code)]:
+        text, count = re.subn(r'^' + field + r':.*$', f'{field}: {value}', text, flags=re.M)
+        if count == 0:
+            text = text.rstrip() + f'\n{field}: {value}\n'
+        elif count != 1:
+            raise SystemExit(f'Duplicate {field}: {package}')
+    metadata.write_text(text)
+
 # Run fdroid update before staging, so indexes describe precisely these APKs.
 import subprocess
 subprocess.run(['fdroid', 'update'], cwd=root, check=True)
@@ -36,6 +56,13 @@ for package_id, package in index['packages'].items():
         apk = repo / Path(route).name
         if hashlib.sha256(apk.read_bytes()).hexdigest() != info['sha256']:
             raise SystemExit(f'APK hash mismatch: {route}')
+
+# Upload and read back every indexed APK before deploying indexes that name it.
+from r2 import upload
+for package in index['packages'].values():
+    for version in package['versions'].values():
+        info = version['file']
+        upload(repo / info['name'].lstrip('/'), 'fdroid/' + info['name'].lstrip('/'), info['sha256'])
 
 assets = root / 'assets'
 if assets.exists():

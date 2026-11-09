@@ -27,5 +27,5 @@ Description: |-
   version 0.1 used a different development certificate and can't update in
   place: uninstall it in every Android user/profile first, which clears that
   profile's app data.
-CurrentVersion: 0.1.1
-CurrentVersionCode: 4
+CurrentVersion: 0.1.5
+CurrentVersionCode: 7

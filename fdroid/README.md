@@ -7,9 +7,8 @@ Add to F-Droid:
 https://f-droid.vwave.me/fdroid/repo?fingerprint=47841BF725DA7B106B2D05DF097E4898C7B5576411804A23D6A5505C5AD17933
 
 The Worker serves signed indexes, icons, and screenshots as Workers Static Assets.
-APK requests redirect to immutable versioned assets in each app's GitHub Releases.
-Static asset requests do not invoke the Worker; APK redirects use the free
-Worker request allowance. No APKs or signing keys are uploaded to Cloudflare.
+APK requests stream directly from the private `wave-releases` R2 bucket; GitHub Releases supply the initial downloads.
+Static asset requests do not invoke the Worker; APK streams invoke the Worker with byte range, HEAD and ETag support. Signing keys are never uploaded.
 
 ## Update and deploy
 
@@ -29,14 +28,13 @@ reuse this repository key so clients continue to trust updates.
    ```
 
 `prepare.py` downloads missing APKs, regenerates signed indexes, verifies indexed
-APK hashes and download mappings, and stages only public files into `assets/`.
+APK hashes and download mappings, updates recommended versions from actual APKs, uploads and reads back indexed APKs to verify immutable R2 hashes, and stages public indexes into `assets/`.
 It also requires an indexed icon for each app and verifies the icon hashes.
 Store PNG icons under `metadata/<package-id>/en-US/images/icon.png`: adaptive
 launcher icons alone may not be extracted by fdroidserver. Wave Remote's icon
 comes from the app's Fastlane metadata; Wave VPN's PNG is rendered from
 `icons/wave-vpn.svg`, which preserves its Android launcher artwork.
-New releases currently require running this update command; there is no automatic
-release synchronization. Previously indexed APKs remain available until explicitly
+Wave VPN releases invoke this publisher automatically through the VPN website release coordinator. Previously indexed APKs remain available until explicitly
 removed from `repo/` and `downloads.json`.
 
 The repository signing fingerprint is distinct from each Android app's signing
@@ -84,3 +82,19 @@ Validation after deployment:
 - Repository key, app keys and release APK bytes were not changed. No app code
   was changed or rebuilt; Kotlin/Rust checks and device qualification were not
   rerun for this metadata/deployment update. No website files were changed.
+
+## R2 and client compatibility repair — 2026-11-09
+
+- Existing Wave VPN 0.1.5 (7) and Wave Remote 0.6.8 (10020) are the recommended
+  releases. Previously VPN's CurrentVersionCode remained at 4 despite newer APKs.
+- Preparation derives both recommended-version fields from APK manifests before
+  signing; no hand-maintained release version is needed.
+- Every indexed APK is hosted in `wave-releases/fdroid/` and verified by SHA-256
+  after upload. Existing conflicting objects stop publication rather than being
+  replaced. No app/repository keys or APK bytes changed.
+- Signed v1 and v2 live indexes verified with the pinned repository certificate;
+  VPN 0.1.5's recommendation, signer and public APK SHA-256 passed. HEAD returns
+  200 with APK MIME/length and a resumed byte range returns 206 without redirect.
+
+The standalone `r2.py` helper is maintained here (GPL-3.0-or-later), also used
+in the VPN website publisher. It deliberately has no sibling-repo dependencies.

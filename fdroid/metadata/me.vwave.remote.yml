@@ -10,3 +10,5 @@ Summary: Control your LG webOS TV from Android
 Description: |-
   A remote control for LG webOS TVs, with pairing, navigation, volume controls,
   and app launching over your local network.
+CurrentVersion: 0.6.8
+CurrentVersionCode: 10020

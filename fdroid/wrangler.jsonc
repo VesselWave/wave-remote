@@ -5,6 +5,7 @@
   "workers_dev": false,
   "preview_urls": false,
   "routes": [{ "pattern": "f-droid.vwave.me", "custom_domain": true }],
+  "r2_buckets": [{ "binding": "RELEASES", "bucket_name": "wave-releases" }],
   "assets": {
     "directory": "./assets",
     "binding": "ASSETS",
