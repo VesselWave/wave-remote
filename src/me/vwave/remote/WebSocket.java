@@ -141,8 +141,13 @@ final class WebSocket {
             }
             String status = readLine(in);
             if (!status.startsWith("HTTP/1.1 101")) throw new IOException("Handshake refused: " + status);
-            while (!readLine(in).isEmpty()) {
-                // skip response headers
+            int headerBytes = status.length() + 2;
+            String header;
+            while (!(header = readLine(in)).isEmpty()) {
+                headerBytes += header.length() + 2;
+                // The socket timeout applies to each read; a stream of short headers can
+                // otherwise keep the handshake alive indefinitely.
+                if (headerBytes > 64 * 1024) throw new IOException("Handshake headers too large");
             }
             s.setSoTimeout(0);
             open = true;

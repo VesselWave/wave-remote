@@ -27,8 +27,12 @@ public final class WebSocketTest {
     }
 
     private static Result read(byte[] frames) throws Exception {
+        return readResponse("HTTP/1.1 101 Switching Protocols\r\n\r\n".getBytes(StandardCharsets.US_ASCII), frames);
+    }
+
+    private static Result readResponse(byte[] headers, byte[] frames) throws Exception {
         ByteArrayOutputStream response = new ByteArrayOutputStream();
-        response.write("HTTP/1.1 101 Switching Protocols\r\n\r\n".getBytes(StandardCharsets.US_ASCII));
+        response.write(headers);
         response.write(frames);
         InputStream input = new ByteArrayInputStream(response.toByteArray());
         Socket socket = new Socket() {
@@ -71,6 +75,12 @@ public final class WebSocketTest {
     }
 
     public static void main(String[] args) throws Exception {
+        byte[] close = new byte[] {(byte) 0x88, 0};
+        Result headers = readResponse(("HTTP/1.1 101 Switching Protocols\r\n"
+                + "X-Test: value\r\n".repeat(6000) + "\r\n").getBytes(StandardCharsets.US_ASCII), close);
+        check(headers.cause instanceof java.io.IOException
+                && headers.cause.getMessage().equals("Handshake headers too large"),
+                "Many short headers must not bypass the handshake size limit");
         ByteArrayOutputStream frames = new ByteArrayOutputStream();
         frame(frames, 1, false, "hel".getBytes(StandardCharsets.UTF_8));
         frame(frames, 9, true, new byte[0]); // Control frames may interrupt a fragmented message.
