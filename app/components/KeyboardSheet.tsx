@@ -29,7 +29,7 @@ export function KeyboardSheet({ open, ready, onClose }: { open: boolean; ready: 
   };
   return <Sheet open={open} onClose={onClose} title="Keyboard" subtitle="Type into the focused field on your TV.">
     <View style={styles.content}>
-      <TextInput mode="outlined" label="Text for your TV" placeholder="Search for something to watch" value={text} onChangeText={setText} multiline numberOfLines={3} autoFocus={open} disabled={sending || !ready} />
+      <TextInput mode="outlined" label="Text for your TV" placeholder="Search for something to watch" value={text} onChangeText={setText} multiline numberOfLines={3} contentStyle={styles.input} autoFocus={open} disabled={sending || !ready} />
       <HelperText type={error || !ready ? 'error' : 'info'}>{!ready ? 'Your TV disconnected. Reconnect to send text.' : error || 'Select a text field on the TV before sending.'}</HelperText>
       <View style={styles.actions}>
         <Button mode="outlined" icon="send" disabled={sending || !ready || !text} onPress={() => void send(false)} contentStyle={styles.button}>Send</Button>
@@ -38,4 +38,4 @@ export function KeyboardSheet({ open, ready, onClose }: { open: boolean; ready: 
     </View>
   </Sheet>;
 }
-const styles = StyleSheet.create({ content: { paddingHorizontal: 24, gap: 12 }, actions: { flexDirection: 'row', gap: 12, justifyContent: 'flex-end', flexWrap: 'wrap' }, button: { minHeight: 48 } });
+const styles = StyleSheet.create({ content: { paddingHorizontal: 24, gap: 12 }, input: { textAlignVertical: 'center', paddingTop: 12, paddingBottom: 12 }, actions: { flexDirection: 'row', gap: 12, justifyContent: 'flex-end', flexWrap: 'wrap' }, button: { minHeight: 48 } });
