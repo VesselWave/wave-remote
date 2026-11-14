@@ -13,7 +13,7 @@ import java.util.List;
  * under "tv.<host>.*"; "host" is the selected one, and the per-TV getters and setters act on it.
  */
 final class Prefs {
-    private static final String[] TV_FIELDS = {"name", "label", "key", "pin", "macs", "btMac", "wakeRegistered"};
+    private static final String[] TV_FIELDS = {"name", "label", "key", "pin", "macs", "btMac", "wakeRegistered", "favorites"};
     private final SharedPreferences sp;
 
     Prefs(Context ctx) {
@@ -69,6 +69,11 @@ final class Prefs {
     /** A name the user gave this TV, to tell apart several of the same model; kept when the TV's own name is relearned. */
     String label(String host) { return sp.getString(field(host, "label"), null); }
     boolean paired(String host) { return sp.getString(field(host, "key"), null) != null; }
+    /** The selected TV's favourite app ids, in the order the user arranged them. */
+    List<String> favorites() {
+        String f = get("favorites");
+        return f == null || f.isEmpty() ? Collections.<String>emptyList() : Arrays.asList(f.split("\n"));
+    }
 
     /**
      * The address this phone presents for BLE wake-up. Like ThinQ (NetworkUtil.getOrCreateRandomizedMacAddress)
@@ -120,6 +125,12 @@ final class Prefs {
         sp.edit().putString(field(host, "label"), l.isEmpty() ? null : l).apply();
     }
     void setBtMac(String mac) { put("btMac", mac); }
+    /** Blank and repeated ids are dropped; app ids never contain a newline. */
+    void setFavorites(List<String> ids) {
+        List<String> clean = new ArrayList<>();
+        for (String id : ids) if (id != null && !id.trim().isEmpty() && id.indexOf('\n') < 0 && !clean.contains(id)) clean.add(id);
+        put("favorites", android.text.TextUtils.join("\n", clean));
+    }
     void setWakeRegistered(boolean on) {
         String k = current("wakeRegistered");
         if (k != null) sp.edit().putBoolean(k, on).apply();

@@ -177,6 +177,7 @@ class WaveRemoteModule : Module() {
       prefs.setNaturalTwoFinger(naturalTwoFinger); emit()
     }.runOnQueue(Queues.MAIN)
 
+    AsyncFunction("setFavorites") { ids: List<String> -> prepare(); prefs.setFavorites(ids); emit() }.runOnQueue(Queues.MAIN)
     AsyncFunction("power") { bluetooth: Boolean, promise: Promise ->
       prepare()
       paused = false
@@ -318,7 +319,7 @@ class WaveRemoteModule : Module() {
     "state" to (if (quietAttempt) "disconnected" else tv.state().name.lowercase()), "detail" to detail,
     "volume" to volume, "muted" to muted, "touchpad" to prefs.touchpad(),
     "naturalEdge" to prefs.naturalEdge(), "naturalTwoFinger" to prefs.naturalTwoFinger(),
-    "waking" to (wakeUntil != 0L),
+    "waking" to (wakeUntil != 0L), "favorites" to prefs.favorites(),
     "canWakeBluetooth" to (prefs.btMac() != null && prefs.wakeRegistered()),
     "tvs" to prefs.hosts().filter { prefs.paired(it) || it == prefs.host() }
       .map { mapOf("host" to it, "name" to (prefs.label(it) ?: prefs.name(it)), "tvName" to prefs.name(it),

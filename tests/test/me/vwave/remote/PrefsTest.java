@@ -51,6 +51,15 @@ public final class PrefsTest {
         prefs.setLabel("10.0.0.9", "Unknown");
         check("blank label clears; unknown TV ignored", prefs.label("10.0.0.5") == null && prefs.label("10.0.0.9") == null);
 
+        // Favourites belong to the selected TV and keep their order.
+        prefs.setFavorites(Arrays.asList("youtube.leanback.v4", "netflix", "", "netflix", "bad\nid"));
+        check("favourites saved in order without blanks or repeats", prefs.favorites().equals(Arrays.asList("youtube.leanback.v4", "netflix")));
+        prefs.setTv("10.0.0.6", null);
+        check("other TV has its own favourites", prefs.favorites().isEmpty());
+        prefs.setFavorites(Arrays.asList("com.webos.app.livetv"));
+        prefs.setTv("10.0.0.5", null);
+        check("favourites kept when switching back", prefs.favorites().equals(Arrays.asList("youtube.leanback.v4", "netflix")));
+
         // A TV that never paired is dropped when another is selected.
         prefs.setTv("10.0.0.7", "Kitchen");
         prefs.setTv("10.0.0.6", null);
@@ -60,8 +69,9 @@ public final class PrefsTest {
         // Forgetting removes only the selected TV.
         prefs.forget();
         check("forgotten TV gone, none selected", prefs.host() == null && prefs.hosts().equals(Arrays.asList("10.0.0.5"))
-                && !ctx.store.containsKey("tv.10.0.0.6.key") && !ctx.store.containsKey("tv.10.0.0.6.label") && prefs.clientKey() == null);
-        check("other TV still paired", prefs.paired("10.0.0.5"));
+                && !ctx.store.containsKey("tv.10.0.0.6.key") && !ctx.store.containsKey("tv.10.0.0.6.label")
+                && !ctx.store.containsKey("tv.10.0.0.6.favorites") && prefs.clientKey() == null);
+        check("other TV still paired", prefs.paired("10.0.0.5") && ctx.store.containsKey("tv.10.0.0.5.favorites"));
 
         // Fresh install.
         Prefs empty = new Prefs(new Context());

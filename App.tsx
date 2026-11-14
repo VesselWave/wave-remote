@@ -10,6 +10,7 @@ import { RemoteScreen, type Panel } from './app/components/RemoteScreen';
 import { SetupScreen } from './app/components/SetupScreen';
 import { SettingsSheet } from './app/components/SettingsSheet';
 import { PickerSheet } from './app/components/PickerSheet';
+import { AppsSheet } from './app/components/AppsSheet';
 import { FeedbackContext } from './app/components/Sheet';
 import { KeyboardSheet } from './app/components/KeyboardSheet';
 import { TvSheet } from './app/components/TvSheet';
@@ -31,7 +32,8 @@ function RemoteApp() {
       : showRemote ? <RemoteScreen state={state} setPanel={setPanel} power={() => void power()} run={run} /> : <SetupScreen state={state} run={run} onConnect={() => setAdding(false)} onBack={adding && hasRemote ? back : undefined} />}
     <TvSheet state={state} open={panel === 'tvs'} onClose={close} onAdd={add} run={run} />
     <SettingsSheet state={state} open={panel === 'settings'} onClose={close} run={run} />
-    {panel === 'apps' || panel === 'inputs' ? <PickerSheet key={`${panel}-${state.host}-${state.state}`} kind={panel} onClose={close} report={setMessage} ready={state.state === 'ready'} /> : null}
+    {panel === 'apps' ? <AppsSheet key={`apps-${state.host}-${state.state}`} onClose={close} report={setMessage} ready={state.state === 'ready'} favorites={state.favorites} /> : null}
+    {panel === 'inputs' ? <PickerSheet key={`inputs-${state.host}-${state.state}`} onClose={close} report={setMessage} ready={state.state === 'ready'} /> : null}
     {panel === 'keyboard' ? <KeyboardSheet open ready={state.state === 'ready'} onClose={close} /> : null}
     <Snackbar visible={!!message} onDismiss={() => setMessage('')} duration={6500} action={{ label: 'Dismiss', onPress: () => setMessage('') }} style={styles.snackbar}>{message}</Snackbar>
   </SafeAreaView></FeedbackContext.Provider>;

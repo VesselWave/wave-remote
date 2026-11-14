@@ -15,6 +15,8 @@ export interface RemoteState {
   naturalTwoFinger: boolean;
   waking: boolean;
   canWakeBluetooth: boolean;
+  /** The selected TV's favourite app ids, in the user's order. */
+  favorites: string[];
   /** Saved TVs, including the selected one while it pairs. */
   tvs: SavedTv[];
 }
@@ -22,7 +24,8 @@ export interface RemoteState {
 export interface SavedTv { host: string; name: string | null; tvName: string | null; label: string | null; paired: boolean }
 export interface FoundTv { host: string; name: string; btMac: string | null }
 export interface TvInput { id: string; label?: string; connected?: boolean; hdmiSignalExist?: boolean }
-export interface TvApp { id: string; title?: string; params?: Record<string, unknown> }
+/** A webOS launch point. `icon` and `largeIcon` are http URLs served by the TV itself. */
+export interface TvApp { id: string; title?: string; params?: Record<string, unknown>; icon?: string; largeIcon?: string; iconColor?: string }
 export interface TvResponse {
   devices?: TvInput[];
   launchPoints?: TvApp[];
@@ -42,6 +45,7 @@ declare class WaveRemoteNative extends NativeModule<Events> {
   startHeld(key: string, pointer: boolean): Promise<void>;
   stopHeld(): Promise<void>;
   power(bluetooth: boolean): Promise<void>;
+  setFavorites(ids: string[]): Promise<void>;
   preferences(touchpad: boolean, naturalEdge: boolean, naturalTwoFinger: boolean): Promise<void>;
 }
 export const native = requireOptionalNativeModule<WaveRemoteNative>('WaveRemote');
@@ -51,5 +55,5 @@ export const NativeTouchpad = native
 export const initialState: RemoteState = {
   host: null, name: null, paired: false, state: 'disconnected', detail: null,
   volume: -1, muted: false, touchpad: false, naturalEdge: false, naturalTwoFinger: false,
-  waking: false, canWakeBluetooth: false, tvs: [],
+  waking: false, canWakeBluetooth: false, favorites: [], tvs: [],
 };
