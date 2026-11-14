@@ -60,7 +60,10 @@ F-Droid signature copying. Use [the F-Droid verification script](../tools/verify
 against each production release and independent rebuild before publication.
 
 The release path never creates or substitutes a signing key. Debug builds use a
-separate cached key. The package ID remains `me.vwave.remote`.
+separate cached key and are named Wave Remote Preview with the package ID
+`me.vwave.remote.preview`, so they install beside the release (with their own
+pairings) instead of failing its signature check. The release package ID remains
+`me.vwave.remote`.
 
 ## Publish a version
 

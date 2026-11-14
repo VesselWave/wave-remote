@@ -19,6 +19,8 @@ ABIS=${ABIS:-arm64-v8a}
 mode=${1:-debug}
 case "$mode" in
     debug)
+        # Installs beside the release as "Wave Remote Preview" (me.vwave.remote.preview); see app.config.js.
+        export WAVE_REMOTE_VARIANT=preview
         KS="${DEBUG_KEYSTORE:-${XDG_CACHE_HOME:-$HOME/.cache}/wave-remote/debug.keystore}"
         mkdir -p "$(dirname "$KS")"
         export WAVEREMOTE_STORE_PASSWORD=android WAVEREMOTE_KEY_PASSWORD=android
@@ -30,6 +32,7 @@ case "$mode" in
         fi
         ;;
     release)
+        unset WAVE_REMOTE_VARIANT
         : "${RELEASE_KEYSTORE:?Set RELEASE_KEYSTORE to your private signing keystore}"
         : "${WAVEREMOTE_STORE_PASSWORD:?Set WAVEREMOTE_STORE_PASSWORD}"
         : "${WAVEREMOTE_KEY_PASSWORD:?Set WAVEREMOTE_KEY_PASSWORD}"

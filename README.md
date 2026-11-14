@@ -41,7 +41,7 @@ Needs Bun, Node.js (the version in `.node-version`), JDK 17+, Python 3 and the A
 ```sh
 bun install
 bun test && ./test.sh   # app tests, then protocol tests against a mock TV
-./build.sh debug        # dist/wave-remote-v<version>-debug.apk
+./build.sh debug        # dist/wave-remote-v<version>-debug.apk, "Wave Remote Preview"
 ```
 
 The UI is Expo and React Native; the TV protocol is a Java engine in `src/me/vwave/remote`, wrapped by the Expo module in `modules/wave-remote`. Expo Go can't load that module, so install the built APK. More in [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/RELEASING.md](docs/RELEASING.md).
