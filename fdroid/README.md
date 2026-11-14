@@ -98,3 +98,13 @@ Validation after deployment:
 
 The standalone `r2.py` helper is maintained here (GPL-3.0-or-later), also used
 in the VPN website publisher. It deliberately has no sibling-repo dependencies.
+
+## Wave VPN 0.1.6 — 2026-11-09
+
+- Published by the VPN release coordinator: Wave VPN 0.1.6 (8) is the
+  recommended release. `prepare.py` derived `CurrentVersion`/`CurrentVersionCode`
+  from the APK; the `downloads.json` route and metadata bump were committed later.
+- Checked 2026-11-14: the live `index-v2.json` lists version code 8, and the live
+  APK, the local repo copy and the signed index agree on SHA-256
+  `99bdda134848a1367d7f3abf1c3f4d065203f5fb43113b5605a9108a374c70ca`. The
+  versioned GitHub release asset resolves. No keys or APK bytes changed.
