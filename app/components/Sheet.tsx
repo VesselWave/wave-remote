@@ -7,8 +7,10 @@ import { ScrollFrame } from './ScrollFrame';
 
 export const FeedbackContext = createContext({ message: '', dismiss: () => {} });
 
-export function Sheet({ title, subtitle, open, onClose, children }: {
+export function Sheet({ title, subtitle, open, onClose, onBack, children }: {
   title: string; subtitle?: string; open: boolean; onClose: () => void;
+  /** The system Back gesture; defaults to closing. A sheet in an editing mode leaves the mode first. */
+  onBack?: () => void;
   /** Lists can put the heading in their own scroll container to preserve virtualization. */
   children: ReactNode | ((heading: ReactNode) => ReactNode);
 }) {
@@ -26,7 +28,7 @@ export function Sheet({ title, subtitle, open, onClose, children }: {
         {subtitle ? <Text variant="bodyMedium" style={styles.subtitle}>{subtitle}</Text> : null}</View>
       <IconButton icon="close" accessibilityLabel={`Close ${title}`} onPress={onClose} size={24} style={styles.close} />
     </View></>;
-  return <Modal visible={open} transparent animationType={reducedMotion ? 'none' : 'fade'} onRequestClose={onClose} statusBarTranslucent>
+  return <Modal visible={open} transparent animationType={reducedMotion ? 'none' : 'fade'} onRequestClose={onBack ?? onClose} statusBarTranslucent>
     <KeyboardAvoidingView style={[styles.overlay, { paddingTop: Math.max(12, insets.top) }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Close menu" accessibilityRole="button" />
       <View style={[styles.sheet, { paddingBottom: Math.max(24, insets.bottom) }]} accessibilityViewIsModal>

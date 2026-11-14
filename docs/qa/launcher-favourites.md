@@ -58,3 +58,16 @@ Screenshots 17–19 come from the emulator; real-phone screenshots stay out of t
 - **Prefs tests:** 4 new checks cover hidden apps being saved per TV without blanks or repeats, hiding unpinning a favourite, showing an app again without re-pinning it, and forgetting a TV clearing its hidden list.
 
 Screenshots: 20 (choosing apps to hide), 21 (one app shown again, "1 hidden app" row), 22 (Done after Arrange, fixed).
+
+## Follow-up: launcher layout rework — 2026-11-14
+
+Real Pixel 7 (Android 17) with the LG webOS 24 TV, preview build. The emulator was in use by another session, so this pass was phone-only. Real-phone screenshots stay out of the repository, as above.
+
+- **Fixed header:** the title, close button and search field stay in place while the list scrolls.
+- **Edit favourites** (Edit, or a long press on a tile): the search slot becomes a bar with a filled Done, and favourites are listed as rows with up/down arrows and a star that removes. Moving Home Hub above YouTube saved the order and the grid redrew with icons and names after leaving the mode. The first row's up arrow and last row's down arrow are disabled. The sheet keeps its browsing height.
+- **Back:** in either mode, the system Back gesture returned to browsing and kept the sheet open.
+- **Hide apps:** rows use Material switches. Switching Developer Mode off dimmed it, the bar read "1 hidden", and after Done the list ended in "1 hidden app". Tapping that row opened Hide apps scrolled to the top (it previously stayed at the bottom). Switching it back on restored it.
+- **On TV:** YouTube's tile shows an "On TV" pill; its row still reads "On TV now".
+- **Search:** "lg" gave 3 results, with the search field still visible above the keyboard.
+- **Icons:** after one install the Home Hub icon fell back to its initial although it had loaded before; a failed download now retries once after 1.5 s. On the next launch every icon loaded.
+- Favourites and hidden apps on the phone were returned to their earlier state (YouTube only, nothing hidden).
