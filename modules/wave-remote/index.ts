@@ -17,6 +17,8 @@ export interface RemoteState {
   canWakeBluetooth: boolean;
   /** The selected TV's favourite app ids, in the user's order. */
   favorites: string[];
+  /** App ids hidden from the selected TV's launcher; never also favourites. */
+  hidden: string[];
   /** Saved TVs, including the selected one while it pairs. */
   tvs: SavedTv[];
 }
@@ -24,7 +26,7 @@ export interface RemoteState {
 export interface SavedTv { host: string; name: string | null; tvName: string | null; label: string | null; paired: boolean }
 export interface FoundTv { host: string; name: string; btMac: string | null }
 export interface TvInput { id: string; label?: string; connected?: boolean; hdmiSignalExist?: boolean }
-/** A webOS launch point. `icon` and `largeIcon` are http URLs served by the TV itself. */
+/** A webOS launch point. `icon` and `largeIcon` are served by the TV itself, usually from its self-signed https://TV:3001/resources/. */
 export interface TvApp { id: string; title?: string; params?: Record<string, unknown>; icon?: string; largeIcon?: string; iconColor?: string }
 export interface TvResponse {
   devices?: TvInput[];
@@ -46,6 +48,10 @@ declare class WaveRemoteNative extends NativeModule<Events> {
   stopHeld(): Promise<void>;
   power(bluetooth: boolean): Promise<void>;
   setFavorites(ids: string[]): Promise<void>;
+  /** Saves the hidden apps and removes them from the favourites. */
+  setHidden(ids: string[]): Promise<void>;
+  /** Downloads a TV icon through the pinned certificate; resolves to a cached file:// URI. */
+  icon(url: string): Promise<string>;
   preferences(touchpad: boolean, naturalEdge: boolean, naturalTwoFinger: boolean): Promise<void>;
 }
 export const native = requireOptionalNativeModule<WaveRemoteNative>('WaveRemote');
@@ -55,5 +61,5 @@ export const NativeTouchpad = native
 export const initialState: RemoteState = {
   host: null, name: null, paired: false, state: 'disconnected', detail: null,
   volume: -1, muted: false, touchpad: false, naturalEdge: false, naturalTwoFinger: false,
-  waking: false, canWakeBluetooth: false, favorites: [], tvs: [],
+  waking: false, canWakeBluetooth: false, favorites: [], hidden: [], tvs: [],
 };

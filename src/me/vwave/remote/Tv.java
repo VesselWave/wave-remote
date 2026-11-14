@@ -449,6 +449,55 @@ final class Tv {
         return m != null ? m : e.getClass().getSimpleName();
     }
 
+    /** App icons are small; anything larger is not an icon. */
+    static final int MAX_RESOURCE_BYTES = 512 * 1024;
+
+    /**
+     * Downloads an app icon the TV serves at https://TV:3001/resources/..., trusting only the
+     * certificate pinned for {@code host}. Android rejects that self-signed certificate, so the UI
+     * can't load these URLs itself. Any other host, port, path or an unpinned TV is refused.
+     */
+    static byte[] fetchResource(String url, String host, String pin) throws java.io.IOException {
+        URI uri;
+        try { uri = new URI(url); } catch (java.net.URISyntaxException e) { throw new java.io.IOException("Not a TV resource"); }
+        String path = uri.getRawPath();
+        if (pin == null || host == null || !"https".equals(uri.getScheme()) || !host.equals(uri.getHost())
+                || uri.getPort() != SECURE_PORT || uri.getRawUserInfo() != null || path == null
+                || !path.startsWith("/resources/") || path.contains("..")) {
+            throw new java.io.IOException("Not a TV resource");
+        }
+        SSLContext ctx;
+        try {
+            ctx = SSLContext.getInstance("TLS");
+            ctx.init(null, new TrustManager[] {new PinningTrust(pin)}, new SecureRandom());
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+        javax.net.ssl.HttpsURLConnection c = (javax.net.ssl.HttpsURLConnection) uri.toURL().openConnection();
+        try {
+            c.setSSLSocketFactory(ctx.getSocketFactory());
+            // The pin identifies the TV; its certificate names LG, not the TV's address.
+            c.setHostnameVerifier((name, session) -> true);
+            c.setInstanceFollowRedirects(false);
+            c.setUseCaches(false);
+            c.setConnectTimeout(5000);
+            c.setReadTimeout(5000);
+            if (c.getResponseCode() != 200) throw new java.io.IOException("TV answered " + c.getResponseCode());
+            if (c.getContentLengthLong() > MAX_RESOURCE_BYTES) throw new java.io.IOException("Icon too large");
+            try (java.io.InputStream in = c.getInputStream()) {
+                java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+                byte[] buf = new byte[16 * 1024];
+                for (int n; (n = in.read(buf)) != -1; ) {
+                    if (out.size() + n > MAX_RESOURCE_BYTES) throw new java.io.IOException("Icon too large");
+                    out.write(buf, 0, n);
+                }
+                return out.toByteArray();
+            }
+        } finally {
+            c.disconnect();
+        }
+    }
+
     private static SocketFactory tlsFactory(X509TrustManager tm) {
         try {
             SSLContext ctx = SSLContext.getInstance("TLS");

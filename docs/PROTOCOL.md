@@ -25,10 +25,19 @@ The registration signature is public protocol data, distinct from APK signing.
 | Volume subscription | `ssap://audio/getVolume` |
 | Input list | `ssap://tv/getExternalInputList` |
 | App list | `ssap://com.webos.applicationManager/listLaunchPoints` |
+| Foreground app | `ssap://com.webos.applicationManager/getForegroundAppInfo` (`appId`) |
 | Pointer socket | `ssap://com.webos.service.networkinput/getPointerInputSocket` |
 | Power state | `ssap://com.webos.service.tvpower/power/getPowerState` |
 | Power off | `ssap://system/turnOff` |
 | Network MAC addresses | `ssap://com.webos.service.connectionmanager/getinfo` |
+
+Launch points carry `icon` (about 80 px), `largeIcon` (about 130 px) and an
+`iconColor` to place them on. On webOS 24 the icon URLs are
+`https://<tv>:3001/resources/<hash>/<file>.png`, served with the same
+self-signed LG certificate as the control socket; plain `:3000` resets the
+connection. Android's image loader rejects that certificate, so the app
+downloads icons natively through the pinned certificate (only `/resources/` on
+the selected TV's port 3001) and caches them by URL.
 
 The TV provides a separate pointer socket URL. Frames contain newline-separated
 fields with an empty final line, for example `type:button` with `name:UP`.

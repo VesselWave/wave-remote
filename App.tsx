@@ -32,7 +32,7 @@ function RemoteApp() {
       : showRemote ? <RemoteScreen state={state} setPanel={setPanel} power={() => void power()} run={run} /> : <SetupScreen state={state} run={run} onConnect={() => setAdding(false)} onBack={adding && hasRemote ? back : undefined} />}
     <TvSheet state={state} open={panel === 'tvs'} onClose={close} onAdd={add} run={run} />
     <SettingsSheet state={state} open={panel === 'settings'} onClose={close} run={run} />
-    {panel === 'apps' ? <AppsSheet key={`apps-${state.host}-${state.state}`} onClose={close} report={setMessage} ready={state.state === 'ready'} favorites={state.favorites} /> : null}
+    {panel === 'apps' ? <AppsSheet key={`apps-${state.host}-${state.state}`} onClose={close} report={setMessage} ready={state.state === 'ready'} favorites={state.favorites} hidden={state.hidden} /> : null}
     {panel === 'inputs' ? <PickerSheet key={`inputs-${state.host}-${state.state}`} onClose={close} report={setMessage} ready={state.state === 'ready'} /> : null}
     {panel === 'keyboard' ? <KeyboardSheet open ready={state.state === 'ready'} onClose={close} /> : null}
     <Snackbar visible={!!message} onDismiss={() => setMessage('')} duration={6500} action={{ label: 'Dismiss', onPress: () => setMessage('') }} style={styles.snackbar}>{message}</Snackbar>

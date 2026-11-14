@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- New app launcher: pin favourite apps per TV with a star, arrange them (Arrange or long press, also through accessibility actions), and search the full list.
+- Shows the TV's own app icons. The TV serves them over its self-signed connection, so they are fetched through the TV's pinned certificate and cached on the phone.
+- Marks the app currently open on the TV as "On TV now".
+- Hide apps you never use, per TV: tap Hide apps (or long press an app) and tap the apps to hide. Hidden apps leave the list, search and favourites; a "hidden apps" row at the bottom brings them back.
+- Debug builds are named Wave Remote Preview (`me.vwave.remote.preview`) and install beside the release.
+- The keyboard field keeps its text vertically centred.
+
 ## 0.6.8 — 2026-11-04
 
 - Volume and channel controls use softly tilted oval press highlights around their icons.

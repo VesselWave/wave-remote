@@ -13,7 +13,7 @@ import java.util.List;
  * under "tv.<host>.*"; "host" is the selected one, and the per-TV getters and setters act on it.
  */
 final class Prefs {
-    private static final String[] TV_FIELDS = {"name", "label", "key", "pin", "macs", "btMac", "wakeRegistered", "favorites"};
+    private static final String[] TV_FIELDS = {"name", "label", "key", "pin", "macs", "btMac", "wakeRegistered", "favorites", "hidden"};
     private final SharedPreferences sp;
 
     Prefs(Context ctx) {
@@ -70,8 +70,11 @@ final class Prefs {
     String label(String host) { return sp.getString(field(host, "label"), null); }
     boolean paired(String host) { return sp.getString(field(host, "key"), null) != null; }
     /** The selected TV's favourite app ids, in the order the user arranged them. */
-    List<String> favorites() {
-        String f = get("favorites");
+    List<String> favorites() { return ids("favorites"); }
+    /** App ids the user hid from the selected TV's launcher. */
+    List<String> hidden() { return ids("hidden"); }
+    private List<String> ids(String field) {
+        String f = get(field);
         return f == null || f.isEmpty() ? Collections.<String>emptyList() : Arrays.asList(f.split("\n"));
     }
 
@@ -126,11 +129,22 @@ final class Prefs {
     }
     void setBtMac(String mac) { put("btMac", mac); }
     /** Blank and repeated ids are dropped; app ids never contain a newline. */
-    void setFavorites(List<String> ids) {
+    void setFavorites(List<String> ids) { put("favorites", join(clean(ids))); }
+    /** Hidden apps leave the favourites too, so a hidden app is gone from the whole launcher. */
+    void setHidden(List<String> ids) {
+        List<String> hidden = clean(ids);
+        List<String> favorites = new ArrayList<>(favorites());
+        favorites.removeAll(hidden);
+        put("hidden", join(hidden));
+        put("favorites", join(favorites));
+    }
+    /** Blank and repeated ids are dropped; app ids never contain a newline. */
+    private static List<String> clean(List<String> ids) {
         List<String> clean = new ArrayList<>();
         for (String id : ids) if (id != null && !id.trim().isEmpty() && id.indexOf('\n') < 0 && !clean.contains(id)) clean.add(id);
-        put("favorites", android.text.TextUtils.join("\n", clean));
+        return clean;
     }
+    private static String join(List<String> ids) { return android.text.TextUtils.join("\n", ids); }
     void setWakeRegistered(boolean on) {
         String k = current("wakeRegistered");
         if (k != null) sp.edit().putBoolean(k, on).apply();

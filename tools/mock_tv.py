@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Mock webOS TV for testing Wave Remote: SSAP over wss://:3001, pointer socket, SSDP responder.
+"""Mock webOS TV for testing Wave Remote: SSAP over wss://:3001, pointer socket, app icons, SSDP responder.
 
 Implements the protocol as observed statically in LG ThinQ 5.2.12500 (see NOTICE.md).
 Every message is logged as one JSON line so tests can assert on it.
 """
-import asyncio, base64, hashlib, json, os, socket, ssl, struct, subprocess, sys, time
+import asyncio, base64, hashlib, json, os, socket, ssl, struct, subprocess, sys, time, zlib
 
 HOST_IP = sys.argv[1] if len(sys.argv) > 1 else "0.0.0.0"
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -30,9 +30,49 @@ def ensure_cert():
                        capture_output=True)
 
 
+# Launch points as webOS 24 reports them: icons are served by the TV itself over its self-signed TLS port.
+APPS = [("netflix", "Netflix", "#e50914"), ("youtube.leanback.v4", "YouTube", "#ff0033"),
+        ("com.webos.app.livetv", "Live TV", "#3c6df0"), ("broken.icon", "Broken Icon", "#555555")]
+
+
+def png(size, color):
+    """A solid icon with a white centre square, so a loaded icon is easy to tell from the fallback."""
+    rgb = bytes.fromhex(color[1:])
+    rows = b"".join(b"\0" + b"".join(b"\xff\xff\xff" if size // 3 <= x < size * 2 // 3 and size // 3 <= y < size * 2 // 3
+                                     else rgb for x in range(size)) for y in range(size))
+    chunk = lambda kind, data: struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
+    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", size, size, 8, 2, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(rows)) + chunk(b"IEND", b""))
+
+
+def launch_points(ip):
+    base = f"https://{ip}:3001/resources/0123456789abcdef"
+    return [{"id": i, "title": t, "iconColor": c, "icon": f"{base}/{i.split('.')[0]}.png",
+             "largeIcon": f"{base}/{i.split('.')[0]}_130x130.png"} for i, t, c in APPS]
+
+
+async def serve_resource(writer, path):
+    """GET /resources/<hash>/<name>.png, as the TV serves app icons; anything else is 404."""
+    name = path.rsplit("/", 1)[-1]
+    match = next(((size, c) for i, _, c in APPS if i != "broken.icon"
+                  for size, suffix in ((80, ".png"), (130, "_130x130.png")) if name == i.split(".")[0] + suffix), None)
+    body = png(*match) if path.startswith("/resources/") and match else b"not found"
+    status = "200 OK" if match else "404 Not Found"
+    log("resource", path=path, status=status[:3])
+    writer.write(f"HTTP/1.1 {status}\r\nContent-Type: {'image/png' if match else 'text/plain'}\r\n"
+                 f"Content-Length: {len(body)}\r\nConnection: close\r\n\r\n".encode() + body)
+    await writer.drain()
+
+
 async def ws_handshake(reader, writer):
     request = (await reader.readuntil(b"\r\n\r\n")).decode()
     path = request.split(" ")[1]
+    if "upgrade: websocket" not in request.lower():
+        await serve_resource(writer, path)
+        return None
+    # A real TV names itself by its own address; behind the emulator's NAT that's the client's Host.
+    host = next((l.split(":", 1)[1].strip() for l in request.split("\r\n") if l.lower().startswith("host:")), "")
+    writer.tv_address = host.rsplit(":", 1)[0] if host else writer.get_extra_info("sockname")[0]
     key = next(l.split(":", 1)[1].strip() for l in request.split("\r\n") if l.lower().startswith("sec-websocket-key"))
     accept = base64.b64encode(hashlib.sha1((key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").encode()).digest()).decode()
     writer.write(("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n"
@@ -122,9 +162,13 @@ async def handle_control(reader, writer, peer):
                 {"id": "HDMI_2", "label": "HDMI 2", "connected": False},
                 {"id": "HDMI_3", "label": "Apple TV", "connected": True}]}})
         elif uri == "ssap://com.webos.applicationManager/listLaunchPoints":
-            send(writer, {"type": "response", "id": mid, "payload": {"returnValue": True, "launchPoints": [
-                {"id": "netflix", "title": "Netflix"}, {"id": "youtube.leanback.v4", "title": "YouTube"},
-                {"id": "com.webos.app.livetv", "title": "Live TV"}]}})
+            send(writer, {"type": "response", "id": mid, "payload": {"returnValue": True,
+                 "launchPoints": launch_points(writer.tv_address)}})
+        elif uri == "ssap://system.launcher/launch":
+            state["app"] = p.get("id", state["app"])
+            send(writer, {"type": "response", "id": mid, "payload": {"returnValue": True, "id": state["app"]}})
+        elif uri == "ssap://com.webos.applicationManager/getForegroundAppInfo":
+            send(writer, {"type": "response", "id": mid, "payload": {"returnValue": True, "appId": state["app"]}})
         elif uri == "ssap://mock/pointerSocket":
             pointer_mode["mode"] = p.get("mode", "answer")
             send(writer, {"type": "response", "id": mid, "payload": {"returnValue": True}})
@@ -167,6 +211,8 @@ async def on_connect(reader, writer):
     peer = writer.get_extra_info("peername")[0]
     try:
         path = await ws_handshake(reader, writer)
+        if path is None:
+            return
         log("open", peer=peer, path=path)
         if path.endswith("netinput.pointer.sock"):
             await handle_pointer(reader, writer, peer)

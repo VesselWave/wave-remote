@@ -22,4 +22,5 @@ export const commands = {
   volumeUp: 'ssap://audio/volumeUp', volumeDown: 'ssap://audio/volumeDown',
   channelUp: 'ssap://tv/channelUp', channelDown: 'ssap://tv/channelDown',
   inputs: 'ssap://tv/getExternalInputList', apps: 'ssap://com.webos.applicationManager/listLaunchPoints',
+  foregroundApp: 'ssap://com.webos.applicationManager/getForegroundAppInfo',
 };

@@ -60,6 +60,17 @@ public final class PrefsTest {
         prefs.setTv("10.0.0.5", null);
         check("favourites kept when switching back", prefs.favorites().equals(Arrays.asList("youtube.leanback.v4", "netflix")));
 
+        // Hidden apps belong to the selected TV and leave its favourites.
+        prefs.setHidden(Arrays.asList("netflix", "com.webos.app.camera", "", "netflix"));
+        check("hidden apps saved without blanks or repeats", prefs.hidden().equals(Arrays.asList("netflix", "com.webos.app.camera")));
+        check("hiding a favourite unpins it", prefs.favorites().equals(Arrays.asList("youtube.leanback.v4")));
+        prefs.setTv("10.0.0.6", null);
+        check("other TV hides nothing", prefs.hidden().isEmpty() && prefs.favorites().equals(Arrays.asList("com.webos.app.livetv")));
+        prefs.setTv("10.0.0.5", null);
+        prefs.setHidden(Arrays.asList("com.webos.app.camera"));
+        check("unhiding keeps the rest hidden and does not re-pin", prefs.hidden().equals(Arrays.asList("com.webos.app.camera"))
+                && prefs.favorites().equals(Arrays.asList("youtube.leanback.v4")));
+
         // A TV that never paired is dropped when another is selected.
         prefs.setTv("10.0.0.7", "Kitchen");
         prefs.setTv("10.0.0.6", null);
@@ -70,7 +81,7 @@ public final class PrefsTest {
         prefs.forget();
         check("forgotten TV gone, none selected", prefs.host() == null && prefs.hosts().equals(Arrays.asList("10.0.0.5"))
                 && !ctx.store.containsKey("tv.10.0.0.6.key") && !ctx.store.containsKey("tv.10.0.0.6.label")
-                && !ctx.store.containsKey("tv.10.0.0.6.favorites") && prefs.clientKey() == null);
+                && !ctx.store.containsKey("tv.10.0.0.6.favorites") && !ctx.store.containsKey("tv.10.0.0.6.hidden") && prefs.clientKey() == null);
         check("other TV still paired", prefs.paired("10.0.0.5") && ctx.store.containsKey("tv.10.0.0.5.favorites"));
 
         // Fresh install.

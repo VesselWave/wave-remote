@@ -16,6 +16,8 @@ import java.util.concurrent.Executors
 class WaveRemoteModule : Module() {
   private val main = Handler(Looper.getMainLooper())
   private val network = Executors.newSingleThreadExecutor()
+  /** App icons load a few at a time so a long app list doesn't queue behind one slow download. */
+  private val icons = Executors.newFixedThreadPool(4)
   private lateinit var prefs: Prefs
   private lateinit var tv: Tv
   private lateinit var ble: Ble
@@ -177,7 +179,34 @@ class WaveRemoteModule : Module() {
       prefs.setNaturalTwoFinger(naturalTwoFinger); emit()
     }.runOnQueue(Queues.MAIN)
 
+    // Resolves a TV icon URL to a cached local file; the UI can't trust the TV's certificate itself.
+    AsyncFunction("icon") { url: String, promise: Promise ->
+      prepare()
+      val host = prefs.host()
+      val pin = prefs.certPin()
+      val dir = java.io.File(requireNotNull(appContext.reactContext).cacheDir, "tv-icons")
+      icons.execute {
+        try {
+          // The URL names the TV and a content hash, so a cached file never goes stale.
+          val name = java.security.MessageDigest.getInstance("SHA-256").digest(url.toByteArray())
+            .joinToString("") { "%02x".format(it) }
+          val file = java.io.File(dir, name)
+          if (!file.isFile) {
+            val bytes = Tv.fetchResource(url, host, pin)
+            dir.mkdirs()
+            val partial = java.io.File(dir, "$name.part")
+            partial.writeBytes(bytes)
+            if (!partial.renameTo(file)) throw java.io.IOException("Could not cache the icon")
+          }
+          promise.resolve(android.net.Uri.fromFile(file).toString())
+        } catch (error: Exception) {
+          promise.reject("ICON_UNAVAILABLE", error.message ?: "Icon unavailable", error)
+        }
+      }
+    }.runOnQueue(Queues.MAIN)
+
     AsyncFunction("setFavorites") { ids: List<String> -> prepare(); prefs.setFavorites(ids); emit() }.runOnQueue(Queues.MAIN)
+    AsyncFunction("setHidden") { ids: List<String> -> prepare(); prefs.setHidden(ids); emit() }.runOnQueue(Queues.MAIN)
     AsyncFunction("power") { bluetooth: Boolean, promise: Promise ->
       prepare()
       paused = false
@@ -319,7 +348,7 @@ class WaveRemoteModule : Module() {
     "state" to (if (quietAttempt) "disconnected" else tv.state().name.lowercase()), "detail" to detail,
     "volume" to volume, "muted" to muted, "touchpad" to prefs.touchpad(),
     "naturalEdge" to prefs.naturalEdge(), "naturalTwoFinger" to prefs.naturalTwoFinger(),
-    "waking" to (wakeUntil != 0L), "favorites" to prefs.favorites(),
+    "waking" to (wakeUntil != 0L), "favorites" to prefs.favorites(), "hidden" to prefs.hidden(),
     "canWakeBluetooth" to (prefs.btMac() != null && prefs.wakeRegistered()),
     "tvs" to prefs.hosts().filter { prefs.paired(it) || it == prefs.host() }
       .map { mapOf("host" to it, "name" to (prefs.label(it) ?: prefs.name(it)), "tvName" to prefs.name(it),

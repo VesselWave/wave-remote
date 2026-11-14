@@ -46,6 +46,22 @@ public final class ProtocolTest {
         main(() -> tv.request("ssap://tv/getExternalInputList", null, (p, e) -> inputs.complete(p)));
         check("input list", inputs.get(3, TimeUnit.SECONDS).getJSONArray("devices").length() == 3);
 
+        // 2b. App icons come from the TV's self-signed resource server, trusted through the pin only.
+        String icon = "https://" + host + ":3001/resources/0123456789abcdef/netflix.png";
+        byte[] png = Tv.fetchResource(icon, host, prefs.certPin());
+        check("icon fetched through the pinned certificate", png.length > 8 && (png[0] & 0xff) == 0x89 && png[1] == 'P');
+        check("icon refused under another pin", refusesResource(icon, host, "00".repeat(32)));
+        check("icon refused for an unpinned TV", refusesResource(icon, host, null));
+        check("icon refused from another host", refusesResource("https://127.0.0.9:3001/resources/0/x.png", host, prefs.certPin()));
+        check("icon refused outside /resources", refusesResource("https://" + host + ":3001/secret.png", host, prefs.certPin()));
+        check("icon refused on another port", refusesResource("https://" + host + ":1990/resources/0/x.png", host, prefs.certPin()));
+        check("icon refused over plain http", refusesResource("http://" + host + ":3001/resources/0/x.png", host, prefs.certPin()));
+        check("missing icon is an error", refusesResource("https://" + host + ":3001/resources/0/missing.png", host, prefs.certPin()));
+        CompletableFuture<JSONObject> points = new CompletableFuture<>();
+        main(() -> tv.request("ssap://com.webos.applicationManager/listLaunchPoints", null, (p, e) -> points.complete(p)));
+        check("launch points carry resource icons", points.get(3, TimeUnit.SECONDS).getJSONArray("launchPoints")
+                .getJSONObject(0).optString("icon").startsWith("https://" + host + ":3001/resources/"));
+
         // 3. Pointer socket: first button queues until the socket opens, later ones go direct.
         main(() -> { tv.button("UP"); tv.button("ENTER"); });
         Thread.sleep(1500);
@@ -187,6 +203,10 @@ public final class ProtocolTest {
     }
 
     static void main(Runnable r) { new android.os.Handler(null).post(r); }
+
+    static boolean refusesResource(String url, String host, String pin) {
+        try { Tv.fetchResource(url, host, pin); return false; } catch (java.io.IOException e) { return true; }
+    }
 
     static void expect(String want) throws InterruptedException {
         long end = System.currentTimeMillis() + 8000;
