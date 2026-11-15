@@ -65,34 +65,117 @@ separate cached key and are named Wave Remote Preview with the package ID
 pairings) instead of failing its signature check. The release package ID remains
 `me.vwave.remote`.
 
-## Publish a version
+## One release command
 
-Do every step, in order. A version isn't done until the download site shows it.
+Use the standalone coordinator for the entire release: GitHub, the signed F-Droid
+repository and R2 downloads, public metadata, and the live download site. It does
+not depend on the Wave VPN checkout.
 
-1. Update `VERSION` (`major.minor` or `major.minor.patch`) and increase the positive integer in `VERSION_CODE`. Android uses this independent counter to determine update order.
-2. Date the `## Unreleased` heading in `CHANGELOG.md` (`## 0.4 — 2026-10-16`) and rewrite `docs/release-notes.md` for this version: what changed, whether it installs over the previous version and keeps the pairing, and the `sha256sum --check wave-remote-v<version>.apk.sha256` line. Add the store changelog, `fastlane/metadata/android/en-US/changelogs/<VERSION_CODE>.txt`: the same changes as a short plain list, under 500 characters.
-3. Run `bun run typecheck`, `bun run lint`, `bun test`, `./test.sh` and `python3 tools/npm-lock.py --check`. Build with `./build.sh release` (or `debug` without the signing key), install it on a real phone with `adb install -r`, and try each changelog item against a real TV.
-4. Refresh the screenshots from that phone, connected and showing the TV name and volume:
-   - `docs/screenshots/buttons.png` and `touchpad.png`: `adb exec-out screencap -p`, cropped to 1080×2170 from the top of the header to the bottom of the Back/Home/Settings row (on a 1080×2400 Pixel 7, `crop=1080:2170:0:140`).
-   - `fastlane/metadata/android/en-US/images/phoneScreenshots/1.png` and `2.png`: copies of `buttons.png` and `touchpad.png`, for F-Droid and IzzyOnDroid.
-   - `site/public/screens/*.webp`: scaled from those to 720 px wide, e.g. `ffmpeg -i ../docs/screenshots/buttons.png -vf scale=720:-1:flags=lanczos -c:v libwebp -quality 85 buttons.webp`. Update the version and date in each `.webp.json` sidecar.
-   - `site/public/og.png` and `docs/brand/cover.png`: re-render with `og/render.sh` (see [site/README.md](../site/README.md)) and look at the result.
-5. Commit and push `main`, then create and push the matching tag:
+Before planning, finish device/TV QA and update the `## Unreleased` changelog.
+Refresh screenshots only when the interface has changed. Commit and push the
+reviewed source and artwork to `main`; the coordinator requires clean `main`
+matching `origin/main`. It prepares the next patch version, increments
+`VERSION_CODE`, dates the changelog, and generates release notes and a store
+summary. Review all generated file contents in the saved JSON plan. A long store
+summary links to the full notes rather than silently truncating a feature claim.
 
 ```sh
-git tag -a "v$(cat VERSION)" -m "Wave Remote $(cat VERSION)"
-git push origin "v$(cat VERSION)"
+python3 tools/release.py --state .release-state/remote-0.6.9.json
+# Review the JSON plan, then publish an authorized release:
+python3 tools/release.py --state .release-state/remote-0.6.9.json --apply --background
+# Read only when someone requests status:
+python3 tools/release.py --state .release-state/remote-0.6.9.json --status
 ```
 
-The release workflow checks the tag against `VERSION`, runs tests, restores the
-private keystore to a temporary runner file, builds and verifies the release APK,
-and publishes the APK, `.sha256`, and `.certificate.txt` to GitHub Releases.
-The temporary keystore is removed even when a step fails.
+Specify `--version X.Y.Z` while planning to override the next patch. The state
+filename is your choice; always use a fresh file for a later release. Reuse the
+same file to resume an interruption. State pins the source commit and generated
+files; later source changes stop publication. Do not edit a running plan.
 
-6. Deploy the site while the workflow runs: `cd site && bun install && bun run typecheck && bun run deploy`.
-7. Once the release is published, verify it: download the APK and `.sha256` into one directory, run `sha256sum --check <filename>.apk.sha256`, and compare the certificate SHA-256 digest in `.certificate.txt` with the previous release's.
-8. Check the site: `curl -fsS https://remote.vwave.me/latest.json` shows the new version (it caches GitHub for up to ten minutes), `curl -fsSI https://remote.vwave.me/download` redirects to the new APK, and `/screens/buttons.webp` and `/og.png` match the committed files.
-9. Update the [signed F-Droid repository](../fdroid/README.md#update-and-deploy) with the published APK. Verify that its live index includes the new version and the same SHA-256 as GitHub, and that its APK route redirects to that release asset. Commit and push the download mapping. Keep the existing repository signing key.
+The coordinator:
 
-If a release run fails before publishing, fix the cause and rerun the failed job.
-Do not move published tags or replace an already released APK; ship a new version.
+1. Checks F-Droid tooling/configuration, signing-secret names and the site build
+   before pushing any tag.
+2. Commits/pushes the planned version, changelog and notes, then an annotated tag.
+3. Waits for the existing release CI, downloads the artifacts, verifies the pinned
+   OpenPGP signature and every manifest hash, and validates the actual APK's
+   production certificate, package, version/code and 16 KB ZIP alignment. It
+   checks provenance against the planned commit.
+4. Mirrors **all** GitHub release artifacts under `remote/vVERSION/` in R2,
+   reads them back to verify hashes, and writes an immutable readiness manifest.
+   Publishes the verified APK through `fdroid/prepare.py`, reusing existing app
+   and repository keys. This updates recommended versions, signs indexes and
+   uploads immutable R2 APKs with read-back hash verification. It deploys the
+   F-Droid Worker and verifies live signed v1/v2 indexes, recommendation and
+   public APK bytes.
+5. Commits/pushes the public download mapping and F-Droid metadata. The publisher then promotes
+   `remote/latest.json` in R2. The site reads this pointer directly; releases need
+   no website sync Action, data commit or redeployment. Completion requires `/latest.json` to show the version and hash and
+   `/download` to redirect to the same-origin R2 APK, whose public bytes are also verified.
+
+Background launch returns `started`, **not published**. The detached Python
+worker retries routine CI/site cache waits without LLM calls. Agents must hand
+back after launch: do not poll, schedule checks, or keep a monitoring agent.
+Status, blockers and logs live beside the state as `.job.json` and `.log`.
+There is no automatic notification; keep the machine running. After interruption,
+resume the same state. Foreground `--apply` is available to terminal operators;
+`--timeout` bounds each foreground wait (default 5400 seconds). Exit 3 means
+routine waiting; exit 2 means a blocker. Failed CI stops for repair instead of
+being treated as routine waiting. Completed state is a no-op on resume.
+
+Only one Remote coordinator may run at a time. The F-Droid repository is shared
+with VPN: do not run their publishers simultaneously. If a failed deployment or
+stale cache blocks progress after GitHub publication, fix it and resume the same
+state. Never move published tags, replace release assets or rotate signing keys
+as a retry strategy. Device/TV tests remain a maintainer qualification step;
+the coordinator does not claim to automate them.
+
+### Publisher prerequisites
+
+The machine needs Python 3, Git, authenticated `gh`, Bun, JDK and Android SDK
+build-tools 36.0.0 (`ANDROID_HOME`/`ANDROID_SDK_ROOT`, or `~/opt/android-sdk`).
+Install root and site dependencies. Wrangler must already be authenticated for
+the existing Workers and `wave-releases` R2 bucket. Preserve the private
+`fdroid/config.yml` and repository keystore. The adapter uses an installed
+fdroidserver or boots pinned fdroidserver 2.4.5 / setuptools 80.9.0 under Python
+3.13 with `uv`; `uv` must be installed for that fallback. The publisher never
+creates a new signing key or uploads private configuration.
+
+The GitHub workflow uses the `release` environment. Configure its deployment
+branch policy for `v*` tags and store signing secrets there (repository secrets
+remain supported). In addition to the four APK secrets above, configure:
+
+| Secret | Value |
+| --- | --- |
+| `RELEASE_GPG_KEY_BASE64` | Base64 of the existing armored VesselWave OpenPGP private signing key. |
+| `RELEASE_GPG_PASSPHRASE` | Its passphrase, if protected. |
+
+Reuse the existing release key fingerprint
+`414018C0BBB8C0A70A80BF570AA32CCB2C0B3951`. Its public key is pinned in
+`docs/keys/wave-release-signing.asc`. Never generate a replacement implicitly.
+The preflight checks secret names; CI verifies that the actual signing material
+matches the pinned identities. Missing or wrong keys fail closed.
+
+### Artifacts and independent verification
+
+GitHub publishes the signed APK, legacy `.apk.sha256` and certificate report,
+source archive, provenance JSON, and an OpenPGP-signed `SHA256SUMS` covering the
+APK, source and provenance. Packaging requires clean tagged source. The pinned
+production APK certificate SHA-256 is:
+
+```text
+a2a5c53e76ebefe4c0c5b288904a813dc3d2a61e3802ac8066466167913ed69c
+```
+
+Download the release artifacts to one directory, then verify with the script
+from a trusted checkout (substitute the version/code):
+
+```sh
+python3 tools/verify-release.py /path/to/wave-remote-v0.6.9.apk 0.6.9 10021 --manifest
+```
+
+F-Droid signature-copy reproducibility remains a separate independent-rebuild
+check: `tools/verify-fdroid.sh`. The maintainer-hosted F-Droid publisher uses the
+same verified production APK; it does not claim an independent rebuild.
+
+Workflow tests: `python3 -m unittest discover -s tools/tests -v`.

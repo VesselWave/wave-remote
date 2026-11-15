@@ -34,3 +34,6 @@ modules/**/build/
 /.impeccable/review/
 /.impeccable/decision/
 /.impeccable/build/
+
+# Resumable release plans and background job reports
+/.release-state/

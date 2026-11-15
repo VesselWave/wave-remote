@@ -74,5 +74,8 @@ APK="dist/wave-remote-v$VERSION_NAME$suffix.apk"
     --out "$APK" "$UNSIGNED"
 rm -f "$APK.idsig"
 "$BT/apksigner" verify --verbose --print-certs "$APK" > "$APK.certificate.txt"
+if [[ "$mode" == release ]]; then
+    python3 tools/verify-release.py "$APK" "$VERSION_NAME" "$VERSION_CODE"
+fi
 (cd dist && sha256sum "$(basename "$APK")" > "$(basename "$APK").sha256")
 ls -lh "$APK"

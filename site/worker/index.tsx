@@ -1,11 +1,11 @@
-// Renders the download page with the latest GitHub release and redirects /download to its APK.
+// Render current release data from R2 and stream all downloads from the same bucket.
 import { renderToString } from 'react-dom/server';
 import App from '../src/App';
-import { RELEASES_URL, type Release } from '../src/release';
+import { download } from './downloads';
+import { type Release } from '../src/release';
 
-type Env = { ASSETS: Fetcher };
+type Env = { ASSETS: Fetcher; RELEASES: R2Bucket };
 
-const API = 'https://api.github.com/repos/VesselWave/wave-remote/releases/latest';
 
 // Matches public/_headers, which covers the static files.
 const SECURITY_HEADERS = {
@@ -32,33 +32,18 @@ function secured(response: Response): Response {
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
-// Cached at the edge for ten minutes to stay well inside GitHub's anonymous API limit.
-async function latest(): Promise<Release | null> {
+// The publisher promotes this pointer only after verifying immutable artifacts and F-Droid.
+async function latest(env: Env): Promise<Release | null> {
   try {
-    const response = await fetch(API, {
-      headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'remote.vwave.me' },
-      cf: { cacheTtl: 600, cacheEverything: true },
-    });
-    if (!response.ok) return null;
-    const release = (await response.json()) as {
-      tag_name: string;
-      published_at: string;
-      html_url: string;
-      assets: { name: string; size: number; digest?: string; browser_download_url: string }[];
-    };
-    // 0.2 and earlier shipped as tv-remote-v*.apk, before the rename.
-    const apk = release.assets.find((asset) => /^(?:wave|tv)-remote-v[\d.]+\.apk$/.test(asset.name));
-    if (!apk) return null;
-    return {
-      version: release.tag_name.replace(/^v/, ''),
-      tag: release.tag_name,
-      file: apk.name,
-      size: apk.size,
-      sha256: apk.digest?.replace(/^sha256:/, '') ?? '',
-      published: release.published_at,
-      url: apk.browser_download_url,
-      page: release.html_url,
-    };
+    const object = await env.RELEASES.get('remote/latest.json');
+    if (!object) return null;
+    const release = await object.json<Release>();
+    if (!/^v\d+\.\d+(?:\.\d+)?$/.test(release.tag)
+      || release.tag !== `v${release.version}`
+      || !/^wave-remote-v[\d.]+\.apk$/.test(release.file)
+      || release.url !== `https://remote.vwave.me/downloads/${release.tag}/${release.file}`
+      || !/^[a-f0-9]{64}$/.test(release.sha256)) return null;
+    return release;
   } catch {
     return null;
   }
@@ -67,20 +52,22 @@ async function latest(): Promise<Release | null> {
 async function respond(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
 
+  if (url.pathname.startsWith('/downloads/')) return download(request, env.RELEASES);
+
   if (url.pathname === '/latest.json') {
-    const release = await latest();
+    const release = await latest(env);
     if (!release) return new Response('Latest release unavailable', { status: 503 });
     return Response.json(release, { headers: { 'Cache-Control': 'max-age=300' } });
   }
 
   if (url.pathname === '/download') {
-    const release = await latest();
-    return Response.redirect(release?.url ?? RELEASES_URL, 302);
+    const release = await latest(env);
+    return release ? Response.redirect(release.url, 302) : new Response('Release mirror unavailable', { status: 503 });
   }
 
   const [template, release] = await Promise.all([
     env.ASSETS.fetch(new URL('/', url)).then((response) => response.text()),
-    latest(),
+    latest(env),
   ]);
   const json = JSON.stringify(release).replace(/</g, '\\u003c');
   const html = template

@@ -5,7 +5,13 @@ https://remote.vwave.me is the one-page download site: the APK download, an Add 
 - **Stack:** React 19, TypeScript, Tailwind CSS v4 and shadcn/ui components (`src/components/ui`, restyled in `src/styles.css`), built with Vite under Bun.
 - **Design:** shared with https://vpn.vwave.me: a plain dark ground, Inter for all text, and a header linking VesselWave, Wave Remote and Wave VPN. The family block at the top of `src/styles.css` is kept identical in both sites. Inter is self-hosted under the SIL Open Font License; the notice is in `public/licenses/`.
 - **Hosting:** Cloudflare Worker `wave-remote` on the `vwave.me` zone ([`wrangler.jsonc`](wrangler.jsonc)). Static files come from Vite's `dist/`.
-- **Release data:** [`worker/index.tsx`](worker/index.tsx) reads the latest GitHub release through the GitHub API, cached at the edge for ten minutes. It server-renders `/` with that release and embeds it so React hydrates without a flash, redirects `/download` to the `wave-remote-v*.apk` asset, and serves `/latest.json`. If GitHub can't be reached, the page shows generic text and `/download` opens the releases page.
+- **Release data:** the publisher promotes `remote/latest.json` in the private
+  `wave-releases` R2 bucket after verifying all artifacts and F-Droid publication.
+  The Worker reads it directly, server-renders `/`, serves `/latest.json`, and
+  redirects `/download` to the versioned `/downloads/vVERSION/FILENAME` route.
+  Every artifact streams from R2 with HEAD, ETag and byte-range support. There
+  is no GitHub API dependency at request time and no site sync Action or release
+  commit. A missing manifest returns 503 for download endpoints.
 - **Screenshots:** `public/screens/*.webp` are scaled from `../docs/screenshots`; refresh them when the UI changes. Their `.json` sidecars record where they came from.
 - **Brand art:** [`og/card.html`](og/card.html) is the brand card, with the Buttons screenshot. After editing either, run `og/render.sh` (headless Chrome; set `CHROME` for another binary) to write `public/og.png` (1200×630 link preview) and `../docs/brand/cover.png` (README cover, 1600 px wide), and commit both PNGs.
 
@@ -24,7 +30,7 @@ bun run deploy        # vite build + wrangler deploy
 
 `bun run preview` builds and serves the Worker locally with `wrangler dev`.
 
-Verify with `curl -fsS https://remote.vwave.me/latest.json` and `curl -fsSI https://remote.vwave.me/download`. The second should return a 302 to the release APK.
+Verify with `curl -fsS https://remote.vwave.me/latest.json` and `curl -fsSI https://remote.vwave.me/download`. The second should return a 302 to the same-origin R2 APK route.
 
 ## Automatic deployment
 
@@ -39,3 +45,19 @@ Cloudflare Workers Builds is connected to this GitHub repository. Pushes to
 - Dedicated build token managed by Cloudflare; no GitHub deployment secret required.
 
 Local `bun run deploy` remains available with Wrangler login.
+
+## Existing-release migration
+
+Before deploying this Worker for the first time, mirror the current published
+release and promote its pointer, so `/download` is ready immediately. For a
+historical release without OpenPGP manifests, explicitly use `--legacy` and an
+independently verified APK SHA-256 (for example the trusted signed F-Droid index):
+
+```sh
+python3 tools/publish-r2.py --version 0.6.8 --code 10020 --legacy --sha256 bd073edf862050b66f4f862cf51666bbbdbe510d9c576449f143c6e16b50a14f
+python3 tools/release-pointer.py --version 0.6.8
+```
+
+Run these from the repository root. New releases use the coordinator instead.
+Artifact objects and version manifests are immutable; only `remote/latest.json`
+is mutable, with downgrade/conflict checks and read-back verification.

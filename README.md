@@ -45,7 +45,7 @@ bun test && ./test.sh   # app tests, then protocol tests against a mock TV
 ./build.sh debug        # dist/wave-remote-v<version>-debug.apk, "Wave Remote Preview"
 ```
 
-The UI is Expo and React Native; the TV protocol is a Java engine in `src/me/vwave/remote`, wrapped by the Expo module in `modules/wave-remote`. Expo Go can't load that module, so install the built APK. More in [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/RELEASING.md](docs/RELEASING.md).
+The UI is Expo and React Native; the TV protocol is a Java engine in `src/me/vwave/remote`, wrapped by the Expo module in `modules/wave-remote`. Expo Go can't load that module, so install the built APK. Release publication uses the resumable `python3 tools/release.py` coordinator for GitHub, F-Droid/R2 and the download site. More in [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/RELEASING.md](docs/RELEASING.md).
 
 ---
 

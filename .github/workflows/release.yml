@@ -10,6 +10,7 @@ concurrency:
 jobs:
   checks:
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
@@ -27,14 +28,18 @@ jobs:
           bun test
           python3 tools/npm-lock.py --check
           ./test.sh
+          python3 -m unittest discover -s tools/tests -v
   release:
     needs: checks
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:
       contents: write
+    environment: release
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .node-version
@@ -63,14 +68,29 @@ jobs:
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           WAVEREMOTE_STORE_PASSWORD: ${{ secrets.WAVEREMOTE_STORE_PASSWORD }}
           WAVEREMOTE_KEY_PASSWORD: ${{ secrets.WAVEREMOTE_KEY_PASSWORD }}
+          RELEASE_GPG_KEY_BASE64: ${{ secrets.RELEASE_GPG_KEY_BASE64 }}
+          RELEASE_GPG_PASSPHRASE: ${{ secrets.RELEASE_GPG_PASSPHRASE }}
         run: |
           set -euo pipefail
           : "${RELEASE_KEYSTORE_BASE64:?Missing release signing secrets; see docs/RELEASING.md}"
           umask 077
           printf '%s' "$RELEASE_KEYSTORE_BASE64" | base64 --decode > "$RELEASE_KEYSTORE"
           trap 'rm -f "$RELEASE_KEYSTORE"' EXIT
+          export GNUPGHOME="$RUNNER_TEMP/gnupg"
+          mkdir -m 700 "$GNUPGHOME"
+          : "${RELEASE_GPG_KEY_BASE64:?Configure existing OpenPGP signing identity; see docs/RELEASING.md}"
+          printf '%s' "$RELEASE_GPG_KEY_BASE64" | base64 --decode | gpg --batch --quiet --import
+          printf 'batch\npinentry-mode loopback\n' > "$GNUPGHOME/gpg.conf"
+          if [ -n "$RELEASE_GPG_PASSPHRASE" ]; then
+            printf '%s' "$RELEASE_GPG_PASSPHRASE" > "$GNUPGHOME/passphrase"
+            printf 'passphrase-file %s/passphrase\n' "$GNUPGHOME" >> "$GNUPGHOME/gpg.conf"
+          fi
           ./build.sh release
-      - name: Publish APK, checksum, and signing certificate
+          python3 tools/package-release.py
+      - name: Remove signing material
+        if: always()
+        run: rm -rf "${{ runner.temp }}/release.keystore" "${{ runner.temp }}/gnupg"
+      - name: Publish verified release artifacts
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -80,7 +100,8 @@ jobs:
             --notes-file docs/release-notes.md \
             "dist/wave-remote-$RELEASE_TAG.apk" \
             "dist/wave-remote-$RELEASE_TAG.apk.sha256" \
-            "dist/wave-remote-$RELEASE_TAG.apk.certificate.txt"
-      - name: Remove signing material
-        if: always()
-        run: rm -f "${{ runner.temp }}/release.keystore"
+            "dist/wave-remote-$RELEASE_TAG.apk.certificate.txt" \
+            "dist/wave-remote-$RELEASE_TAG-source.tar.gz" \
+            "dist/wave-remote-$RELEASE_TAG-provenance.json" \
+            "dist/wave-remote-$RELEASE_TAG-SHA256SUMS" \
+            "dist/wave-remote-$RELEASE_TAG-SHA256SUMS.asc"

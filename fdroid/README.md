@@ -12,6 +12,11 @@ Static asset requests do not invoke the Worker; APK streams invoke the Worker wi
 
 ## Update and deploy
 
+Wave Remote releases use the [release coordinator](../docs/RELEASING.md#one-release-command):
+`python3 tools/release.py` plans; `--apply --background` publishes and verifies
+GitHub, F-Droid/R2 and the site. The steps below are for manual repair/backfill.
+Do not run Remote and VPN publishers simultaneously against this shared repository.
+
 Requires Python, fdroidserver 2.4.5, JDK 17+, the Android SDK, and the existing
 private `config.yml` and keystore. On Python 3.13, fdroidserver also needs
 `setuptools<81`. Keep signing material private and back it up securely. Always
