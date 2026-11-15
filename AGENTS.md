@@ -31,3 +31,6 @@ Check `gh pr edit --help` if the flag is unavailable on another machine.
 - Run `python3 -m unittest discover -s tools/tests -v` for publisher changes.
   `./test.sh` runs real protocol tests on standard localhost, without root or
   privileged loopback aliases, on macOS and Linux.
+
+- End your own device session after QA so another agent can use the phone.
+  Never reuse or close another agent’s session to acquire it.

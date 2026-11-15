@@ -80,11 +80,11 @@ summary. Review all generated file contents in the saved JSON plan. A long store
 summary links to the full notes rather than silently truncating a feature claim.
 
 ```sh
-python3 tools/release.py --state .release-state/remote-0.6.9.json
+python3 tools/release.py
 # Review the JSON plan, then publish an authorized release:
-python3 tools/release.py --state .release-state/remote-0.6.9.json --apply --background
+python3 tools/release.py --apply --background
 # Read only when someone requests status:
-python3 tools/release.py --state .release-state/remote-0.6.9.json --status
+python3 tools/release.py --status
 ```
 
 Without `--state`, the command selects an unfinished matching plan or creates a
@@ -194,7 +194,7 @@ Download the release artifacts to one directory, then verify with the script
 from a trusted checkout (substitute the version/code):
 
 ```sh
-python3 tools/verify-release.py /path/to/wave-remote-v0.6.9.apk 0.6.9 10021 --manifest
+python3 tools/verify-release.py /path/to/wave-remote-v0.7.apk 0.7 10022 --manifest
 ```
 
 F-Droid signature-copy reproducibility remains a separate independent-rebuild
@@ -202,3 +202,5 @@ check: `tools/verify-fdroid.sh`. The maintainer-hosted F-Droid publisher uses th
 same verified production APK; it does not claim an independent rebuild.
 
 Workflow tests: `python3 -m unittest discover -s tools/tests -v`.
+
+The full publication path and Pixel upgrade were exercised for [0.7](qa/release-0.7.md).
