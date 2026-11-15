@@ -5,7 +5,8 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { palette, radius } from '../theme';
 
 /** Fitting screens stay still; overflowing screens briefly explain that they scroll. */
-export function useScrollCues() {
+export function useScrollCues(endPadding = 0) {
+  const [paddingBottom, setPaddingBottom] = useState(endPadding);
   const metrics = useRef({ height: 0, content: 0, offset: 0 });
   const [scrollable, setScrollable] = useState(false);
   const opacity = useAnimatedValue(0);
@@ -13,6 +14,10 @@ export function useScrollCues() {
   const update = () => {
     const { height, content } = metrics.current;
     setScrollable(height > 0 && content > height + 2);
+    // Measure the content without our optional breathing room. Long lists get the
+    // full viewport; fitting menus keep the extra gap. Excluding the current
+    // padding avoids flipping between the two when content almost fits.
+    if (height > 0 && content > 0) setPaddingBottom(content - paddingBottom > height + 2 ? 0 : endPadding);
   };
   useEffect(() => {
     opacity.setValue(scrollable ? 1 : 0);
@@ -41,13 +46,13 @@ export function useScrollCues() {
     <Text style={styles.label}>More below</Text><MaterialCommunityIcons name="chevron-down" size={28} color={palette.text} />
   </Animated.View> : null;
   const frameProps = { onLayout: (event: LayoutChangeEvent) => { metrics.current.height = event.nativeEvent.layout.height; update(); } };
-  return { props, frameProps, cues };
+  return { props, frameProps, cues, contentStyle: { paddingBottom } };
 }
 
-export function ScrollFrame({ children, style, ...props }: ScrollViewProps & { children: ReactNode }) {
-  const scroll = useScrollCues();
+export function ScrollFrame({ children, style, endPadding = 0, contentContainerStyle, ...props }: ScrollViewProps & { children: ReactNode; endPadding?: number }) {
+  const scroll = useScrollCues(endPadding);
   return <View {...scroll.frameProps} style={[styles.frame, style]}>
-    <ScrollView {...props} {...scroll.props} style={styles.scroll} keyboardShouldPersistTaps="handled">{children}</ScrollView>
+    <ScrollView {...props} {...scroll.props} contentContainerStyle={[contentContainerStyle, endPadding > 0 && scroll.contentStyle]} style={styles.scroll} keyboardShouldPersistTaps="handled">{children}</ScrollView>
     {scroll.cues}
   </View>;
 }

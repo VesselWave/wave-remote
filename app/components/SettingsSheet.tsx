@@ -19,7 +19,7 @@ export function SettingsSheet({ state, open, onClose, run }: {
       <Text variant="bodyLarge">This removes the saved pairing for {state.name || 'your TV'}. You’ll need to approve a new connection on the TV to use it again.</Text>
       <View style={styles.actions}><Button onPress={() => setConfirmForget(false)}>Keep TV</Button>
         <Button mode="contained" icon="link-off" buttonColor={palette.danger} textColor="#FFFFFF" onPress={() => { void run(() => native!.forget()).then((success) => { if (success) close(); }); }}>Forget TV</Button></View>
-    </View> : <View style={styles.content}>
+    </View> : <View>
       <View style={styles.device}><Icon source="television" size={28} color={palette.accentFg} /><View style={styles.deviceInfo}>
         <Text variant="titleMedium">{state.name || 'LG TV'}</Text><Text variant="bodyMedium" style={styles.secondary}>{state.host}</Text>
         <Text variant="bodySmall" style={styles.secondary}>{connectionLabel(state)}</Text>
@@ -44,7 +44,7 @@ export function SettingsSheet({ state, open, onClose, run }: {
   </Sheet>;
 }
 const styles = StyleSheet.create({
-  content: { paddingBottom: 8 }, device: { flexDirection: 'row', gap: 16, padding: 20, marginHorizontal: 24, borderRadius: radius.md, backgroundColor: palette.raised },
+  device: { flexDirection: 'row', gap: 16, padding: 20, marginHorizontal: 24, borderRadius: radius.md, backgroundColor: palette.raised },
   deviceInfo: { flex: 1, gap: 4 }, secondary: { color: palette.muted }, sectionTitle: { marginTop: 28, marginBottom: 8, marginHorizontal: 24, color: palette.accentFg },
   explanation: { marginHorizontal: 24, color: palette.muted, marginBottom: 8 }, scrollSetting: { marginHorizontal: 24, marginTop: 12, gap: 8 },
   divider: { marginHorizontal: 24, marginVertical: 20 }, action: { paddingHorizontal: 12, minHeight: 80 },

@@ -49,7 +49,7 @@ export function TvSheet({ state, open, onClose, onAdd, run }: {
   </Sheet>;
 }
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 12, paddingBottom: 8, gap: 4 },
+  content: { paddingHorizontal: 12, gap: 4 },
   item: { paddingHorizontal: 12, minHeight: 72, borderRadius: radius.md }, current: { backgroundColor: palette.raised },
   trailing: { flexDirection: 'row', alignItems: 'center', gap: 4 }, rename: { width: 48, height: 48, margin: 0 },
   form: { paddingHorizontal: 24, gap: 4 }, actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 12 },

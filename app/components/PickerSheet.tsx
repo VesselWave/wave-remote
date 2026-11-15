@@ -5,7 +5,7 @@ import { ActivityIndicator, Button, Icon, List, Text } from 'react-native-paper'
 import { native, type TvInput } from '../../modules/wave-remote';
 import { commands, errorMessage } from '../lib/remote';
 import { palette, radius } from '../theme';
-import { Sheet } from './Sheet';
+import { Sheet, SHEET_END_PADDING } from './Sheet';
 import { useScrollCues } from './ScrollFrame';
 
 type Choice = { id: string; title: string; description?: string };
@@ -22,7 +22,7 @@ export function PickerSheet({ onClose, report, ready }: {
   const [retry, setRetry] = useState(0);
   const generation = useRef(0);
   const activeAction = useRef(false);
-  const scroll = useScrollCues();
+  const scroll = useScrollCues(SHEET_END_PADDING);
   useEffect(() => {
     const token = ++generation.current;
     if (!ready) return;
@@ -46,7 +46,7 @@ export function PickerSheet({ onClose, report, ready }: {
     finally { if (token === generation.current) { setActing(null); activeAction.current = false; } }
   };
   return <Sheet open onClose={onClose} title="Inputs" subtitle="Choose what’s on your screen.">
-    {(heading) => <View {...scroll.frameProps} style={styles.scroll}><FlatList {...scroll.props} style={styles.scroll} data={ready && !loading && !error ? items : []} keyExtractor={(item) => item.id} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.list}
+    {(heading) => <View {...scroll.frameProps} style={styles.scroll}><FlatList contentContainerStyle={scroll.contentStyle} {...scroll.props} style={styles.scroll} data={ready && !loading && !error ? items : []} keyExtractor={(item) => item.id} keyboardShouldPersistTaps="handled"
       ListHeaderComponent={<>{heading}</>}
       renderItem={({ item }) =>
         <List.Item title={item.title} titleNumberOfLines={2} description={item.description} left={(props) => <List.Icon {...props} icon="application-import" />} right={(props) => acting === item.id ? <ActivityIndicator size={20} style={styles.progress} /> : <List.Icon {...props} icon="chevron-right" />} onPress={() => void choose(item)} disabled={!!acting || !ready} style={styles.item} />
@@ -54,6 +54,6 @@ export function PickerSheet({ onClose, report, ready }: {
   </Sheet>;
 }
 const styles = StyleSheet.create({
-  scroll: { flexShrink: 1 }, list: { paddingBottom: 16 },
+  scroll: { flexShrink: 1 },
   item: { minHeight: 72, borderRadius: radius.md, marginHorizontal: 12 }, empty: { alignItems: 'center', padding: 32, gap: 16 }, secondary: { color: palette.muted, textAlign: 'center' }, center: { textAlign: 'center' }, progress: { margin: 16 },
 });

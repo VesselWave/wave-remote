@@ -5,6 +5,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { palette, radius } from '../theme';
 import { ScrollFrame } from './ScrollFrame';
 
+export const SHEET_END_PADDING = 32;
+
 export const FeedbackContext = createContext({ message: '', dismiss: () => {} });
 
 export function Sheet({ title, subtitle, open, onClose, onBack, children }: {
@@ -31,8 +33,8 @@ export function Sheet({ title, subtitle, open, onClose, onBack, children }: {
   return <Modal visible={open} transparent animationType={reducedMotion ? 'none' : 'fade'} onRequestClose={onBack ?? onClose} statusBarTranslucent>
     <KeyboardAvoidingView style={[styles.overlay, { paddingTop: Math.max(12, insets.top) }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Close menu" accessibilityRole="button" />
-      <View style={[styles.sheet, { paddingBottom: Math.max(24, insets.bottom) }]} accessibilityViewIsModal>
-        {typeof children === 'function' ? children(heading) : <ScrollFrame>{heading}{children}</ScrollFrame>}
+      <View style={[styles.sheet, { paddingBottom: 8 + insets.bottom }]} accessibilityViewIsModal>
+        {typeof children === 'function' ? children(heading) : <ScrollFrame endPadding={SHEET_END_PADDING}>{heading}{children}</ScrollFrame>}
       </View>
       <Snackbar visible={!!feedback.message} onDismiss={feedback.dismiss} duration={6500} action={{ label: 'Dismiss', onPress: feedback.dismiss }}>{feedback.message}</Snackbar>
     </KeyboardAvoidingView>
@@ -40,7 +42,7 @@ export function Sheet({ title, subtitle, open, onClose, onBack, children }: {
 }
 const styles = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#00000099' },
-  sheet: { backgroundColor: palette.surface, maxHeight: '100%', borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, paddingBottom: 28, width: '100%', maxWidth: 600, alignSelf: 'center', overflow: 'hidden' },
+  sheet: { backgroundColor: palette.surface, maxHeight: '100%', borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, width: '100%', maxWidth: 600, alignSelf: 'center', overflow: 'hidden' },
   handle: { width: 32, height: 4, borderRadius: radius.pill, backgroundColor: palette.faint, alignSelf: 'center', marginTop: 12, marginBottom: 8 },
   heading: { flexDirection: 'row', paddingLeft: 24, paddingRight: 8, alignItems: 'center', paddingBottom: 16 },
   title: { flex: 1 }, subtitle: { color: palette.muted, marginTop: 4 }, close: { width: 48, height: 48 },

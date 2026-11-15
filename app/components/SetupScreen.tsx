@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { BackHandler, KeyboardAvoidingView, Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ActivityIndicator, Button, HelperText, Icon, IconButton, List, Surface, Text, TextInput } from 'react-native-paper';
+import { ActivityIndicator, Button, HelperText, Icon, IconButton, List, Surface, Text, TextInput, useTheme } from 'react-native-paper';
 import { native, type FoundTv, type RemoteState } from '../../modules/wave-remote';
 import { errorMessage, normalizeHost } from '../lib/remote';
 import { palette, radius } from '../theme';
@@ -13,6 +13,7 @@ export function SetupScreen({ state, run, onConnect, onBack }: {
   onConnect?: () => void; onBack?: () => void;
 }) {
   const insets = useSafeAreaInsets();
+  const { fonts } = useTheme();
   const { height } = useWindowDimensions();
   const compact = height - insets.top - insets.bottom < 700;
   const [host, setHost] = useState(onBack ? '' : state.host || '');
@@ -79,21 +80,24 @@ export function SetupScreen({ state, run, onConnect, onBack }: {
     {saved.length && !onBack ? <>
       <Text variant="titleMedium" style={styles.savedHeading} accessibilityRole="header">Your TVs</Text>
       <View style={styles.devices}>
-        {saved.map((tv) => <List.Item key={tv.host} title={tv.name || 'LG TV'} description={tv.host} accessibilityLabel={`${tv.name || 'LG TV'}, ${tv.host}`} titleNumberOfLines={2} left={(props) => <List.Icon {...props} icon="television" />} right={(props) => <List.Icon {...props} icon="chevron-right" />} onPress={() => connect({ host: tv.host, name: tv.name || 'LG TV' })} disabled={busy} style={styles.device} />)}
+        {saved.map((tv) => <List.Item key={tv.host} title={tv.name || 'LG TV'} description={tv.host} accessibilityLabel={`${tv.name || 'LG TV'}, ${tv.host}`} titleNumberOfLines={2} titleStyle={[fonts.titleMedium, styles.deviceTitle]} descriptionStyle={[fonts.bodyMedium, styles.secondary]} left={(props) => <List.Icon {...props} icon="television" />} right={(props) => <List.Icon {...props} icon="chevron-right" />} onPress={() => connect({ host: tv.host, name: tv.name || 'LG TV' })} disabled={busy} style={styles.device} />)}
       </View>
     </> : null}
     <View style={styles.sectionHeading}><Text variant="titleMedium" accessibilityRole="header">Nearby TVs</Text>
-      {searching ? <ActivityIndicator size={20} /> : <Button icon="refresh" onPress={() => void search()} disabled={!native || busy}>Search again</Button>}
+      {searching ? <ActivityIndicator size={20} /> : <Button icon="refresh" textColor={palette.accentFg} contentStyle={styles.searchAction} onPress={() => void search()} disabled={!native || busy}>Search again</Button>}
     </View>
     <View style={styles.devices}>
-      {devices.map((device) => <List.Item key={device.host} title={device.name} description={savedHosts.has(device.host) ? `${device.host} · Paired` : device.host} accessibilityLabel={`${device.name}, ${device.host}${savedHosts.has(device.host) ? ', paired' : ''}`} titleNumberOfLines={2} left={(props) => <List.Icon {...props} icon="television" />} right={(props) => <List.Icon {...props} icon="chevron-right" />} onPress={() => connect(device)} disabled={busy} style={styles.device} />)}
+      {devices.map((device) => <List.Item key={device.host} title={device.name} description={savedHosts.has(device.host) ? `${device.host} · Paired` : device.host} accessibilityLabel={`${device.name}, ${device.host}${savedHosts.has(device.host) ? ', paired' : ''}`} titleNumberOfLines={2} titleStyle={[fonts.titleMedium, styles.deviceTitle]} descriptionStyle={[fonts.bodyMedium, styles.secondary]} left={(props) => <List.Icon {...props} icon="television" />} right={(props) => <List.Icon {...props} icon="chevron-right" />} onPress={() => connect(device)} disabled={busy} style={styles.device} />)}
       {searching ? <Text variant="bodyMedium" style={[styles.empty, compact && { paddingVertical: 12 }]}>Looking for LG webOS TVs…</Text> : null}
       {!searching && !devices.length && searched ? <Text variant="bodyMedium" style={[styles.empty, compact && { paddingVertical: 12 }]}>{searchError || 'No TVs found. Turn your TV on, check Wi-Fi, or enter its IP address below.'}</Text> : null}
     </View>
-    <Text variant="titleMedium" style={[styles.manualHeading, compact && { marginTop: 16, marginBottom: 8 }]} accessibilityRole="header">Connect by IP address</Text>
-    <TextInput label="TV IP address" placeholder="192.168.0.1" mode="outlined" value={host} onChangeText={(value) => { setHost(value); setInvalid(false); }} keyboardType="decimal-pad" autoCorrect={false} autoCapitalize="none" returnKeyType="go" onSubmitEditing={() => connect()} error={invalid} disabled={!native || busy} />
-    <HelperText type={invalid ? 'error' : 'info'}>{invalid ? 'Enter a valid IP address, such as 192.168.0.1.' : 'Find it in your TV’s Settings → Network.'}</HelperText>
-    <Button mode="contained" icon="lan-connect" onPress={() => connect()} disabled={!native || busy || !host.trim()} contentStyle={styles.connect}>Connect</Button>
+    <View style={[styles.manual, compact && styles.compactManual]}>
+      <Text variant="titleMedium" accessibilityRole="header">Connect by IP address</Text>
+      <Text variant="bodyMedium" style={styles.secondary}>Find it in your TV’s Settings → Network.</Text>
+      <TextInput label="TV IP address" placeholder="192.168.0.1" mode="outlined" value={host} onChangeText={(value) => { setHost(value); setInvalid(false); }} keyboardType="decimal-pad" autoCorrect={false} autoCapitalize="none" returnKeyType="go" onSubmitEditing={() => connect()} error={invalid} disabled={!native || busy} style={styles.address} />
+      {invalid ? <HelperText type="error" padding="none">Enter a valid IP address, such as 192.168.0.1.</HelperText> : null}
+      <Button mode="contained" icon="lan-connect" onPress={() => connect()} disabled={!native || busy || !host.trim()} contentStyle={styles.connect}>Connect</Button>
+    </View>
   </ScrollFrame></KeyboardAvoidingView>;
 }
 const styles = StyleSheet.create({
@@ -105,7 +109,9 @@ const styles = StyleSheet.create({
   intro: { color: palette.muted, marginTop: 12, marginBottom: 24 }, notice: { borderRadius: radius.md, padding: 20, marginBottom: 20, gap: 12 },
   secondary: { color: palette.muted }, busyHeading: { flexDirection: 'row', alignItems: 'center', gap: 12, flexWrap: 'wrap' },
   sectionHeading: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', minHeight: 48, columnGap: 12 },
-  devices: { gap: 8 }, device: { backgroundColor: palette.surface, borderRadius: radius.md, minHeight: 80 }, empty: { color: palette.muted, paddingVertical: 20, lineHeight: 22 },
+  devices: { gap: 8 }, device: { backgroundColor: palette.surface, borderRadius: radius.md, minHeight: 72, paddingVertical: 8, justifyContent: 'center' }, deviceTitle: { color: palette.text }, empty: { color: palette.muted, paddingVertical: 20, lineHeight: 22 },
   savedHeading: { minHeight: 48, textAlignVertical: 'center', marginBottom: 8 },
-  manualHeading: { marginTop: 32, marginBottom: 16 }, connect: { minHeight: 52 },
+  searchAction: { minHeight: 48 },
+  manual: { marginTop: 32, paddingTop: 24, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: palette.raised, gap: 12 },
+  compactManual: { marginTop: 24, paddingTop: 20 }, address: { backgroundColor: palette.surface }, connect: { minHeight: 52 },
 });

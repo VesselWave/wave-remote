@@ -1,12 +1,12 @@
 import { memo, useEffect, useRef, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, FlatList, Image, LayoutAnimation, StyleSheet, useWindowDimensions, View } from 'react-native';
-import { ActivityIndicator, Button, Icon, IconButton, Searchbar, Switch, Text, TouchableRipple } from 'react-native-paper';
+import { ActivityIndicator, Button, Icon, IconButton, Searchbar, Text, TouchableRipple } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
 import { native, type TvApp } from '../../modules/wave-remote';
 import { commands, errorMessage } from '../lib/remote';
 import { request } from '../lib/transport';
 import { palette, radius } from '../theme';
-import { Sheet } from './Sheet';
+import { Sheet, SHEET_END_PADDING } from './Sheet';
 import { useScrollCues } from './ScrollFrame';
 
 type App = { id: string; title: string; icon?: string; tile?: string; color?: string; params?: Record<string, unknown> };
@@ -84,7 +84,7 @@ export function AppsSheet({ onClose, report, ready, favorites: saved, hidden: sa
   const generation = useRef(0);
   const listRef = useRef<FlatList<App>>(null);
   const activeAction = useRef(false);
-  const scroll = useScrollCues();
+  const scroll = useScrollCues(SHEET_END_PADDING);
   const { width, fontScale } = useWindowDimensions();
 
   useEffect(() => { void AccessibilityInfo.isReduceMotionEnabled().then(setReducedMotion); }, []);
@@ -131,7 +131,6 @@ export function AppsSheet({ onClose, report, ready, favorites: saved, hidden: sa
   const toggleHidden = (app: App) => {
     void Haptics.selectionAsync();
     const next = hidden.includes(app.id) ? hidden.filter((id) => id !== app.id) : [...hidden, app.id];
-    animate();
     setHidden(next);
     setFavorites(favorites.filter((id) => !next.includes(id)));
     void native?.setHidden(next).catch((issue: unknown) => { report(errorMessage(issue)); setHidden(savedHidden); setFavorites(saved); });
@@ -211,7 +210,7 @@ export function AppsSheet({ onClose, report, ready, favorites: saved, hidden: sa
   </View>;
   const toolbar = !loaded || apps.length === 0 ? null
     : mode === 'arrange' ? modeBar('Edit favourites', 'Use the arrows to reorder. Tap a star to remove.')
-    : mode === 'hide' ? modeBar('Hide apps', hiddenCount > 0 ? `${hiddenCount} hidden. Switch an app off to hide it.` : 'Switch an app off to hide it.')
+    : mode === 'hide' ? modeBar('Hide apps', hiddenCount > 0 ? `${hiddenCount} hidden. Tap an eye to show or hide an app.` : 'Tap an eye to show or hide an app.')
     : <Searchbar placeholder="Search apps" accessibilityLabel="Search TV apps" value={query} onChangeText={setQuery} style={styles.search} />;
 
   const listHeader = !loaded || apps.length === 0 || mode !== 'browse' ? <View style={styles.modeGap} /> : <>
@@ -244,15 +243,15 @@ export function AppsSheet({ onClose, report, ready, favorites: saved, hidden: sa
       </View>
     </View>;
     const isHidden = hidden.includes(app.id);
-    if (mode === 'hide') return <TouchableRipple onPress={() => toggleHidden(app)} style={styles.row} accessibilityRole="switch"
-      accessibilityState={{ checked: !isHidden }} accessibilityLabel={`Show ${app.title}`}>
+    if (mode === 'hide') return <View style={styles.row}>
       <View style={styles.rowBody}>
-        <View style={isHidden && styles.dimmed}><AppIcon app={app} size={40} /></View>
-        <Text variant="bodyLarge" numberOfLines={2} style={[styles.rowTitle, isHidden && styles.dimmed]}>{app.title}</Text>
-        <View style={styles.trailing} importantForAccessibility="no-hide-descendants">
-          <Switch value={!isHidden} onValueChange={() => toggleHidden(app)} /></View>
+        <AppIcon app={app} size={40} />
+        <Text variant="bodyLarge" numberOfLines={2} style={[styles.rowTitle, isHidden && styles.hiddenTitle]}>{app.title}</Text>
+        <IconButton icon={isHidden ? 'eye-off-outline' : 'eye-outline'} iconColor={isHidden ? palette.muted : palette.accentFg}
+          onPress={() => toggleHidden(app)} style={styles.action}
+          accessibilityLabel={`${isHidden ? 'Show' : 'Hide'} ${app.title}`} accessibilityValue={{ text: isHidden ? 'Hidden' : 'Visible' }} />
       </View>
-    </TouchableRipple>;
+    </View>;
     const starred = favorites.includes(app.id);
     return <TouchableRipple onPress={() => void launch(app)} disabled={!!acting || !ready} style={styles.row}
       accessibilityRole="button" accessibilityLabel={`Open ${app.title}${app.id === current ? ', on TV now' : ''}`}
@@ -273,8 +272,8 @@ export function AppsSheet({ onClose, report, ready, favorites: saved, hidden: sa
   return <Sheet open onClose={onClose} onBack={mode === 'browse' ? onClose : () => enter('browse')} title="Apps" subtitle="Open an app on your TV.">
     {(heading) => <View style={[styles.scroll, mode !== 'browse' && { minHeight: browseHeight }]}
       onLayout={(event) => { if (mode === 'browse') setBrowseHeight(event.nativeEvent.layout.height); }}>{heading}{toolbar}
-      <View {...scroll.frameProps} style={styles.scroll}><FlatList ref={listRef} {...scroll.props} style={styles.scroll} data={data}
-        keyExtractor={(app) => app.id} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.list}
+      <View {...scroll.frameProps} style={styles.scroll}><FlatList contentContainerStyle={scroll.contentStyle} ref={listRef} {...scroll.props} style={styles.scroll} data={data}
+        keyExtractor={(app) => app.id} keyboardShouldPersistTaps="handled"
         extraData={[favorites, hidden, mode, acting, current, pinned.length]}
         ListHeaderComponent={listHeader} ListFooterComponent={footer} renderItem={renderItem}
         ListEmptyComponent={!ready ? <View style={styles.empty}><Text>Your TV disconnected. Close this menu and reconnect.</Text></View>
@@ -290,17 +289,17 @@ export function AppsSheet({ onClose, report, ready, favorites: saved, hidden: sa
 }
 
 const styles = StyleSheet.create({
-  scroll: { flexShrink: 1 }, list: { paddingBottom: 16 },
+  scroll: { flexShrink: 1 },
   search: { marginHorizontal: 24, marginBottom: 8, backgroundColor: palette.raised },
   // Same slot and height as the search field, so entering or leaving a mode doesn't shift the list.
-  modeBar: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, marginHorizontal: 24, marginBottom: 8, paddingLeft: 20, paddingRight: 8, paddingVertical: 8, borderRadius: 28, backgroundColor: palette.accentSoft },
+  modeBar: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, marginHorizontal: 24, marginBottom: 8, paddingVertical: 8 },
   modeText: { flex: 1, gap: 2 }, done: { minWidth: 88 }, modeGap: { height: 8 },
   section: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 4 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 48 },
   sectionTitle: { color: palette.accentFg, flexShrink: 1 },
-  dimmed: { opacity: 0.45 },
+  hiddenTitle: { color: palette.muted, textDecorationLine: 'line-through' },
   hiddenIcon: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  // Every row ends in the same 48-wide slot (star, spinner, switch or chevron), so they line up.
+  // Every row ends in the same 48-wide slot (star, spinner, eye or chevron), so they line up.
   trailing: { minWidth: 48, height: 48, alignItems: 'center', justifyContent: 'center' },
   action: { margin: 0, width: 48, height: 48 },
   rowActions: { flexDirection: 'row', alignItems: 'center' },

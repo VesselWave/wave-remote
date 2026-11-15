@@ -38,4 +38,6 @@ export function KeyboardSheet({ open, ready, onClose }: { open: boolean; ready: 
     </View>
   </Sheet>;
 }
-const styles = StyleSheet.create({ content: { paddingHorizontal: 24, gap: 12 }, input: { textAlignVertical: 'center', paddingTop: 12, paddingBottom: 12 }, actions: { flexDirection: 'row', gap: 12, justifyContent: 'flex-end', flexWrap: 'wrap' }, button: { minHeight: 48 } });
+// Paper reserves 8dp above the native input; the outline starts at 6dp.
+// A 2dp padding difference centers the line within the visible outline.
+const styles = StyleSheet.create({ content: { paddingHorizontal: 24, gap: 12 }, input: { textAlignVertical: 'center', includeFontPadding: false, paddingTop: 10, paddingBottom: 12 }, actions: { flexDirection: 'row', gap: 12, justifyContent: 'flex-end', flexWrap: 'wrap' }, button: { minHeight: 48 } });
