@@ -1,0 +1,4 @@
+- Pin favourite TV apps, reorder them and hide apps per TV.
+- Search the launcher and see the app currently open on the TV.
+- Show TV app icons through the pinned connection.
+- Keep keyboard text vertically centred.
