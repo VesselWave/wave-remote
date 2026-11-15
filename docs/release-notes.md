@@ -1,4 +1,4 @@
-Wave Remote 0.10
+Wave Remote 0.7
 
 - New app launcher: pin favourite apps per TV with a star, reorder or remove them under Edit (or a long press on a tile), and search the full list. The title and search stay put while the list scrolls, and the app open on the TV is labelled "On TV".
 - Shows the TV's own app icons. The TV serves them over its self-signed connection, so they are fetched through the TV's pinned certificate and cached on the phone.
@@ -9,6 +9,6 @@ Wave Remote 0.10
 
 Installs over 0.6.8 and keeps TV pairings and settings. Uses the existing production signing key.
 
-Check the download with `sha256sum --check wave-remote-v0.10.apk.sha256`. The release also includes OpenPGP-signed SHA256SUMS, source and provenance.
+Check the download with `sha256sum --check wave-remote-v0.7.apk.sha256`. The release also includes OpenPGP-signed SHA256SUMS, source and provenance.
 
 Setup: https://github.com/VesselWave/wave-remote#readme. Not affiliated with LG.

@@ -2,8 +2,6 @@
 
 ## Unreleased
 
-## 0.10 — 2026-11-14
-
 - New app launcher: pin favourite apps per TV with a star, reorder or remove them under Edit (or a long press on a tile), and search the full list. The title and search stay put while the list scrolls, and the app open on the TV is labelled "On TV".
 - Shows the TV's own app icons. The TV serves them over its self-signed connection, so they are fetched through the TV's pinned certificate and cached on the phone.
 - Marks the app currently open on the TV as "On TV now".
