@@ -147,66 +147,6 @@ public final class ProtocolTest {
 
         // 7. The reconnect probe sees the mock's TLS port and a closed one.
         check("probe finds a listening TV", Net.reachable(host, Tv.SECURE_PORT, 1500));
-        check("probe reports a closed port", !Net.reachable("127.0.0.2", Tv.SECURE_PORT, 1500));
-
-        // 8. A refused 3001 falls back to plain 3000 only for a TV that never pinned a certificate.
-        String legacyHost = "127.0.0.2";
-        try (java.net.ServerSocket legacy = new java.net.ServerSocket(Tv.LEGACY_PORT, 1, java.net.InetAddress.getByName(legacyHost))) {
-            legacy.setSoTimeout(3000);
-            prefs.setTv(legacyHost, "Legacy");
-            prefs.setClientKey("legacy-key");
-            prefs.setCertPin("11".repeat(32));
-            main(tv::connect);
-            expect("state:CONNECTING");
-            ev = events.poll(5, TimeUnit.SECONDS);
-            boolean refused = ev != null && ev.startsWith("state:DISCONNECTED");
-            try (java.net.Socket s = legacy.accept()) {
-                refused = false;
-            } catch (java.net.SocketTimeoutException e) {
-                // Nothing reached port 3000.
-            }
-            check("pinned TV never downgrades to plain ws (" + ev + ")", refused);
-
-            prefs.setCertPin(null);
-            main(tv::connect);
-            expect("state:CONNECTING");
-            boolean fellBack;
-            try (java.net.Socket s = legacy.accept()) {
-                fellBack = true;
-            } catch (java.net.SocketTimeoutException e) {
-                fellBack = false;
-            }
-            check("unpinned TV still falls back to plain ws://:3000", fellBack);
-            main(tv::disconnect);
-        }
-
-        // 9. A TV that accepts the connection but never answers gives up instead of "Connecting…" forever.
-        try (java.net.ServerSocket silent = new java.net.ServerSocket(Tv.SECURE_PORT, 1, java.net.InetAddress.getByName("127.0.0.3"))) {
-            prefs.setTv("127.0.0.3", "Silent");
-            long started = System.currentTimeMillis();
-            main(tv::connect);
-            expect("state:CONNECTING");
-            ev = events.poll(WebSocket.HANDSHAKE_TIMEOUT_MS + 3000, TimeUnit.MILLISECONDS);
-            check("silent TV times out (" + ev + ")", ev != null && ev.startsWith("state:DISCONNECTED")
-                    && ev.contains("didn't respond") && System.currentTimeMillis() - started >= WebSocket.HANDSHAKE_TIMEOUT_MS - 500);
-        }
-
-        // 10. A TV that closes the connection mid-handshake isn't reported as a changed certificate.
-        try (java.net.ServerSocket closing = new java.net.ServerSocket(Tv.SECURE_PORT, 1, java.net.InetAddress.getByName("127.0.0.4"))) {
-            prefs.setTv("127.0.0.4", "Booting");
-            prefs.setClientKey("booting-key");
-            prefs.setCertPin("22".repeat(32));
-            main(tv::connect);
-            expect("state:CONNECTING");
-            closing.setSoTimeout(3000);
-            try (java.net.Socket s = closing.accept()) {
-                s.getInputStream().read(); // The ClientHello starts; hang up on it.
-            }
-            ev = events.poll(5, TimeUnit.SECONDS);
-            check("handshake dropped by the TV is not a certificate change (" + ev + ")",
-                    ev != null && ev.equals("state:DISCONNECTED:The TV closed the connection. Try again."));
-        }
-
         System.out.println(failures == 0 ? "ALL PASSED" : failures + " FAILED");
         System.exit(failures == 0 ? 0 : 1);
     }

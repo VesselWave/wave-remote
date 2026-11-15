@@ -87,6 +87,10 @@ python3 tools/release.py --state .release-state/remote-0.6.9.json --apply --back
 python3 tools/release.py --state .release-state/remote-0.6.9.json --status
 ```
 
+Without `--state`, the command selects an unfinished matching plan or creates a
+version-specific state for the next patch. It does not reuse a completed release.
+`--status` without `--state` reads the newest background job report.
+
 Specify `--version X.Y.Z` while planning to override the next patch. The state
 filename is your choice; always use a fresh file for a later release. Reuse the
 same file to resume an interruption. State pins the source commit and generated
@@ -164,7 +168,13 @@ python3 tools/configure-release-signing.py --apply
 This reads the existing private store and keychain, validates the fingerprint,
 and sends only the OpenPGP secrets to Remote's `release` environment through
 stdin. It never changes the APK signing key or prints secret values. Without
-`--apply` it only validates access. Agent sessions may be denied keychain access.
+`--apply` it only validates access. Agent sessions may be denied keychain access. If provisioning is necessary for
+an authorized release and keychain access fails, use the secure `request_secret`
+field for the existing OpenPGP passphrase (never a chat question or plaintext
+argument), then pass its temporary file to
+`configure-release-signing.py --apply --passphrase-file PATH`. Delete the
+one-use file after provisioning. Once CI secrets exist, future releases do not
+require the local keychain or passphrase.
 
 The preflight checks secret names; CI verifies that the actual signing material
 matches the pinned identities. Missing or wrong keys fail closed.

@@ -40,3 +40,8 @@ with tempfile.TemporaryDirectory(prefix='waveremote-test-') as directory:
             except subprocess.TimeoutExpired:
                 mock.kill()
                 mock.wait()
+
+# Failed-connect fixtures reuse localhost after the mock has released its ports.
+# macOS does not bind arbitrary 127.0.0.x addresses without privileged aliases.
+subprocess.run(['java', '-cp', classpath, 'me.vwave.remote.ConnectionFailureTest'],
+               check=True, timeout=60)

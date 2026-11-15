@@ -83,14 +83,42 @@ def release_files(target):
                   f'fastlane/metadata/android/en-US/changelogs/{code}.txt': summary + '\n'}
 
 
+def next_version(current):
+    require(re.fullmatch(r'\d+\.\d+(?:\.\d+)?', current), 'Version must be X.Y or X.Y.Z')
+    parts = current.split('.')
+    parts += ['0'] * (3 - len(parts))
+    return '.'.join(parts[:2] + [str(int(parts[2]) + 1)])
+
+
+def default_state(target=None, status=False):
+    current = (ROOT / 'VERSION').read_text().strip()
+    candidates = []
+    for path in (ROOT / '.release-state').glob('*.json'):
+        if path.name.endswith('.job.json'):
+            continue
+        state = json.loads(path.read_text())
+        if state.get('schema') != 1 or state.get('root') != str(ROOT) or (state.get('complete') and not status):
+            continue
+        if target and state['version'] != target:
+            continue
+        if status and path.with_suffix('.job.json').exists():
+            candidates.append(path)
+            continue
+        if not status and (state['version'] == current or state.get('base') == git('rev-parse', 'HEAD')):
+            candidates.append(path)
+    if status:
+        require(candidates, 'No background job report; use --state for the release you started')
+        return max(candidates, key=lambda path: path.with_suffix('.job.json').stat().st_mtime)
+    require(len(candidates) <= 1, 'Multiple unfinished plans; select --state explicitly')
+    return candidates[0] if candidates else ROOT / '.release-state' / f'remote-{target or next_version(current)}.json'
+
+
 def plan(args):
     require(not git('status', '--porcelain'), 'Commit or preserve working changes before planning')
     require(git('branch', '--show-current') == 'main', 'Plan on main')
     git('fetch', 'origin', 'main', '--tags')
     require(git('rev-parse', 'HEAD') == git('rev-parse', 'origin/main'), 'Synchronize main with origin/main')
-    current = (ROOT / 'VERSION').read_text().strip().split('.')
-    current += ['0'] * (3 - len(current))
-    target = args.version or '.'.join(current[:2] + [str(int(current[2]) + 1)])
+    target = args.version or next_version((ROOT / 'VERSION').read_text().strip())
     require(not git('tag', '--list', f'v{target}'), 'Target tag already exists')
     code, files = release_files(target)
     return {'schema': 1, 'root': str(ROOT), 'version': target, 'code': code,
@@ -272,7 +300,7 @@ def worker(args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
-    parser.add_argument('--state', type=Path, default=ROOT / '.release-state/remote.json')
+    parser.add_argument('--state', type=Path, help='resume file; defaults to an unfinished plan or the next version')
     parser.add_argument('--version')
     parser.add_argument('--apply', action='store_true')
     parser.add_argument('--background', action='store_true')
@@ -280,7 +308,7 @@ def main():
     parser.add_argument('--timeout', type=int, default=5400)
     parser.add_argument('--worker-lock', type=int, help=argparse.SUPPRESS)
     args = parser.parse_args()
-    args.state = args.state.resolve()
+    args.state = (args.state or default_state(args.version, args.status)).resolve()
     if args.status:
         value = json.loads(args.state.with_suffix('.job.json').read_text())
         if value['status'] in ('running', 'waiting'):

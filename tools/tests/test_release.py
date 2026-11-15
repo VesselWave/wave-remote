@@ -118,6 +118,25 @@ class CoordinatorTests(unittest.TestCase):
                 release.publish_source(state, lambda: None)
             self.assertEqual(self.command('git', 'rev-parse', 'v0.6.9'), state['base'])
 
+    def test_default_state_uses_next_version_and_resumes_unfinished_plan(self):
+        expected = self.root / '.release-state/remote-0.6.9.json'
+        self.assertEqual(release.default_state(), expected)
+        state = {'schema': 1, 'root': str(self.root), **self.state()}
+        release.save(expected, state)
+        with patch.object(release, 'git', side_effect=self.command_git):
+            self.assertEqual(release.default_state(), expected)
+        (self.root / 'VERSION').write_text('0.6.9\n')
+        self.assertEqual(release.default_state(), expected)
+        state['complete'] = True
+        release.save(expected, state)
+        self.assertEqual(release.default_state(), self.root / '.release-state/remote-0.6.10.json')
+        # Status continues to find the completed job rather than guessing the next version.
+        release.save(expected.with_suffix('.job.json'), {'status': 'complete'})
+        self.assertEqual(release.default_state(status=True), expected)
+
+    def command_git(self, *args):
+        return self.command('git', *args)
+
     def test_completed_state_does_not_touch_services(self):
         with patch.object(release, 'run', side_effect=AssertionError('must not run')):
             release.apply({'complete': True}, self.root / 'state.json')
