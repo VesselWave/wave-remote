@@ -1,14 +1,10 @@
-Wave Remote 0.7
+Wave Remote 0.7.1
 
-- New app launcher: pin favourite apps per TV with a star, reorder or remove them under Edit (or a long press on a tile), and search the full list. The title and search stay put while the list scrolls, and the app open on the TV is labelled "On TV".
-- Shows the TV's own app icons. The TV serves them over its self-signed connection, so they are fetched through the TV's pinned certificate and cached on the phone.
-- Marks the app currently open on the TV as "On TV now".
-- Hide apps you never use, per TV: tap Hide apps and switch them off. Hidden apps leave the list, search and favourites; a "hidden apps" row at the bottom brings them back. While editing, Done stays at the top and Back leaves the mode instead of closing the launcher.
-- Debug builds are named Wave Remote Preview (`me.vwave.remote.preview`) and install beside the release.
-- The keyboard field keeps its text vertically centred.
+- Fixes reconnecting after a router restart changes the TV's IP address. The remote finds the paired TV at its new address without losing its pairing, name, favourites or wake settings.
+- Distinguishes LG TVs that share a factory certificate, so another TV receiving the old IP cannot keep the remote stuck on the wrong device. Startup, reconnect and wake retries use the same device discovery.
 
-Installs over 0.6.8 and keeps TV pairings and settings. Uses the existing production signing key.
+Installs over 0.7 and keeps TV pairings and settings. Uses the existing production signing key.
 
-Check the download with `sha256sum --check wave-remote-v0.7.apk.sha256`. The release also includes OpenPGP-signed SHA256SUMS, source and provenance.
+Check the download with `sha256sum --check wave-remote-v0.7.1.apk.sha256`. The release also includes OpenPGP-signed SHA256SUMS, source and provenance.
 
 Setup: https://github.com/VesselWave/wave-remote#readme. Not affiliated with LG.

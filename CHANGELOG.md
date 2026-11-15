@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.7.1 — 2026-11-15
+
 - Fixes reconnecting after a router restart changes the TV's IP address. The remote finds the paired TV at its new address without losing its pairing, name, favourites or wake settings.
 - Distinguishes LG TVs that share a factory certificate, so another TV receiving the old IP cannot keep the remote stuck on the wrong device. Startup, reconnect and wake retries use the same device discovery.
 
