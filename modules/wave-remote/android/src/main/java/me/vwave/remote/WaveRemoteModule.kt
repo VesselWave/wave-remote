@@ -38,7 +38,7 @@ class WaveRemoteModule : Module() {
   private val confirm = Runnable {
     if (quietAttempt && tv.isReady) { quietAttempt = false; onState(Tv.State.READY, null) }
   }
-  private val reconnect = Runnable { if (foreground && wakeUntil > System.currentTimeMillis()) tv.connect() }
+  private val reconnect = Runnable { if (foreground && wakeUntil > System.currentTimeMillis()) probe() }
   /** Reconnects on its own once a paired TV is back, e.g. after it was turned on with its own remote. */
   private val watch = Runnable { probe() }
   private val wakeTimeout = Runnable {
@@ -117,6 +117,7 @@ class WaveRemoteModule : Module() {
       stopHeld()
       volume = -1
       muted = false
+      tv.disconnect()
       prefs.setTv(host, name)
       if (btMac != null && btMac.matches(Regex("(?i)([0-9a-f]{2}:){5}[0-9a-f]{2}"))) prefs.setBtMac(btMac)
       userConnect()
@@ -279,8 +280,8 @@ class WaveRemoteModule : Module() {
           quietAttempt = false
           main.removeCallbacks(confirm)
           // Didn't hold: the TV is in standby or still shutting down. Keep showing what was there
-          // and back off, unless the attempt found something only the user can fix.
-          if (info?.contains("certificate") != true) { failedAttempts++; watchSoon(); return }
+          // and back off before verifying its address again.
+          failedAttempts++; watchSoon(); return
         }
       }
     }
@@ -302,8 +303,8 @@ class WaveRemoteModule : Module() {
       main.postDelayed(reconnect, 2000)
     } else if (state == Tv.State.DISCONNECTED) {
       if (info == "TV is off") offAt = android.os.SystemClock.uptimeMillis()
-      // A changed certificate needs the user; retrying can't fix it.
-      if (info?.contains("certificate") != true) watchSoon()
+      // The old IP may now belong to another TV. Rediscover using our saved certificate.
+      watchSoon()
     }
     emit()
   }
@@ -324,19 +325,25 @@ class WaveRemoteModule : Module() {
   }
 
   private fun probe() {
-    if (!foreground || paused || probing || !::tv.isInitialized || tv.state() != Tv.State.DISCONNECTED || wakeUntil != 0L) return
+    if (!foreground || paused || probing || !::tv.isInitialized || tv.state() != Tv.State.DISCONNECTED) return
     val host = prefs.host() ?: return
     if (prefs.clientKey() == null) return // Pairing needs the user at the TV; don't start it unasked.
-    val legacy = prefs.certPin() == null
+    val pin = prefs.certPin()
     val token = generation
     probing = true
     network.execute {
-      val up = Net.reachable(host, Tv.SECURE_PORT, PROBE_TIMEOUT_MS) || (legacy && Net.reachable(host, Tv.LEGACY_PORT, PROBE_TIMEOUT_MS))
+      val resolved = Net.findPaired(requireNotNull(appContext.reactContext), host, pin, PROBE_TIMEOUT_MS)
       main.post {
         probing = false
-        if (token != generation || host != prefs.host() || !foreground) return@post
-        if (tv.state() != Tv.State.DISCONNECTED || wakeUntil != 0L) return@post
-        if (up) { quietAttempt = true; tv.connect() } else watchSoon()
+        if (token != generation || host != prefs.host() || !foreground || paused) return@post
+        if (tv.state() != Tv.State.DISCONNECTED) return@post
+        if (resolved != null) {
+          if (resolved != host) { prefs.relocate(resolved); emit() }
+          quietAttempt = wakeUntil == 0L
+          tv.connect()
+        } else if (wakeUntil > System.currentTimeMillis()) {
+          main.postDelayed(reconnect, 2000)
+        } else watchSoon()
       }
     }
   }

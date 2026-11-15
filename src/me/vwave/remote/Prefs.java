@@ -117,6 +117,43 @@ final class Prefs {
         e.putString("host", host).apply();
     }
 
+    /** Move the selected TV's entire record after its certificate was verified at a new IP.
+     * If DHCP swapped two saved TVs, retain the displaced record at the old IP so it too can recover.
+     * Snapshot both records before editing, and publish the move in one preferences transaction.
+     */
+    void relocate(String newHost) {
+        String oldHost = host();
+        if (oldHost == null || oldHost.equals(newHost)) return;
+        List<String> hosts = new ArrayList<>(hosts());
+        boolean occupied = hosts.contains(newHost);
+        java.util.Map<String, String> source = record(oldHost);
+        java.util.Map<String, String> destination = record(newHost);
+        SharedPreferences.Editor e = sp.edit();
+        for (String f : TV_FIELDS) {
+            e.remove(field(oldHost, f));
+            e.remove(field(newHost, f));
+            write(e, newHost, f, source.get(f));
+            if (occupied) write(e, oldHost, f, destination.get(f));
+        }
+        if (!occupied) hosts.set(hosts.indexOf(oldHost), newHost);
+        e.putString("hosts", android.text.TextUtils.join(",", hosts));
+        e.putString("host", newHost).apply();
+    }
+
+    private java.util.Map<String, String> record(String host) {
+        java.util.Map<String, String> values = new java.util.HashMap<>();
+        for (String f : TV_FIELDS) {
+            values.put(f, f.equals("wakeRegistered") ? String.valueOf(sp.getBoolean(field(host, f), false))
+                    : sp.getString(field(host, f), null));
+        }
+        return values;
+    }
+
+    private static void write(SharedPreferences.Editor e, String host, String f, String value) {
+        if (f.equals("wakeRegistered")) e.putBoolean(field(host, f), Boolean.parseBoolean(value));
+        else if (value != null) e.putString(field(host, f), value);
+    }
+
     void setClientKey(String key) { put("key", key); }
     void setCertPin(String pin) { put("pin", pin); }
     void setMacs(List<String> macs) { put("macs", android.text.TextUtils.join(",", macs)); }

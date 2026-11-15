@@ -12,6 +12,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
+import java.net.MulticastSocket;
+import java.net.Inet4Address;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.URL;
@@ -101,7 +103,7 @@ final class Net {
         WifiManager wifi = (WifiManager) ctx.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         WifiManager.MulticastLock lock = wifi.createMulticastLock("waveremote-ssdp");
         lock.acquire();
-        try (DatagramSocket socket = new DatagramSocket()) {
+        try (MulticastSocket socket = new MulticastSocket(0)) {
             byte[] search = ("M-SEARCH * HTTP/1.1\r\n"
                     + "HOST: 239.255.255.250:1900\r\n"
                     + "MAN: \"ssdp:discover\"\r\n"
@@ -109,8 +111,23 @@ final class Net {
                     + "ST: urn:lge-com:service:webos-second-screen:1\r\n\r\n").getBytes(StandardCharsets.US_ASCII);
             InetAddress group = InetAddress.getByName("239.255.255.250");
             for (int i = 0; i < 2; i++) {
-                socket.send(new DatagramPacket(search, search.length, group, 1900));
-                if (host != null) socket.send(new DatagramPacket(search, search.length, InetAddress.getByName(host), 1900));
+                // VPNs and virtual adapters can own the default route. Search each LAN explicitly.
+                for (NetworkInterface nif : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+                    if (!nif.isUp() || nif.isLoopback() || !nif.supportsMulticast()) continue;
+                    boolean ipv4 = false;
+                    for (InetAddress address : Collections.list(nif.getInetAddresses())) {
+                        if (address instanceof Inet4Address) ipv4 = true;
+                    }
+                    if (!ipv4) continue;
+                    try {
+                        socket.setNetworkInterface(nif);
+                        socket.send(new DatagramPacket(search, search.length, group, 1900));
+                    } catch (Exception ignored) { /* One unavailable interface must not stop the others. */ }
+                }
+                if (host != null) {
+                    try { socket.send(new DatagramPacket(search, search.length, InetAddress.getByName(host), 1900)); }
+                    catch (Exception ignored) {}
+                }
             }
             long end = System.currentTimeMillis() + timeoutMs;
             byte[] buf = new byte[2048];
@@ -142,6 +159,21 @@ final class Net {
             found.put(e.getKey(), new Found(name != null && !name.isEmpty() ? name : "LG TV", bt));
         }
         return found;
+    }
+
+    /**
+     * Resolve a paired TLS TV after DHCP changes, including when another TV owns its old address.
+     * Discovery is only a hint: the saved certificate must match before credentials can be reused.
+     * Old installs already have this pin, so recovery needs no identity migration or new pairing.
+     */
+    static String findPaired(Context ctx, String host, String pin, int timeoutMs) {
+        if (pin == null) return reachable(host, Tv.SECURE_PORT, timeoutMs)
+                || reachable(host, Tv.LEGACY_PORT, timeoutMs) ? host : null;
+        if (Tv.matchesPin(host, pin, timeoutMs)) return host;
+        for (String candidate : discover(ctx, 2500).keySet()) {
+            if (!candidate.equals(host) && Tv.matchesPin(candidate, pin, timeoutMs)) return candidate;
+        }
+        return null;
     }
 
     private static String tag(String xml, String name) {

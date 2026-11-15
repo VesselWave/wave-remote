@@ -498,6 +498,20 @@ final class Tv {
         }
     }
 
+    /** Identity-only probe: never sends a pairing key or opens an SSAP session. */
+    static boolean matchesPin(String host, String pin, int timeoutMs) {
+        if (pin == null) return false;
+        try (javax.net.ssl.SSLSocket socket = (javax.net.ssl.SSLSocket)
+                tlsFactory(new PinningTrust(pin)).createSocket()) {
+            socket.connect(new java.net.InetSocketAddress(host, SECURE_PORT), timeoutMs);
+            socket.setSoTimeout(timeoutMs);
+            socket.startHandshake();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private static SocketFactory tlsFactory(X509TrustManager tm) {
         try {
             SSLContext ctx = SSLContext.getInstance("TLS");

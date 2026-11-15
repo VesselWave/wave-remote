@@ -84,6 +84,27 @@ public final class PrefsTest {
                 && !ctx.store.containsKey("tv.10.0.0.6.favorites") && !ctx.store.containsKey("tv.10.0.0.6.hidden") && prefs.clientKey() == null);
         check("other TV still paired", prefs.paired("10.0.0.5") && ctx.store.containsKey("tv.10.0.0.5.favorites"));
 
+        // DHCP moves and swaps preserve all per-TV data, including Boolean preferences.
+        prefs.setTv("10.0.0.5", null);
+        prefs.setLabel("10.0.0.5", "Lounge");
+        prefs.relocate("10.0.1.20");
+        check("DHCP move keeps pairing and settings", "10.0.1.20".equals(prefs.host())
+                && "key-a".equals(prefs.clientKey()) && "pin-a".equals(prefs.certPin())
+                && "Lounge".equals(prefs.label(prefs.host())) && prefs.wakeRegistered()
+                && prefs.favorites().equals(Arrays.asList("youtube.leanback.v4"))
+                && prefs.hidden().equals(Arrays.asList("com.webos.app.camera"))
+                && prefs.macs().size() == 1 && prefs.btMac() != null);
+        check("old address removed", !prefs.hosts().contains("10.0.0.5") && !ctx.store.containsKey("tv.10.0.0.5.key"));
+        prefs.setTv("10.0.1.21", "Bedroom");
+        prefs.setClientKey("key-b"); prefs.setCertPin("pin-b");
+        prefs.setTv("10.0.1.20", null);
+        prefs.relocate("10.0.1.21");
+        check("swapped address selects original TV", "key-a".equals(prefs.clientKey()) && "pin-a".equals(prefs.certPin()));
+        prefs.setTv("10.0.1.20", null);
+        check("displaced TV pairing survives swap", "key-b".equals(prefs.clientKey()) && "pin-b".equals(prefs.certPin())
+                && "Bedroom".equals(prefs.name()) && !prefs.wakeRegistered());
+        check("move persists across restart", "key-b".equals(new Prefs(ctx).clientKey()) && prefs.hosts().size() == 2);
+
         // Fresh install.
         Prefs empty = new Prefs(new Context());
         check("fresh install has no TVs", empty.host() == null && empty.hosts().isEmpty() && empty.clientKey() == null);

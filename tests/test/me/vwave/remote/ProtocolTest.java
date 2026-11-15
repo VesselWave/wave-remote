@@ -129,6 +129,15 @@ public final class ProtocolTest {
         main(tv::disconnect);
         expect("state:DISCONNECTED");
 
+        // Identity probes authenticate a candidate without sending any SSAP credentials.
+        long beforeProbe = java.nio.file.Files.size(log);
+        check("identity probe accepts saved pin", Tv.matchesPin(host, prefs.certPin(), 1500));
+        check("identity probe rejects a different TV", !Tv.matchesPin(host, "00".repeat(32), 1500));
+        check("identity probe requires a saved pin", !Tv.matchesPin(host, null, 1500));
+        Thread.sleep(200);
+        String probes = new String(java.nio.file.Files.readAllBytes(log)).substring((int) beforeProbe);
+        check("identity probes send no client key", !probes.contains("client-key") && !probes.contains("register"));
+
         // 6. Wrong pinned certificate must be refused.
         prefs.setCertPin("00".repeat(32));
         main(tv::connect);
