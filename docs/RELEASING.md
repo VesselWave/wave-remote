@@ -153,6 +153,19 @@ remain supported). In addition to the four APK secrets above, configure:
 Reuse the existing release key fingerprint
 `414018C0BBB8C0A70A80BF570AA32CCB2C0B3951`. Its public key is pinned in
 `docs/keys/wave-release-signing.asc`. Never generate a replacement implicitly.
+On the maintainer Mac, the existing key can be provisioned without copying any
+secret values by hand:
+
+```sh
+# Run in a logged-in Terminal so macOS can allow login-keychain access:
+python3 tools/configure-release-signing.py --apply
+```
+
+This reads the existing private store and keychain, validates the fingerprint,
+and sends only the OpenPGP secrets to Remote's `release` environment through
+stdin. It never changes the APK signing key or prints secret values. Without
+`--apply` it only validates access. Agent sessions may be denied keychain access.
+
 The preflight checks secret names; CI verifies that the actual signing material
 matches the pinned identities. Missing or wrong keys fail closed.
 

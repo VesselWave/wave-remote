@@ -45,7 +45,7 @@ def main():
         import tempfile
         with tempfile.TemporaryDirectory() as folder:
             apk = Path(folder) / name
-            with urllib.request.urlopen(source, timeout=120) as response, apk.open('wb') as output:
+            with urllib.request.urlopen(urllib.request.Request(source, headers={'User-Agent': 'Wave-Remote-release/1.0'}), timeout=120) as response, apk.open('wb') as output:
                 shutil.copyfileobj(response, output)
             verify.require(verify.sha(apk) == args.sha256, 'Published APK hash changed')
             verify.verify_apk(apk, args.version, args.code)
@@ -74,7 +74,7 @@ def main():
     verify.require(int(app['suggestedVersionCode']) >= args.code, 'Stale F-Droid recommendation')
     verify.require(any(v['versionName'] == args.version and int(v['versionCode']) == args.code and
                        v['hash'] == args.sha256 for v in v1['packages']['me.vwave.remote']), 'Live signed v1 index mismatch')
-    with urllib.request.urlopen('https://f-droid.vwave.me' + route, timeout=120) as response:
+    with urllib.request.urlopen(urllib.request.Request('https://f-droid.vwave.me' + route, headers={'User-Agent': 'Wave-Remote-release/1.0'}), timeout=120) as response:
         verify.require(response.geturl() == 'https://f-droid.vwave.me' + route, 'APK must stream directly from R2')
         import hashlib
         digest = hashlib.sha256()

@@ -151,7 +151,7 @@ def wait_github(state):
 
 def verify_site(state):
     try:
-        with urllib.request.urlopen('https://remote.vwave.me/latest.json', timeout=30) as response:
+        with urllib.request.urlopen(urllib.request.Request('https://remote.vwave.me/latest.json', headers={'User-Agent': 'Wave-Remote-release/1.0'}), timeout=30) as response:
             release = json.load(response)
         if release['version'] != state['version']:
             raise TimeoutError('Site release cache has not caught up')
@@ -162,13 +162,13 @@ def verify_site(state):
             def redirect_request(self, req, fp, code, msg, headers, newurl):
                 return None
         try:
-            urllib.request.build_opener(NoRedirect).open(urllib.request.Request('https://remote.vwave.me/download', method='HEAD'), timeout=30)
+            urllib.request.build_opener(NoRedirect).open(urllib.request.Request('https://remote.vwave.me/download', method='HEAD', headers={'User-Agent': 'Wave-Remote-release/1.0'}), timeout=30)
             raise ValueError('Site download must redirect to verified release')
         except urllib.error.HTTPError as error:
             require(error.code == 302 and error.headers['Location'] == url, 'Site redirect is stale or incorrect')
         import hashlib
         digest = hashlib.sha256()
-        with urllib.request.urlopen(url, timeout=120) as response:
+        with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'Wave-Remote-release/1.0'}), timeout=120) as response:
             require(response.geturl() == url, 'R2 download must stream without redirects')
             for chunk in iter(lambda: response.read(1024 * 1024), b''):
                 digest.update(chunk)
