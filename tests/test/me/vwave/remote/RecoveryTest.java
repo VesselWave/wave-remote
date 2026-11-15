@@ -14,13 +14,13 @@ public final class RecoveryTest {
     public static void main(String[] args) throws Exception {
         Context context = new Context();
         Prefs prefs = new Prefs(context);
-        prefs.setTv(args[0], "Living room");
+        prefs.setTv(args[0], "Mock LG TV");
         prefs.setClientKey("mock-client-key-0001");
         prefs.setCertPin(args[2]);
         prefs.setLabel(args[0], "Lounge");
         prefs.setFavorites(Arrays.asList("netflix"));
         if (Tv.matchesPin(args[0], args[2], 1000)) throw new AssertionError("Old address still has our TV");
-        String found = Net.findPaired(context, prefs.host(), prefs.certPin(), 1000);
+        String found = Net.findPaired(context, prefs.host(), prefs.certPin(), prefs.udn(), prefs.btMac(), prefs.name(), 1000);
         if (!args[1].equals(found)) throw new AssertionError("Expected " + args[1] + ", discovered " + found);
         prefs.relocate(found);
         Prefs restored = new Prefs(context);

@@ -13,7 +13,7 @@ import java.util.List;
  * under "tv.<host>.*"; "host" is the selected one, and the per-TV getters and setters act on it.
  */
 final class Prefs {
-    private static final String[] TV_FIELDS = {"name", "label", "key", "pin", "macs", "btMac", "wakeRegistered", "favorites", "hidden"};
+    private static final String[] TV_FIELDS = {"udn", "name", "label", "key", "pin", "macs", "btMac", "wakeRegistered", "favorites", "hidden"};
     private final SharedPreferences sp;
 
     Prefs(Context ctx) {
@@ -46,6 +46,8 @@ final class Prefs {
     }
 
     String host() { return sp.getString("host", null); }
+    String udn() { return get("udn"); }
+    void setUdn(String udn) { put("udn", udn); }
     String name() { return get("name"); }
     String clientKey() { return get("key"); }
     String certPin() { return get("pin"); }

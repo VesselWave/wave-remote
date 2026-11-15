@@ -13,8 +13,8 @@ public final class WolTest {
         if (!ok) throw new AssertionError("Invalid wake packet");
         java.util.Map<String, Net.Found> tvs = Net.discover(new android.content.Context(), 2500, a.length > 0 ? a[0] : "127.0.0.1");
         boolean found = false;
-        for (Net.Found f : tvs.values()) found |= "Mock LG TV".equals(f.name) && "a8:23:fe:00:00:03".equals(f.btMac);
-        System.out.println((found ? "ok   " : "FAIL ") + "SSDP discovery (name + bluetoothMac) " + tvs.keySet());
+        for (Net.Found f : tvs.values()) found |= "Mock LG TV".equals(f.name) && "a8:23:fe:00:00:03".equals(f.btMac) && "uuid:mock-tv".equals(f.udn);
+        System.out.println((found ? "ok   " : "FAIL ") + "SSDP discovery (name + bluetoothMac + UUID) " + tvs.keySet());
         if (!found) throw new AssertionError("Mock SSDP discovery failed");
 
         // A device description is only fetched from the device that answered, without redirects.

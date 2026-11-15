@@ -36,10 +36,16 @@ final class Net {
         final String name;
         /** From {@code <bluetoothMac>} in the device description; the BLE wake-up target. May be null. */
         final String btMac;
+        final String udn;
 
         Found(String name, String btMac) {
+            this(name, btMac, null);
+        }
+
+        Found(String name, String btMac, String udn) {
             this.name = name;
             this.btMac = btMac;
+            this.udn = udn;
         }
     }
 
@@ -156,24 +162,40 @@ final class Net {
             if (name != null && name.startsWith("[LG] ")) name = name.substring(5);
             String bt = tag(xml, "bluetoothMac");
             if (bt != null && !bt.matches("(?i)([0-9a-f]{2}:){5}[0-9a-f]{2}")) bt = null;
-            found.put(e.getKey(), new Found(name != null && !name.isEmpty() ? name : "LG TV", bt));
+            found.put(e.getKey(), new Found(name != null && !name.isEmpty() ? name : "LG TV", bt, tag(xml, "UDN")));
         }
         return found;
     }
 
-    /**
-     * Resolve a paired TLS TV after DHCP changes, including when another TV owns its old address.
-     * Discovery is only a hint: the saved certificate must match before credentials can be reused.
-     * Old installs already have this pin, so recovery needs no identity migration or new pairing.
-     */
-    static String findPaired(Context ctx, String host, String pin, int timeoutMs) {
-        if (pin == null) return reachable(host, Tv.SECURE_PORT, timeoutMs)
-                || reachable(host, Tv.LEGACY_PORT, timeoutMs) ? host : null;
-        if (Tv.matchesPin(host, pin, timeoutMs)) return host;
-        for (String candidate : discover(ctx, 2500).keySet()) {
-            if (!candidate.equals(host) && Tv.matchesPin(candidate, pin, timeoutMs)) return candidate;
+    /** LG TVs can share a factory TLS certificate. Match device identity before checking its pin. */
+    static String findPaired(Context ctx, String host, String pin, String udn, String btMac,
+                             String name, int timeoutMs) {
+        return findPaired(host, pin, udn, btMac, name, timeoutMs, discover(ctx, 2500, host));
+    }
+
+    /** Discovery is injectable for protocol tests; candidate sockets and TLS are real. */
+    static String findPaired(String host, String pin, String udn, String btMac, String name,
+                             int timeoutMs, Map<String, Found> found) {
+        String candidate = null;
+        for (Map.Entry<String, Found> entry : found.entrySet()) {
+            Found tv = entry.getValue();
+            boolean matches = udn != null ? udn.equalsIgnoreCase(tv.udn)
+                    : btMac != null ? btMac.equalsIgnoreCase(tv.btMac)
+                    : name != null && !name.equals("LG TV") && name.equals(tv.name);
+            if (!matches) continue;
+            // Names alone are a migration hint for older installs; never guess among duplicates.
+            if (candidate != null) return null;
+            candidate = entry.getKey();
         }
-        return null;
+        if (candidate == null) {
+            // Filtered discovery must not break a working cached address. But an answered search
+            // that identifies a different TV at that address must never reuse our credentials there.
+            if (found.containsKey(host)) return null;
+            candidate = host;
+        }
+        if (pin != null) return Tv.matchesPin(candidate, pin, timeoutMs) ? candidate : null;
+        return reachable(candidate, Tv.SECURE_PORT, timeoutMs)
+                || reachable(candidate, Tv.LEGACY_PORT, timeoutMs) ? candidate : null;
     }
 
     private static String tag(String xml, String name) {

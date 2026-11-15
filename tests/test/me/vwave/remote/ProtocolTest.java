@@ -138,6 +138,25 @@ public final class ProtocolTest {
         String probes = new String(java.nio.file.Files.readAllBytes(log)).substring((int) beforeProbe);
         check("identity probes send no client key", !probes.contains("client-key") && !probes.contains("register"));
 
+        // Two real TV endpoints can share LG's factory certificate. A stale address must not
+        // win just because its TLS handshake succeeds. Both aliases below serve the same pin.
+        java.util.Map<String, Net.Found> candidates = new java.util.LinkedHashMap<>();
+        candidates.put("localhost", new Net.Found("Other TV", "00:11:22:33:44:55", "uuid:other"));
+        candidates.put(host, new Net.Found("Mock LG TV", "aa:bb:cc:dd:ee:ff", "uuid:ours"));
+        check("shared certificate: migrate by unique saved TV name", host.equals(Net.findPaired(
+                "localhost", prefs.certPin(), null, null, "Mock LG TV", 1500, candidates)));
+        check("shared certificate: stable UUID survives a changed TV name", host.equals(Net.findPaired(
+                "localhost", prefs.certPin(), "uuid:ours", null, "Old name", 1500, candidates)));
+        check("older installs recover by Bluetooth identity", host.equals(Net.findPaired(
+                "localhost", prefs.certPin(), null, "AA:BB:CC:DD:EE:FF", "Old name", 1500, candidates)));
+        check("identity match still requires saved certificate", Net.findPaired(
+                "localhost", "00".repeat(32), "uuid:ours", null, "Mock LG TV", 1500, candidates) == null);
+        check("do not fall back to another TV with the same certificate", Net.findPaired(
+                "localhost", prefs.certPin(), "uuid:missing", null, "Other TV", 1500, candidates) == null);
+        candidates.put("localhost", new Net.Found("Mock LG TV", null, "uuid:other"));
+        check("ambiguous names do not move credentials", Net.findPaired(
+                "localhost", prefs.certPin(), null, null, "Mock LG TV", 1500, candidates) == null);
+
         // 6. Wrong pinned certificate must be refused.
         prefs.setCertPin("00".repeat(32));
         main(tv::connect);

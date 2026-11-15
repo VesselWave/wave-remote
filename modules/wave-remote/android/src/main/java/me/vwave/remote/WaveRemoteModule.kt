@@ -290,12 +290,18 @@ class WaveRemoteModule : Module() {
     if (state == Tv.State.READY) {
       failedAttempts = 0
       stopWake()
-      if (prefs.btMac() == null) {
+      if (prefs.udn() == null || prefs.btMac() == null) {
         val host = prefs.host()
         val token = generation
         network.execute {
           val found = Net.discover(requireNotNull(appContext.reactContext), 2500, host)[host]
-          main.post { if (token == generation && host == prefs.host() && found?.btMac != null) { prefs.setBtMac(found.btMac); emit() } }
+          main.post {
+            if (token == generation && host == prefs.host() && found != null) {
+              if (found.btMac != null) prefs.setBtMac(found.btMac)
+              if (found.udn != null) prefs.setUdn(found.udn)
+              emit()
+            }
+          }
         }
       }
     } else if (state == Tv.State.DISCONNECTED && wakeUntil > System.currentTimeMillis()) {
@@ -314,7 +320,11 @@ class WaveRemoteModule : Module() {
     quietAttempt = false
     failedAttempts = 0
     main.removeCallbacks(confirm)
-    tv.connect()
+    if (prefs.clientKey() == null) tv.connect()
+    else {
+      tv.disconnect()
+      probe()
+    }
   }
 
   private fun watchSoon() {
@@ -329,10 +339,13 @@ class WaveRemoteModule : Module() {
     val host = prefs.host() ?: return
     if (prefs.clientKey() == null) return // Pairing needs the user at the TV; don't start it unasked.
     val pin = prefs.certPin()
+    val udn = prefs.udn()
+    val btMac = prefs.btMac()
+    val name = prefs.name()
     val token = generation
     probing = true
     network.execute {
-      val resolved = Net.findPaired(requireNotNull(appContext.reactContext), host, pin, PROBE_TIMEOUT_MS)
+      val resolved = Net.findPaired(requireNotNull(appContext.reactContext), host, pin, udn, btMac, name, PROBE_TIMEOUT_MS)
       main.post {
         probing = false
         if (token != generation || host != prefs.host() || !foreground || paused) return@post

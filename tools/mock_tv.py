@@ -240,7 +240,7 @@ class Ssdp(asyncio.DatagramProtocol):
 async def desc(reader, writer):
     await reader.readuntil(b"\r\n\r\n")
     body = (b"<root><device><friendlyName>[LG] Mock LG TV</friendlyName>"
-            b"<bluetoothMac>a8:23:fe:00:00:03</bluetoothMac></device></root>")
+            b"<bluetoothMac>a8:23:fe:00:00:03</bluetoothMac><UDN>uuid:mock-tv</UDN></device></root>")
     writer.write(b"HTTP/1.1 200 OK\r\nContent-Type: text/xml\r\nContent-Length: %d\r\n\r\n" % len(body) + body)
     await writer.drain()
     writer.close()

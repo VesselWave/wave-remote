@@ -87,10 +87,11 @@ public final class PrefsTest {
         // DHCP moves and swaps preserve all per-TV data, including Boolean preferences.
         prefs.setTv("10.0.0.5", null);
         prefs.setLabel("10.0.0.5", "Lounge");
+        prefs.setUdn("uuid:living-room");
         prefs.relocate("10.0.1.20");
         check("DHCP move keeps pairing and settings", "10.0.1.20".equals(prefs.host())
                 && "key-a".equals(prefs.clientKey()) && "pin-a".equals(prefs.certPin())
-                && "Lounge".equals(prefs.label(prefs.host())) && prefs.wakeRegistered()
+                && "Lounge".equals(prefs.label(prefs.host())) && "uuid:living-room".equals(prefs.udn()) && prefs.wakeRegistered()
                 && prefs.favorites().equals(Arrays.asList("youtube.leanback.v4"))
                 && prefs.hidden().equals(Arrays.asList("com.webos.app.camera"))
                 && prefs.macs().size() == 1 && prefs.btMac() != null);
