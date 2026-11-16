@@ -85,7 +85,10 @@ class CoordinatorTests(unittest.TestCase):
     def test_plan_uses_changelog_and_increments_code(self):
         state = self.state()
         self.assertEqual(state['code'], 10021)
-        self.assertIn('A real change.', state['files']['docs/release-notes.md'])
+        notes = state['files']['docs/release-notes.md']
+        self.assertIn('A real change.', notes)
+        self.assertNotIn('Installs over', notes)
+        self.assertNotIn('production signing key', notes)
         self.assertIn('## Unreleased\n\n## 0.6.9', state['files']['CHANGELOG.md'])
         self.assertLess(len(state['files']['fastlane/metadata/android/en-US/changelogs/10021.txt']), 501)
         with self.assertRaises(ValueError):

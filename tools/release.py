@@ -69,7 +69,6 @@ def release_files(target):
     require(section and section[1].strip(), 'Write the Unreleased changelog before planning')
     bullets = section[1].strip()
     notes = (f'Wave Remote {target}\n\n{bullets}\n\n'
-             f'Installs over {current} and keeps TV pairings and settings. Uses the existing production signing key.\n\n'
              f'Check the download with `sha256sum --check wave-remote-v{target}.apk.sha256`. '
              'The release also includes OpenPGP-signed SHA256SUMS, source and provenance.\n\n'
              'Setup: https://github.com/VesselWave/wave-remote#readme. Not affiliated with LG.\n')
