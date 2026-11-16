@@ -107,6 +107,29 @@ public final class ProtocolTest {
         check("press after an unanswered pointer request goes through", mock.contains("type:button\\nname:HOME"));
         check("press queued for the unanswered request is dropped", !mock.contains("type:button\\nname:EXIT"));
 
+        // Returning to the app checks the existing session instead of registering again.
+        mark = java.nio.file.Files.size(log);
+        main(tv::checkConnection);
+        CompletableFuture<JSONObject> resumed = new CompletableFuture<>();
+        main(() -> tv.request("ssap://audio/getVolume", null, (p, e) -> resumed.complete(p)));
+        check("existing connection works after resume", resumed.get(3, TimeUnit.SECONDS) != null);
+        mock = new String(java.nio.file.Files.readAllBytes(log)).substring((int) mark);
+        check("resume does not register again", !mock.contains("register"));
+
+        // The OS or peer can still close a retained connection. Fail pending work and reconnect
+        // with the saved pairing, rather than pretending commands reached the old socket.
+        CompletableFuture<String> closed = new CompletableFuture<>();
+        main(() -> tv.request("ssap://mock/disconnect", null, (p, e) -> closed.complete(e)));
+        check("peer closure fails the pending request", "Disconnected".equals(closed.get(3, TimeUnit.SECONDS)));
+        expect("state:DISCONNECTED:Connection closed by TV");
+        main(tv::checkConnection); // Must not resurrect a closed socket.
+        main(tv::connect);
+        expect("state:CONNECTING");
+        expect("state:READY");
+        CompletableFuture<JSONObject> recovered = new CompletableFuture<>();
+        main(() -> tv.request("ssap://audio/getVolume", null, (p, e) -> recovered.complete(p)));
+        check("commands work after reconnecting the retained session", recovered.get(3, TimeUnit.SECONDS) != null);
+
         // 5b. A pointer socket that opens late doesn't deliver a press made seconds earlier.
         main(tv::disconnect);
         expect("state:DISCONNECTED");
@@ -137,6 +160,15 @@ public final class ProtocolTest {
         Thread.sleep(200);
         String probes = new String(java.nio.file.Files.readAllBytes(log)).substring((int) beforeProbe);
         check("identity probes send no client key", !probes.contains("client-key") && !probes.contains("register"));
+
+        long cachedStart = System.nanoTime();
+        check("cached IP resolves by direct stable identity", host.equals(Net.findPaired(new Context(),
+                host, prefs.certPin(), "uuid:mock-tv", null, "Mock LG TV", 1500)));
+        check("cached IP skips the full discovery wait", TimeUnit.NANOSECONDS.toMillis(
+                System.nanoTime() - cachedStart) < 2400);
+
+        check("cached address with another identity is rejected", Net.findPaired(new Context(),
+                host, prefs.certPin(), "uuid:another-tv", null, "Mock LG TV", 1500) == null);
 
         // Two real TV endpoints can share LG's factory certificate. A stale address must not
         // win just because its TLS handshake succeeds. Both aliases below serve the same pin.

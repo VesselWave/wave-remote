@@ -243,11 +243,14 @@ class WaveRemoteModule : Module() {
     OnActivityEntersForeground {
       main.post {
         foreground = true
-        if (::tv.isInitialized && prefs.host() != null && tv.state() == Tv.State.DISCONNECTED) userConnect()
+        if (::tv.isInitialized) {
+          if (tv.isReady) tv.checkConnection()
+          else if (!paused && prefs.host() != null && tv.state() == Tv.State.DISCONNECTED) probe()
+        }
       }
     }
     OnActivityEntersBackground {
-      main.post { foreground = false; main.removeCallbacks(watch); if (::tv.isInitialized) { stopHeld(); stopWake(); tv.disconnect() } }
+      main.post { foreground = false; main.removeCallbacks(watch); if (::tv.isInitialized) { stopHeld(); stopWake() } }
     }
     OnDestroy {
       main.post {
@@ -270,6 +273,7 @@ class WaveRemoteModule : Module() {
   }
 
   private fun onState(state: Tv.State, info: String?) {
+    android.util.Log.d("WaveRemote", "TV connection: ${state.name}")
     if (quietAttempt) {
       when (state) {
         Tv.State.READY -> { main.removeCallbacks(confirm); main.postDelayed(confirm, CONFIRM_MS); return }

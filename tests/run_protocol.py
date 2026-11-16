@@ -27,7 +27,8 @@ with tempfile.TemporaryDirectory(prefix='waveremote-test-') as directory:
             else:
                 raise TimeoutError('Mock did not start within 10 seconds')
             for test, args in [('ProtocolTest', ['127.0.0.1', str(work / 'mock_tv.log')]),
-                               ('WolTest', ['127.0.0.1'])]:
+                               ('WolTest', ['127.0.0.1']),
+                               ('SilenceTest', ['127.0.0.1'])]:
                 subprocess.run(['java', '-cp', classpath, 'me.vwave.remote.' + test, *args],
                                check=True, timeout=60)
         except BaseException:

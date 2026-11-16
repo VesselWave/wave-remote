@@ -117,8 +117,11 @@ def push_volume():
 
 
 async def handle_control(reader, writer, peer):
+    silent = False
     while True:
         op, data = await read_frame(reader)
+        if silent:
+            continue
         if op == 0x8:
             return
         if op == 0x9:
@@ -169,6 +172,12 @@ async def handle_control(reader, writer, peer):
             send(writer, {"type": "response", "id": mid, "payload": {"returnValue": True, "id": state["app"]}})
         elif uri == "ssap://com.webos.applicationManager/getForegroundAppInfo":
             send(writer, {"type": "response", "id": mid, "payload": {"returnValue": True, "appId": state["app"]}})
+        elif uri == "ssap://mock/silent":
+            send(writer, {"type": "response", "id": mid, "payload": {"returnValue": True}})
+            silent = True
+        elif uri == "ssap://mock/disconnect":
+            writer.close()
+            return
         elif uri == "ssap://mock/pointerSocket":
             pointer_mode["mode"] = p.get("mode", "answer")
             send(writer, {"type": "response", "id": mid, "payload": {"returnValue": True}})

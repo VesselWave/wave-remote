@@ -104,6 +104,11 @@ final class Net {
 
     /** Like {@link #discover(Context, int)}, also asking {@code host} directly in case multicast is filtered. */
     static Map<String, Found> discover(Context ctx, int timeoutMs, String host) {
+        return discover(ctx, timeoutMs, host, false);
+    }
+
+    /** Cached-address check: no multicast, and stop as soon as that device answers. */
+    private static Map<String, Found> discover(Context ctx, int timeoutMs, String host, boolean direct) {
         Map<String, Found> found = new LinkedHashMap<>();
         Map<String, String> locations = new LinkedHashMap<>();
         WifiManager wifi = (WifiManager) ctx.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
@@ -118,7 +123,8 @@ final class Net {
             InetAddress group = InetAddress.getByName("239.255.255.250");
             for (int i = 0; i < 2; i++) {
                 // VPNs and virtual adapters can own the default route. Search each LAN explicitly.
-                for (NetworkInterface nif : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+                for (NetworkInterface nif : direct ? Collections.<NetworkInterface>emptyList()
+                        : Collections.list(NetworkInterface.getNetworkInterfaces())) {
                     if (!nif.isUp() || nif.isLoopback() || !nif.supportsMulticast()) continue;
                     boolean ipv4 = false;
                     for (InetAddress address : Collections.list(nif.getInetAddresses())) {
@@ -148,9 +154,11 @@ final class Net {
                     break;
                 }
                 String ip = p.getAddress().getHostAddress();
+                if (direct && !host.equals(ip)) continue;
                 String text = new String(p.getData(), 0, p.getLength(), StandardCharsets.US_ASCII);
                 Matcher loc = Pattern.compile("(?im)^location:\\s*(\\S+)").matcher(text);
                 if (!locations.containsKey(ip)) locations.put(ip, loc.find() ? loc.group(1) : null);
+                if (direct) break;
             }
         } catch (Exception ignored) {
         } finally {
@@ -170,6 +178,15 @@ final class Net {
     /** LG TVs can share a factory TLS certificate. Match device identity before checking its pin. */
     static String findPaired(Context ctx, String host, String pin, String udn, String btMac,
                              String name, int timeoutMs) {
+        // A stable device identity makes a direct answer sufficient. Names alone can be duplicated,
+        // so older installs still need the full search until an identity has been learned.
+        if (udn != null || btMac != null) {
+            Map<String, Found> cached = discover(ctx, timeoutMs, host, true);
+            if (cached.containsKey(host)) {
+                String resolved = findPaired(host, pin, udn, btMac, name, timeoutMs, cached);
+                if (resolved != null) return resolved;
+            }
+        }
         return findPaired(host, pin, udn, btMac, name, timeoutMs, discover(ctx, 2500, host));
     }
 

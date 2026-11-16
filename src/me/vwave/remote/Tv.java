@@ -74,9 +74,11 @@ final class Tv {
     private State state = State.DISCONNECTED;
     private int registerId;
     private boolean turningOff;
+    private boolean checkingConnection;
 
     private final Runnable keepalive = new Runnable() {
         @Override public void run() {
+            checkingConnection = false;
             if (ws == null || !isReady()) return;
             if (System.currentTimeMillis() - ws.lastHeard() > SILENCE_MS) {
                 drop(turningOff ? "TV is off" : "TV stopped responding");
@@ -100,6 +102,16 @@ final class Tv {
         return state == State.READY;
     }
 
+    /** Keep the existing authenticated socket on resume. Give a sleeping phone a fresh pong window. */
+    void checkConnection() {
+        if (!isReady() || ws == null || checkingConnection) return;
+        // Repeated app switches must not keep postponing a dead connection's timeout.
+        checkingConnection = true;
+        main.removeCallbacks(keepalive);
+        ws.ping();
+        main.postDelayed(keepalive, PING_MS);
+    }
+
     // ---- connection ---------------------------------------------------------------------------
 
     void connect() {
@@ -117,6 +129,7 @@ final class Tv {
 
     /** Closes our side and reports DISCONNECTED with {@code why}; a later onClose of the old socket is ignored. */
     private void drop(String why) {
+        checkingConnection = false;
         main.removeCallbacks(keepalive);
         if (ws != null) ws.close();
         ws = null;
@@ -146,6 +159,7 @@ final class Tv {
                 main.post(() -> {
                     if (ws != self[0]) return;
                     ws = null;
+                    checkingConnection = false;
                     main.removeCallbacks(keepalive);
                     closePointer();
                     failPending("Disconnected");

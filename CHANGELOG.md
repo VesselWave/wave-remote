@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Keeps the TV connection across app switches and checks it on return instead of disconnecting every time.
+- Reconnects by checking the saved IP first when the TV has a known device identity; scans the network only if that check fails.
+
 ## 0.7.1 — 2026-11-15
 
 - Fixes reconnecting after a router restart changes the TV's IP address. The remote finds the paired TV at its new address without losing its pairing, name, favourites or wake settings.
