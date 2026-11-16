@@ -1,0 +1,2 @@
+- Keeps the TV connection across app switches and checks it on return instead of disconnecting every time.
+- Reconnects by checking the saved IP first when the TV has a known device identity; scans the network only if that check fails.

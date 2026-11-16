@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.7.2 — 2026-11-15
+
 - Keeps the TV connection across app switches and checks it on return instead of disconnecting every time.
 - Reconnects by checking the saved IP first when the TV has a known device identity; scans the network only if that check fails.
 
