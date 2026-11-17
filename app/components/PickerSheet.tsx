@@ -20,11 +20,21 @@ export function PickerSheet({ onClose, report, ready }: {
   const [error, setError] = useState('');
   const [acting, setActing] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
+  const [previousReady, setPreviousReady] = useState(ready);
+  if (previousReady !== ready) {
+    setPreviousReady(ready);
+    setActing(null);
+    setLoading(ready);
+    setError('');
+  }
   const generation = useRef(0);
   const activeAction = useRef(false);
   const scroll = useScrollCues(SHEET_END_PADDING);
   useEffect(() => {
     const token = ++generation.current;
+    // A disconnect invalidates the old action's finally block too. Release its
+    // latch here so a recovered connection can accept a new selection.
+    activeAction.current = false;
     if (!ready) return;
     void request(commands.inputs).then((response) => {
       if (generation.current !== token) return;

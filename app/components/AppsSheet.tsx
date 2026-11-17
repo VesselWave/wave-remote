@@ -68,6 +68,13 @@ export function AppsSheet({ onClose, report, ready, favorites: saved, hidden: sa
   const [error, setError] = useState('');
   const [acting, setActing] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
+  const [previousReady, setPreviousReady] = useState(ready);
+  if (previousReady !== ready) {
+    setPreviousReady(ready);
+    setActing(null);
+    setLoading(ready);
+    setError('');
+  }
   const [mode, setMode] = useState<Mode>('browse');
   /** The app the TV is showing now, marked "On TV"; unknown if the TV doesn't say. */
   const [current, setCurrent] = useState<string | null>(null);
@@ -90,6 +97,9 @@ export function AppsSheet({ onClose, report, ready, favorites: saved, hidden: sa
   useEffect(() => { void AccessibilityInfo.isReduceMotionEnabled().then(setReducedMotion); }, []);
   useEffect(() => {
     const token = ++generation.current;
+    // A disconnect invalidates the old action's finally block too. Release its
+    // latch here so a recovered connection can accept a new selection.
+    activeAction.current = false;
     if (!ready) return;
     void request(commands.apps).then((response) => {
       if (generation.current !== token) return;

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Apps and Inputs menus recover after the TV disconnects during a selection, without needing to close and reopen the menu.
+
 ## 0.7.2 — 2026-11-15
 
 - Keeps the TV connection across app switches and checks it on return instead of disconnecting every time.
