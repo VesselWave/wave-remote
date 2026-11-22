@@ -1,0 +1,8 @@
+<resources>
+    <string name="wave_touchpad_instructions">Тачпад. Ведите пальцем, чтобы перемещать указатель на телевизоре. Коснитесь, чтобы нажать. Для прокрутки проведите вверх или вниз вдоль правого края или проведите двумя пальцами.</string>
+    <string name="wave_touchpad_move_and_tap">Ведите пальцем · Коснитесь для нажатия</string>
+    <string name="wave_touchpad_scroll">Прокрутка вдоль правого края</string>
+    <string name="wave_touchpad_move_short">Ведите пальцем</string>
+    <string name="wave_touchpad_tap_short">Касание — нажатие</string>
+    <string name="wave_touchpad_scroll_short">Край — прокрутка</string>
+</resources>

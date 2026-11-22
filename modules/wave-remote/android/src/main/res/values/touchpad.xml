@@ -1,0 +1,8 @@
+<resources>
+    <string name="wave_touchpad_instructions">Touchpad. Drag to move the TV pointer, tap to click. Slide up or down on the right edge to scroll; two-finger scrolling also works.</string>
+    <string name="wave_touchpad_move_and_tap">Drag to move · Tap to click</string>
+    <string name="wave_touchpad_scroll">Slide right edge to scroll</string>
+    <string name="wave_touchpad_move_short">Drag to move</string>
+    <string name="wave_touchpad_tap_short">Tap to click</string>
+    <string name="wave_touchpad_scroll_short">Edge: scroll</string>
+</resources>

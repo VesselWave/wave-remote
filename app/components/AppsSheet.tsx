@@ -1,9 +1,10 @@
+import { useTranslate } from '../i18n/context';
 import { memo, useEffect, useRef, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, FlatList, Image, LayoutAnimation, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { ActivityIndicator, Button, Icon, IconButton, Searchbar, Text, TouchableRipple } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
 import { native, type TvApp } from '../../modules/wave-remote';
-import { commands, errorMessage } from '../lib/remote';
+import { commands, diagnostic, errorMessage } from '../lib/remote';
 import { request } from '../lib/transport';
 import { palette, radius } from '../theme';
 import { Sheet, SHEET_END_PADDING } from './Sheet';
@@ -62,6 +63,7 @@ type Mode = 'browse' | 'arrange' | 'hide';
 export function AppsSheet({ onClose, report, ready, favorites: saved, hidden: savedHidden }: {
   onClose: () => void; report: (message: string) => void; ready: boolean; favorites: string[]; hidden: string[];
 }) {
+  const t = useTranslate();
   const [apps, setApps] = useState<App[]>([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(ready);
@@ -174,6 +176,7 @@ export function AppsSheet({ onClose, report, ready, favorites: saved, hidden: sa
   const visible = apps.filter((app) => !hidden.includes(app.id));
   const filtered = searching ? visible.filter((app) => app.title.toLowerCase().includes(query.trim().toLowerCase())) : visible;
   const hiddenCount = apps.length - visible.length;
+  const hiddenSummary = t(hiddenCount === 1 ? '{count} hidden app' : '{count} hidden apps', { count: hiddenCount });
   // Arranging lists only the favourites; hiding lists every app, hidden ones included.
   const data = !loaded ? [] : mode === 'arrange' ? pinned : mode === 'hide' ? apps : filtered;
   // Sheet content spans min(width, 600) with 24 on each side; tiles keep at least 80 (scaled with text).
@@ -187,10 +190,10 @@ export function AppsSheet({ onClose, report, ready, favorites: saved, hidden: sa
     return <View key={app.id} style={{ width: tileWidth }}>
       <TouchableRipple borderless onPress={() => void launch(app)} onLongPress={() => enter('arrange')}
         disabled={(!!acting && !busy) || !ready} style={styles.tile} accessibilityRole="button"
-        accessibilityLabel={`Open ${app.title}${live ? ', on TV now' : ''}`} accessibilityHint="Long press to edit favourites">
+        accessibilityLabel={t(live ? 'Open {name}, on TV now' : 'Open {name}', { name: app.title })} accessibilityHint={t('Long press to edit favourites')}>
         <View style={styles.tileBody}>
           <View><AppIcon app={app} size={52} large />{busy ? <View style={styles.busy}><ActivityIndicator size={22} color={palette.text} /></View> : null}
-            {live && !busy ? <View style={styles.badgeRow} pointerEvents="none"><Text style={styles.badge}>On TV</Text></View> : null}</View>
+            {live && !busy ? <View style={styles.badgeRow} pointerEvents="none"><Text style={styles.badge}>{t('On TV')}</Text></View> : null}</View>
           <Text variant="bodySmall" numberOfLines={2} style={styles.tileTitle}>{app.title}</Text>
         </View>
       </TouchableRipple>
@@ -201,13 +204,13 @@ export function AppsSheet({ onClose, report, ready, favorites: saved, hidden: sa
     <Text variant="titleSmall" style={styles.sectionTitle} accessibilityRole="header">{title}</Text>{action}</View>;
 
   const favouritesSection = <View style={styles.section}>
-    {sectionHeader('Favourites', pinned.length > 0
-      ? <Button compact onPress={() => enter('arrange')} accessibilityLabel="Edit favourites">Edit</Button> : null)}
+    {sectionHeader(t('Favourites'), pinned.length > 0
+      ? <Button compact onPress={() => enter('arrange')} accessibilityLabel={t('Edit favourites')}>{t('Edit')}</Button> : null)}
     {pinned.length > 0 ? <View style={[styles.grid, { gap }]}>{pinned.map(tile)}</View>
       : <View style={styles.emptyFavourites}>
         <View style={styles.emptyIcon}><Icon source="star-outline" size={24} color={palette.accentFg} /></View>
-        <View style={styles.emptyText}><Text variant="titleMedium">Keep your go-to apps here</Text>
-          <Text variant="bodyMedium" style={styles.secondary}>Tap the star next to an app below to pin it.</Text></View>
+        <View style={styles.emptyText}><Text variant="titleMedium">{t('Keep your go-to apps here')}</Text>
+          <Text variant="bodyMedium" style={styles.secondary}>{t('Tap the star next to an app below to pin it.')}</Text></View>
       </View>}
   </View>;
 
@@ -216,26 +219,26 @@ export function AppsSheet({ onClose, report, ready, favorites: saved, hidden: sa
   const modeBar = (title: string, detail: string) => <View style={styles.modeBar}>
     <View style={styles.modeText}><Text variant="titleMedium" accessibilityRole="header">{title}</Text>
       <Text variant="bodySmall" style={styles.secondary}>{detail}</Text></View>
-    <Button mode="contained" onPress={() => enter('browse')} accessibilityLabel={`Done, ${title.toLowerCase()}`} style={styles.done}>Done</Button>
+    <Button mode="contained" onPress={() => enter('browse')} accessibilityLabel={t('Done, {title}', { title: title.toLowerCase() })} style={styles.done}>{t('Done')}</Button>
   </View>;
   const toolbar = !loaded || apps.length === 0 ? null
-    : mode === 'arrange' ? modeBar('Edit favourites', 'Use the arrows to reorder. Tap a star to remove.')
-    : mode === 'hide' ? modeBar('Hide apps', hiddenCount > 0 ? `${hiddenCount} hidden. Tap an eye to show or hide an app.` : 'Tap an eye to show or hide an app.')
-    : <Searchbar placeholder="Search apps" accessibilityLabel="Search TV apps" value={query} onChangeText={setQuery} style={styles.search} />;
+    : mode === 'arrange' ? modeBar(t('Edit favourites'), t('Use the arrows to reorder. Tap a star to remove.'))
+    : mode === 'hide' ? modeBar(t('Hide apps'), hiddenCount > 0 ? t('{count} hidden. Tap an eye to show or hide an app.', { count: hiddenCount }) : t('Tap an eye to show or hide an app.'))
+    : <Searchbar searchAccessibilityLabel={t('search')} clearAccessibilityLabel={t('clear')} placeholder={t('Search apps')} accessibilityLabel={t('Search TV apps')} value={query} onChangeText={setQuery} style={styles.search} />;
 
   const listHeader = !loaded || apps.length === 0 || mode !== 'browse' ? <View style={styles.modeGap} /> : <>
     {searching ? null : favouritesSection}
-    <View style={styles.section}>{sectionHeader(searching ? `${filtered.length} ${filtered.length === 1 ? 'result' : 'results'}` : 'All apps',
-      searching ? null : <Button compact onPress={() => enter('hide')} accessibilityLabel="Hide apps">Hide apps</Button>)}</View>
+    <View style={styles.section}>{sectionHeader(searching ? t(filtered.length === 1 ? '{count} result' : '{count} results', { count: filtered.length }) : t('All apps'),
+      searching ? null : <Button compact onPress={() => enter('hide')} accessibilityLabel={t('Hide apps')}>{t('Hide apps')}</Button>)}</View>
   </>;
   // Hidden apps stay reachable: the count leads to the hiding mode, where they can be shown again.
   const footer = !loaded ? null
-    : mode === 'arrange' ? <Text variant="bodyMedium" style={[styles.secondary, styles.hint]}>To add a favourite, tap Done and star it in All apps.</Text>
+    : mode === 'arrange' ? <Text variant="bodyMedium" style={[styles.secondary, styles.hint]}>{t('To add a favourite, tap Done and star it in All apps.')}</Text>
     : mode === 'browse' && hiddenCount > 0 && !searching ? <TouchableRipple onPress={() => enter('hide')} style={styles.row} accessibilityRole="button"
-      accessibilityLabel={`${hiddenCount} hidden ${hiddenCount === 1 ? 'app' : 'apps'}. Show or hide apps`}>
+      accessibilityLabel={t('{summary}. Show or hide apps', { summary: hiddenSummary })}>
       <View style={styles.rowBody}>
         <View style={styles.hiddenIcon}><Icon source="eye-off-outline" size={20} color={palette.muted} /></View>
-        <Text variant="bodyLarge" style={[styles.rowTitle, styles.secondary]}>{hiddenCount} hidden {hiddenCount === 1 ? 'app' : 'apps'}</Text>
+        <Text variant="bodyLarge" style={[styles.rowTitle, styles.secondary]}>{hiddenSummary}</Text>
         <View style={styles.trailing}><Icon source="chevron-right" size={24} color={palette.muted} /></View>
       </View>
     </TouchableRipple> : null;
@@ -246,9 +249,9 @@ export function AppsSheet({ onClose, report, ready, favorites: saved, hidden: sa
         <AppIcon app={app} size={40} />
         <Text variant="bodyLarge" numberOfLines={2} style={styles.rowTitle}>{app.title}</Text>
         <View style={styles.rowActions}>
-          <IconButton icon="arrow-up" disabled={index === 0} onPress={() => move(app, -1)} accessibilityLabel={`Move ${app.title} earlier`} style={styles.action} />
-          <IconButton icon="arrow-down" disabled={index === pinned.length - 1} onPress={() => move(app, 1)} accessibilityLabel={`Move ${app.title} later`} style={styles.action} />
-          <IconButton icon="star" iconColor={palette.accentFg} onPress={() => toggle(app)} accessibilityLabel={`Remove ${app.title} from favourites`} style={styles.action} />
+          <IconButton icon="arrow-up" disabled={index === 0} onPress={() => move(app, -1)} accessibilityLabel={t('Move {name} earlier', { name: app.title })} style={styles.action} />
+          <IconButton icon="arrow-down" disabled={index === pinned.length - 1} onPress={() => move(app, 1)} accessibilityLabel={t('Move {name} later', { name: app.title })} style={styles.action} />
+          <IconButton icon="star" iconColor={palette.accentFg} onPress={() => toggle(app)} accessibilityLabel={t('Remove {name} from favourites', { name: app.title })} style={styles.action} />
         </View>
       </View>
     </View>;
@@ -259,40 +262,40 @@ export function AppsSheet({ onClose, report, ready, favorites: saved, hidden: sa
         <Text variant="bodyLarge" numberOfLines={2} style={[styles.rowTitle, isHidden && styles.hiddenTitle]}>{app.title}</Text>
         <IconButton icon={isHidden ? 'eye-off-outline' : 'eye-outline'} iconColor={isHidden ? palette.muted : palette.accentFg}
           onPress={() => toggleHidden(app)} style={styles.action}
-          accessibilityLabel={`${isHidden ? 'Show' : 'Hide'} ${app.title}`} accessibilityValue={{ text: isHidden ? 'Hidden' : 'Visible' }} />
+          accessibilityLabel={t(isHidden ? 'Show {name}' : 'Hide {name}', { name: app.title })} accessibilityValue={{ text: isHidden ? t('Hidden') : t('Visible') }} />
       </View>
     </View>;
     const starred = favorites.includes(app.id);
     return <TouchableRipple onPress={() => void launch(app)} disabled={!!acting || !ready} style={styles.row}
-      accessibilityRole="button" accessibilityLabel={`Open ${app.title}${app.id === current ? ', on TV now' : ''}`}
-      accessibilityActions={[{ name: 'hide', label: `Hide ${app.title}` }]} onAccessibilityAction={() => toggleHidden(app)}>
+      accessibilityRole="button" accessibilityLabel={t(app.id === current ? 'Open {name}, on TV now' : 'Open {name}', { name: app.title })}
+      accessibilityActions={[{ name: 'hide', label: t('Hide {name}', { name: app.title }) }]} onAccessibilityAction={() => toggleHidden(app)}>
       <View style={styles.rowBody}>
         <AppIcon app={app} size={40} />
         <View style={styles.rowTitle}>
           <Text variant="bodyLarge" numberOfLines={2}>{app.title}</Text>
-          {app.id === current ? <Text variant="labelMedium" style={styles.live}>On TV now</Text> : null}
+          {app.id === current ? <Text variant="labelMedium" style={styles.live}>{t('On TV now')}</Text> : null}
         </View>
         {acting === app.id ? <View style={styles.trailing}><ActivityIndicator size={20} /></View>
           : <IconButton icon={starred ? 'star' : 'star-outline'} iconColor={starred ? palette.accentFg : palette.muted} onPress={() => toggle(app)}
-            selected={starred} accessibilityLabel={starred ? `Remove ${app.title} from favourites` : `Add ${app.title} to favourites`} style={styles.action} />}
+            selected={starred} accessibilityLabel={starred ? t('Remove {name} from favourites', { name: app.title }) : t('Add {name} to favourites', { name: app.title })} style={styles.action} />}
       </View>
     </TouchableRipple>;
   };
 
-  return <Sheet open onClose={onClose} onBack={mode === 'browse' ? onClose : () => enter('browse')} title="Apps" subtitle="Open an app on your TV.">
+  return <Sheet open onClose={onClose} onBack={mode === 'browse' ? onClose : () => enter('browse')} title={t('Apps')} subtitle={t('Open an app on your TV.')}>
     {(heading) => <View style={[styles.scroll, mode !== 'browse' && { minHeight: browseHeight }]}
       onLayout={(event) => { if (mode === 'browse') setBrowseHeight(event.nativeEvent.layout.height); }}>{heading}{toolbar}
       <View {...scroll.frameProps} style={styles.scroll}><FlatList contentContainerStyle={scroll.contentStyle} ref={listRef} {...scroll.props} style={styles.scroll} data={data}
         keyExtractor={(app) => app.id} keyboardShouldPersistTaps="handled"
         extraData={[favorites, hidden, mode, acting, current, pinned.length]}
         ListHeaderComponent={listHeader} ListFooterComponent={footer} renderItem={renderItem}
-        ListEmptyComponent={!ready ? <View style={styles.empty}><Text>Your TV disconnected. Close this menu and reconnect.</Text></View>
-          : loading ? <View style={styles.empty}><ActivityIndicator /><Text style={[styles.secondary, styles.center]}>Loading from your TV…</Text></View>
-          : error ? <View style={styles.empty}><Icon source="wifi-alert" size={36} color={palette.muted} /><Text variant="bodyLarge" style={styles.center}>{error}</Text>
-            <Button icon="refresh" onPress={() => { setError(''); setLoading(true); setRetry((value) => value + 1); }} disabled={!ready}>Try again</Button></View>
+        ListEmptyComponent={!ready ? <View style={styles.empty}><Text>{t('Your TV disconnected. Close this menu and reconnect.')}</Text></View>
+          : loading ? <View style={styles.empty}><ActivityIndicator /><Text style={[styles.secondary, styles.center]}>{t('Loading from your TV…')}</Text></View>
+          : error ? <View style={styles.empty}><Icon source="wifi-alert" size={36} color={palette.muted} /><Text variant="bodyLarge" style={styles.center}>{diagnostic(error, t)}</Text>
+            <Button icon="refresh" onPress={() => { setError(''); setLoading(true); setRetry((value) => value + 1); }} disabled={!ready}>{t('Try again')}</Button></View>
           : <View style={styles.empty}><Icon source="view-grid-outline" size={40} color={palette.muted} />
-            <Text variant="titleMedium">{searching ? 'No matching apps' : apps.length > 0 ? 'Every app is hidden' : 'No apps reported'}</Text>
-            <Text style={[styles.secondary, styles.center]}>{searching ? 'Try a different app name.' : apps.length > 0 ? 'Show some again from the hidden apps below.' : 'Your TV returned an empty list.'}</Text></View>} />
+            <Text variant="titleMedium">{searching ? t('No matching apps') : apps.length > 0 ? t('Every app is hidden') : t('No apps reported')}</Text>
+            <Text style={[styles.secondary, styles.center]}>{searching ? t('Try a different app name.') : apps.length > 0 ? t('Show some again from the hidden apps below.') : t('Your TV returned an empty list.')}</Text></View>} />
         {scroll.cues}</View>
     </View>}
   </Sheet>;

@@ -1,3 +1,4 @@
+import { useTranslate } from '../i18n/context';
 import { createContext, useContext, useEffect, useRef, useState, type ComponentProps } from 'react';
 import { AppState, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -22,6 +23,7 @@ type Props = {
   style?: StyleProp<ViewStyle>;
 };
 export function RemoteButton({ label, icon, caption, onPress, repeat, disabled, accent, rockerEnd, color: enabledColor = palette.text, style }: Props) {
+  const t = useTranslate();
   const scale = useContext(RemoteScaleContext);
   const styles = makeStyles(scale);
   const [pressed, setPressed] = useState(false);
@@ -41,7 +43,7 @@ export function RemoteButton({ label, icon, caption, onPress, repeat, disabled, 
   return (
     <Pressable
       accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!disabled }}
-      accessibilityHint={repeat ? 'Touch and hold to repeat' : undefined}
+      accessibilityHint={repeat ? t('Touch and hold to repeat') : undefined}
       disabled={disabled}
       android_ripple={rockerEnd ? undefined : { color: '#FFFFFF22', foreground: true }}
       onPressIn={() => {
@@ -68,23 +70,25 @@ export function RemoteButton({ label, icon, caption, onPress, repeat, disabled, 
   );
 }
 export function Dpad({ disabled }: { disabled: boolean }) {
+  const t = useTranslate();
   const styles = makeStyles(useContext(RemoteScaleContext));
-  return <View style={styles.dpad} accessibilityLabel="Directional controls">
-    <View style={styles.dpadRow}><View style={styles.spacer} /><RemoteButton label="Up" icon="chevron-up" repeat={{ key: 'UP', pointer: true }} disabled={disabled} style={styles.round} /><View style={styles.spacer} /></View>
+  return <View style={styles.dpad} accessibilityLabel={t('Directional controls')}>
+    <View style={styles.dpadRow}><View style={styles.spacer} /><RemoteButton label={t('Up')} icon="chevron-up" repeat={{ key: 'UP', pointer: true }} disabled={disabled} style={styles.round} /><View style={styles.spacer} /></View>
     <View style={styles.dpadRow}>
-      <RemoteButton label="Left" icon="chevron-left" repeat={{ key: 'LEFT', pointer: true }} disabled={disabled} style={styles.round} />
+      <RemoteButton label={t('Left')} icon="chevron-left" repeat={{ key: 'LEFT', pointer: true }} disabled={disabled} style={styles.round} />
       <RemoteButton label="OK" onPress={() => void native?.button('ENTER')} disabled={disabled} accent style={styles.round} />
-      <RemoteButton label="Right" icon="chevron-right" repeat={{ key: 'RIGHT', pointer: true }} disabled={disabled} style={styles.round} />
+      <RemoteButton label={t('Right')} icon="chevron-right" repeat={{ key: 'RIGHT', pointer: true }} disabled={disabled} style={styles.round} />
     </View>
-    <View style={styles.dpadRow}><View style={styles.spacer} /><RemoteButton label="Down" icon="chevron-down" repeat={{ key: 'DOWN', pointer: true }} disabled={disabled} style={styles.round} /><View style={styles.spacer} /></View>
+    <View style={styles.dpadRow}><View style={styles.spacer} /><RemoteButton label={t('Down')} icon="chevron-down" repeat={{ key: 'DOWN', pointer: true }} disabled={disabled} style={styles.round} /><View style={styles.spacer} /></View>
   </View>;
 }
-export function Rocker({ label, up, down, disabled }: { label: string; up: string; down: string; disabled: boolean }) {
+export function Rocker({ label, up, down, disabled }: { label: 'Volume' | 'Channel'; up: string; down: string; disabled: boolean }) {
+  const t = useTranslate();
   const styles = makeStyles(useContext(RemoteScaleContext));
   return <View style={[styles.rocker, disabled && styles.disabled]}>
-    <RemoteButton label={`${label} up`} icon={label === 'Volume' ? 'plus' : 'chevron-up'} repeat={{ key: up }} disabled={disabled} rockerEnd="top" style={styles.rockerButton} />
-    <Text style={[styles.rockerLabel, disabled && styles.disabledText]}>{label === 'Volume' ? 'VOL' : 'CH'}</Text>
-    <RemoteButton label={`${label} down`} icon={label === 'Volume' ? 'minus' : 'chevron-down'} repeat={{ key: down }} disabled={disabled} rockerEnd="bottom" style={styles.rockerButton} />
+    <RemoteButton label={t(label === 'Volume' ? 'Volume up' : 'Channel up')} icon={label === 'Volume' ? 'plus' : 'chevron-up'} repeat={{ key: up }} disabled={disabled} rockerEnd="top" style={styles.rockerButton} />
+    <Text style={[styles.rockerLabel, disabled && styles.disabledText]}>{label === 'Volume' ? t('VOL') : t('CH')}</Text>
+    <RemoteButton label={t(label === 'Volume' ? 'Volume down' : 'Channel down')} icon={label === 'Volume' ? 'minus' : 'chevron-down'} repeat={{ key: down }} disabled={disabled} rockerEnd="bottom" style={styles.rockerButton} />
   </View>;
 }
 const makeStyles = (scale: number) => StyleSheet.create({

@@ -1,3 +1,4 @@
+import { useTranslate } from '../i18n/context';
 import { request } from '../lib/transport';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -6,6 +7,7 @@ import { errorMessage } from '../lib/remote';
 import { Sheet } from './Sheet';
 
 export function KeyboardSheet({ open, ready, onClose }: { open: boolean; ready: boolean; onClose: () => void }) {
+  const t = useTranslate();
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
@@ -24,16 +26,16 @@ export function KeyboardSheet({ open, ready, onClose }: { open: boolean; ready: 
       if (!mounted.current) return;
       if (enter) await request('ssap://com.webos.service.ime/sendEnterKey');
       if (mounted.current) onClose();
-    } catch (issue) { if (mounted.current) setError(errorMessage(issue)); }
+    } catch (issue) { if (mounted.current) setError(errorMessage(issue, t)); }
     finally { pending.current = false; if (mounted.current) setSending(false); }
   };
-  return <Sheet open={open} onClose={onClose} title="Keyboard" subtitle="Type into the focused field on your TV.">
+  return <Sheet open={open} onClose={onClose} title={t('Keyboard')} subtitle={t('Type into the focused field on your TV.')}>
     <View style={styles.content}>
-      <TextInput mode="outlined" label="Text for your TV" placeholder="Search for something to watch" value={text} onChangeText={setText} multiline numberOfLines={3} contentStyle={styles.input} autoFocus={open} disabled={sending || !ready} />
-      <HelperText type={error || !ready ? 'error' : 'info'}>{!ready ? 'Your TV disconnected. Reconnect to send text.' : error || 'Select a text field on the TV before sending.'}</HelperText>
+      <TextInput mode="outlined" label={t('Text for your TV')} placeholder={t('Search for something to watch')} value={text} onChangeText={setText} multiline numberOfLines={3} contentStyle={styles.input} autoFocus={open} disabled={sending || !ready} />
+      <HelperText type={error || !ready ? 'error' : 'info'}>{!ready ? t('Your TV disconnected. Reconnect to send text.') : error || t('Select a text field on the TV before sending.')}</HelperText>
       <View style={styles.actions}>
-        <Button mode="outlined" icon="send" disabled={sending || !ready || !text} onPress={() => void send(false)} contentStyle={styles.button}>Send</Button>
-        <Button mode="contained" icon="keyboard-return" loading={sending} disabled={sending || !ready} onPress={() => void send(true)} contentStyle={styles.button}>Send + Enter</Button>
+        <Button mode="outlined" icon="send" disabled={sending || !ready || !text} onPress={() => void send(false)} contentStyle={styles.button}>{t('Send')}</Button>
+        <Button mode="contained" icon="keyboard-return" loading={sending} disabled={sending || !ready} onPress={() => void send(true)} contentStyle={styles.button}>{t('Send + Enter')}</Button>
       </View>
     </View>
   </Sheet>;

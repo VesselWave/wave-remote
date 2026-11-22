@@ -1,3 +1,4 @@
+import { useTranslate } from '../i18n/context';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { IconButton, Snackbar, Text } from 'react-native-paper';
@@ -16,6 +17,7 @@ export function Sheet({ title, subtitle, open, onClose, onBack, children }: {
   /** Lists can put the heading in their own scroll container to preserve virtualization. */
   children: ReactNode | ((heading: ReactNode) => ReactNode);
 }) {
+  const t = useTranslate();
   const insets = useSafeAreaInsets();
   const feedback = useContext(FeedbackContext);
   const [reducedMotion, setReducedMotion] = useState(true);
@@ -28,15 +30,15 @@ export function Sheet({ title, subtitle, open, onClose, onBack, children }: {
     <View style={styles.heading}>
       <View style={styles.title}><Text variant="headlineSmall" accessibilityRole="header">{title}</Text>
         {subtitle ? <Text variant="bodyMedium" style={styles.subtitle}>{subtitle}</Text> : null}</View>
-      <IconButton icon="close" accessibilityLabel={`Close ${title}`} onPress={onClose} size={24} style={styles.close} />
+      <IconButton icon="close" accessibilityLabel={t('Close {title}', { title })} onPress={onClose} size={24} style={styles.close} />
     </View></>;
   return <Modal visible={open} transparent animationType={reducedMotion ? 'none' : 'fade'} onRequestClose={onBack ?? onClose} statusBarTranslucent>
     <KeyboardAvoidingView style={[styles.overlay, { paddingTop: Math.max(12, insets.top) }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Close menu" accessibilityRole="button" />
+      <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel={t('Close menu')} accessibilityRole="button" />
       <View style={[styles.sheet, { paddingBottom: 8 + insets.bottom }]} accessibilityViewIsModal>
         {typeof children === 'function' ? children(heading) : <ScrollFrame endPadding={SHEET_END_PADDING}>{heading}{children}</ScrollFrame>}
       </View>
-      <Snackbar visible={!!feedback.message} onDismiss={feedback.dismiss} duration={6500} action={{ label: 'Dismiss', onPress: feedback.dismiss }}>{feedback.message}</Snackbar>
+      <Snackbar visible={!!feedback.message} onDismiss={feedback.dismiss} duration={6500} action={{ label: t('Dismiss'), onPress: feedback.dismiss }}>{feedback.message}</Snackbar>
     </KeyboardAvoidingView>
   </Modal>;
 }

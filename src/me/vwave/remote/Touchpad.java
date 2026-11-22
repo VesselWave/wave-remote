@@ -1,6 +1,8 @@
 package me.vwave.remote;
 
 import android.content.Context;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
@@ -9,6 +11,8 @@ import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+
+import me.vwave.remote.module.R;
 
 /**
  * Trackpad: drag to move, tap to click, drag the right strip to scroll.
@@ -49,6 +53,8 @@ final class Touchpad extends View {
     private final Paint scrollTrack = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF bounds = new RectF();
     private final RectF scrollBounds = new RectF();
+
+    private String moveHint, scrollHint, shortMoveHint, shortTapHint, shortScrollHint;
 
     private float lastX, lastY, downX, downY, touchX = -1, touchY;
     private long downTime, lastTime;
@@ -96,7 +102,23 @@ final class Touchpad extends View {
         scrollLine.setStrokeWidth(4 * density);
         scrollLine.setStrokeCap(Paint.Cap.ROUND);
         scrollTrack.setColor(hintColor);
-        setContentDescription("Touchpad. Drag to move the TV pointer, tap to click. Slide up or down on the right edge to scroll; two-finger scrolling also works.");
+        updateHints();
+    }
+
+    @Override protected void onConfigurationChanged(Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        updateHints();
+        invalidate();
+    }
+
+    private void updateHints() {
+        Resources res = getResources();
+        setContentDescription(res.getString(R.string.wave_touchpad_instructions));
+        moveHint = res.getString(R.string.wave_touchpad_move_and_tap);
+        scrollHint = res.getString(R.string.wave_touchpad_scroll);
+        shortMoveHint = res.getString(R.string.wave_touchpad_move_short);
+        shortTapHint = res.getString(R.string.wave_touchpad_tap_short);
+        shortScrollHint = res.getString(R.string.wave_touchpad_scroll_short);
     }
 
     @Override protected void onMeasure(int widthSpec, int heightSpec) {
@@ -111,17 +133,15 @@ final class Touchpad extends View {
         c.drawRoundRect(bounds, r, r, fill);
         float cy = getHeight() / 2f;
         float centerX = (getWidth() - SCROLL_AREA_DP * density) / 2f;
-        String moveHint = "Drag to move · Tap to click";
-        String scrollHint = "Slide right edge to scroll";
         float textWidth = Math.max(0, getWidth() - (SCROLL_AREA_DP + 16) * density);
         if (Math.max(hint.measureText(moveHint), hint.measureText(scrollHint)) <= textWidth) {
             c.drawText(moveHint, centerX, cy - 4 * density, hint);
             c.drawText(scrollHint, centerX, cy + 16 * density, hint);
         } else {
             float lineHeight = Math.max(20 * density, hint.getFontSpacing());
-            c.drawText("Drag to move", centerX, cy - lineHeight, hint);
-            c.drawText("Tap to click", centerX, cy, hint);
-            c.drawText("Edge: scroll", centerX, cy + lineHeight, hint);
+            c.drawText(shortMoveHint, centerX, cy - lineHeight, hint);
+            c.drawText(shortTapHint, centerX, cy, hint);
+            c.drawText(shortScrollHint, centerX, cy + lineHeight, hint);
         }
         // A recessed strip and rounded grip distinguish scrolling from the pointer area.
         boolean active = scrollStrip && touchX >= 0;
