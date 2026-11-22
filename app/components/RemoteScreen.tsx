@@ -1,3 +1,4 @@
+import { useTranslate } from '../i18n/context';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Text, TouchableRipple } from 'react-native-paper';
@@ -13,6 +14,7 @@ export function RemoteScreen({ state, setPanel, power, run }: {
   state: RemoteState; setPanel: (panel: Panel) => void; power: () => void;
   run: (action: () => Promise<unknown>) => Promise<boolean>;
 }) {
+  const t = useTranslate();
   const [viewport, setViewport] = useState({ width: 412, height: 850 });
   // React Native reports logical pixels after system bars and display scaling.
   // Keep the reference proportions while leaving scrolling for large accessibility text.
@@ -24,33 +26,33 @@ export function RemoteScreen({ state, setPanel, power, run }: {
   return <RemoteScaleContext.Provider value={scale}><View style={styles.screen} onLayout={({ nativeEvent: { layout } }) => setViewport({ width: layout.width, height: layout.height })}>
     <ScrollFrame style={styles.scroll} contentContainerStyle={styles.content}>
     <View style={styles.header}>
-      <Pressable accessibilityRole="button" accessibilityLabel={`${state.name || 'LG TV'}. ${connectionLabel(state)}`} accessibilityHint="Reconnect to your TV" style={styles.titles} onPress={() => { if (!ready && !busy) void run(() => native!.reconnect()); }}>
+      <Pressable accessibilityRole="button" accessibilityLabel={`${state.name || 'LG TV'}. ${connectionLabel(state, t)}`} accessibilityHint={t('Reconnect to your TV')} style={styles.titles} onPress={() => { if (!ready && !busy) void run(() => native!.reconnect()); }}>
         <Text style={styles.name} numberOfLines={1}>{state.name || 'LG TV'}</Text>
-        <Text style={[styles.status, !ready && !busy && { color: palette.power }]} numberOfLines={2} accessibilityLiveRegion="polite">{connectionLabel(state)}</Text>
+        <Text style={[styles.status, !ready && !busy && { color: palette.power }]} numberOfLines={2} accessibilityLiveRegion="polite">{connectionLabel(state, t)}</Text>
       </Pressable>
       {busy ? <ActivityIndicator size={18} style={styles.activity} /> : null}
-      <RemoteButton label={state.tvs.length > 1 ? 'Switch TV' : 'Add or switch TV'} icon="swap-horizontal" onPress={() => setPanel('tvs')} style={styles.more} />
-      <RemoteButton label="Remote settings" icon="dots-horizontal" onPress={() => setPanel('settings')} style={styles.more} />
+      <RemoteButton label={state.tvs.length > 1 ? t('Switch TV') : t('Add or switch TV')} icon="swap-horizontal" onPress={() => setPanel('tvs')} style={styles.more} />
+      <RemoteButton label={t('Remote settings')} icon="dots-horizontal" onPress={() => setPanel('settings')} style={styles.more} />
     </View>
     <View style={styles.row}>
-      <RemoteButton label={ready ? 'Power off' : 'Wake TV'} icon="power" color={palette.power} disabled={state.waking || state.state === 'pairing'} onPress={power} style={styles.weight} />
-      <RemoteButton label="Inputs" icon="application-import" caption="Inputs" disabled={!ready} onPress={() => setPanel('inputs')} style={styles.weight} />
-      <RemoteButton label={state.muted ? 'Unmute' : 'Mute'} icon={state.muted ? 'volume-off' : 'volume-high'} color={state.muted ? palette.power : palette.text} disabled={!ready} onPress={() => { void run(() => native!.request('ssap://audio/setMute', { mute: !state.muted })); }} style={styles.weight} />
+      <RemoteButton label={ready ? t('Power off') : t('Wake TV')} icon="power" color={palette.power} disabled={state.waking || state.state === 'pairing'} onPress={power} style={styles.weight} />
+      <RemoteButton label={t('Inputs')} icon="application-import" caption={t('Inputs')} disabled={!ready} onPress={() => setPanel('inputs')} style={styles.weight} />
+      <RemoteButton label={state.muted ? t('Unmute') : t('Mute')} icon={state.muted ? 'volume-off' : 'volume-high'} color={state.muted ? palette.power : palette.text} disabled={!ready} onPress={() => { void run(() => native!.request('ssap://audio/setMute', { mute: !state.muted })); }} style={styles.weight} />
     </View>
     <View style={styles.controls}>
       <Rocker label="Volume" up={commands.volumeUp} down={commands.volumeDown} disabled={!ready} />
       <View style={styles.shortcuts}>
-        <RemoteButton label="Apps" icon="view-grid-outline" caption="Apps" disabled={!ready} onPress={() => setPanel('apps')} style={styles.shortcut} />
-        <RemoteButton label="Keyboard" icon="keyboard-outline" caption="Keyboard" disabled={!ready} onPress={() => setPanel('keyboard')} style={styles.shortcut} />
+        <RemoteButton label={t('Apps')} icon="view-grid-outline" caption={t('Apps')} disabled={!ready} onPress={() => setPanel('apps')} style={styles.shortcut} />
+        <RemoteButton label={t('Keyboard')} icon="keyboard-outline" caption={t('Keyboard')} disabled={!ready} onPress={() => setPanel('keyboard')} style={styles.shortcut} />
       </View>
       <Rocker label="Channel" up={commands.channelUp} down={commands.channelDown} disabled={!ready} />
     </View>
     <View style={styles.row}>
-      {([['rewind', 'rewind', 'Rewind'], ['play', 'play', 'Play'], ['pause', 'pause', 'Pause'], ['fastForward', 'fast-forward', 'Fast forward']] as const).map(([command, icon, label]) =>
+      {([['rewind', 'rewind', t('Rewind')], ['play', 'play', t('Play')], ['pause', 'pause', t('Pause')], ['fastForward', 'fast-forward', t('Fast forward')]] as const).map(([command, icon, label]) =>
         <RemoteButton key={command} label={label} icon={icon} disabled={!ready} onPress={() => { void run(() => native!.request(`ssap://media.controls/${command}`, null)); }} style={styles.weight} />)}
     </View>
     <View style={styles.modes} accessibilityRole="tablist">
-      {([['Buttons', 'gamepad-round-outline'], ['Touchpad', 'gesture-tap']] as const).map(([label, icon], index) => {
+      {([[t('Buttons'), 'gamepad-round-outline'], [t('Touchpad'), 'gesture-tap']] as const).map(([label, icon], index) => {
         const selected = state.touchpad === (index === 1);
         return <View key={label} style={[styles.mode, selected && styles.selectedMode]}><TouchableRipple onPress={() => { void run(() => native!.preferences(index === 1, state.naturalEdge, state.naturalTwoFinger)); }} accessibilityRole="tab" accessibilityState={{ selected }} style={styles.modeTouch}>
           <View style={styles.modeContent}>
@@ -64,15 +66,15 @@ export function RemoteScreen({ state, setPanel, power, run }: {
       {state.touchpad && NativeTouchpad ? <View style={[styles.touchpad, !ready && styles.offlinePad]}>
         {/* The native pad draws its own hints, so leave it out entirely while it can't be used. */}
         {ready ? <NativeTouchpad style={styles.nativePad} naturalEdge={state.naturalEdge} naturalTwoFinger={state.naturalTwoFinger} />
-          : <><MaterialCommunityIcons name="television-off" size={28} color={palette.onDisabled} /><Text variant="bodyMedium" style={styles.offlineText}>Connect to use the touchpad</Text></>}
+          : <><MaterialCommunityIcons name="television-off" size={28} color={palette.onDisabled} /><Text variant="bodyMedium" style={styles.offlineText}>{t('Connect to use the touchpad')}</Text></>}
       </View> : <Dpad disabled={!ready} />}
     </View>
     <View style={styles.landingZone} />
     </ScrollFrame>
     <View style={styles.footer}><View style={[styles.row, styles.navigation]}>
-      <RemoteButton label="Back" icon="arrow-u-left-top" disabled={!ready} onPress={key('BACK')} style={[styles.weight, styles.navButton]} />
-      <RemoteButton label="Home" icon="home-outline" disabled={!ready} onPress={key('HOME')} style={[styles.weight, styles.navButton]} />
-      <RemoteButton label="TV settings" icon="cog-outline" disabled={!ready} onPress={key('MENU')} style={[styles.weight, styles.navButton]} />
+      <RemoteButton label={t('Back')} icon="arrow-u-left-top" disabled={!ready} onPress={key('BACK')} style={[styles.weight, styles.navButton]} />
+      <RemoteButton label={t('Home')} icon="home-outline" disabled={!ready} onPress={key('HOME')} style={[styles.weight, styles.navButton]} />
+      <RemoteButton label={t('TV settings')} icon="cog-outline" disabled={!ready} onPress={key('MENU')} style={[styles.weight, styles.navButton]} />
     </View></View>
   </View></RemoteScaleContext.Provider>;
 }

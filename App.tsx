@@ -1,3 +1,6 @@
+import { useLocales } from 'expo-localization';
+import { translatorFor } from './app/i18n/messages';
+import { TranslationContext, useTranslate } from './app/i18n/context';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -5,6 +8,7 @@ import { PaperProvider, Snackbar, ActivityIndicator } from 'react-native-paper';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { theme, palette } from './app/theme';
+import { diagnostic } from './app/lib/remote';
 import { useRemote } from './app/hooks/useRemote';
 import { RemoteScreen, type Panel } from './app/components/RemoteScreen';
 import { SetupScreen } from './app/components/SetupScreen';
@@ -17,7 +21,9 @@ import { TvSheet } from './app/components/TvSheet';
 import { native } from './modules/wave-remote';
 
 function RemoteApp() {
+  const t = useTranslate();
   const { state, loading, message, setMessage, run, power } = useRemote();
+  const feedback = diagnostic(message, t);
   const [panel, setPanel] = useState<Panel>(null);
   // Adding a TV shows setup on top of the current one, which can be resumed with Back.
   const [adding, setAdding] = useState(false);
@@ -26,19 +32,20 @@ function RemoteApp() {
   const close = () => setPanel(null);
   const add = () => { setPanel(null); setAdding(true); void run(() => native!.disconnect()); };
   const back = () => { setAdding(false); void run(() => native!.reconnect()); };
-  return <FeedbackContext.Provider value={{ message, dismiss: () => setMessage('') }}><SafeAreaView style={styles.safe}>
+  return <FeedbackContext.Provider value={{ message: feedback, dismiss: () => setMessage('') }}><SafeAreaView style={styles.safe}>
     <StatusBar style="light" />
-    {loading ? <View style={styles.loading}><ActivityIndicator size="large" accessibilityLabel="Loading your remote" /></View>
+    {loading ? <View style={styles.loading}><ActivityIndicator size="large" accessibilityLabel={t('Loading your remote')} /></View>
       : showRemote ? <RemoteScreen state={state} setPanel={setPanel} power={() => void power()} run={run} /> : <SetupScreen state={state} run={run} onConnect={() => setAdding(false)} onBack={adding && hasRemote ? back : undefined} />}
     <TvSheet state={state} open={panel === 'tvs'} onClose={close} onAdd={add} run={run} />
     <SettingsSheet state={state} open={panel === 'settings'} onClose={close} run={run} />
     {panel === 'apps' ? <AppsSheet key={`apps-${state.host}-${state.state}`} onClose={close} report={setMessage} ready={state.state === 'ready'} favorites={state.favorites} hidden={state.hidden} /> : null}
     {panel === 'inputs' ? <PickerSheet key={`inputs-${state.host}-${state.state}`} onClose={close} report={setMessage} ready={state.state === 'ready'} /> : null}
     {panel === 'keyboard' ? <KeyboardSheet open ready={state.state === 'ready'} onClose={close} /> : null}
-    <Snackbar visible={!!message} onDismiss={() => setMessage('')} duration={6500} action={{ label: 'Dismiss', onPress: () => setMessage('') }} style={styles.snackbar}>{message}</Snackbar>
+    <Snackbar visible={!!message} onDismiss={() => setMessage('')} duration={6500} action={{ label: t('Dismiss'), onPress: () => setMessage('') }} style={styles.snackbar}>{feedback}</Snackbar>
   </SafeAreaView></FeedbackContext.Provider>;
 }
 export default function App() {
-  return <SafeAreaProvider><PaperProvider theme={theme} settings={{ icon: (props) => <MaterialCommunityIcons {...props} name={props.name as keyof typeof MaterialCommunityIcons.glyphMap} /> }}><RemoteApp /></PaperProvider></SafeAreaProvider>;
+  const t = translatorFor(useLocales());
+  return <TranslationContext.Provider value={t}><SafeAreaProvider><PaperProvider theme={theme} settings={{ icon: (props) => <MaterialCommunityIcons {...props} name={props.name as keyof typeof MaterialCommunityIcons.glyphMap} /> }}><RemoteApp /></PaperProvider></SafeAreaProvider></TranslationContext.Provider>;
 }
 const styles = StyleSheet.create({ safe: { flex: 1, backgroundColor: palette.background }, loading: { flex: 1, alignItems: 'center', justifyContent: 'center' }, snackbar: { marginBottom: 12 } });

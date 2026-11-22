@@ -1,9 +1,10 @@
+import { useTranslate } from '../i18n/context';
 import { useEffect, useRef, useState } from 'react';
 import { BackHandler, KeyboardAvoidingView, Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ActivityIndicator, Button, HelperText, Icon, IconButton, List, Surface, Text, TextInput, useTheme } from 'react-native-paper';
 import { native, type FoundTv, type RemoteState } from '../../modules/wave-remote';
-import { errorMessage, normalizeHost } from '../lib/remote';
+import { diagnostic, errorMessage, normalizeHost } from '../lib/remote';
 import { palette, radius } from '../theme';
 import { ScrollFrame } from './ScrollFrame';
 
@@ -12,6 +13,7 @@ export function SetupScreen({ state, run, onConnect, onBack }: {
   state: RemoteState; run: (action: () => Promise<unknown>) => Promise<boolean>;
   onConnect?: () => void; onBack?: () => void;
 }) {
+  const t = useTranslate();
   const insets = useSafeAreaInsets();
   const { fonts } = useTheme();
   const { height } = useWindowDimensions();
@@ -61,42 +63,42 @@ export function SetupScreen({ state, run, onConnect, onBack }: {
   };
   return <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={insets.top}>
     <ScrollFrame style={styles.screen} contentContainerStyle={[styles.content, compact && styles.compactContent]}>
-    {onBack ? <IconButton icon="arrow-left" accessibilityLabel="Back to the remote" onPress={onBack} style={styles.back} /> : null}
+    {onBack ? <IconButton icon="arrow-left" accessibilityLabel={t('Back to the remote')} onPress={onBack} style={styles.back} /> : null}
     <View style={[styles.logo, compact && styles.compactLogo]}><Icon source="television" size={36} color={palette.accentFg} /></View>
-    <Text variant={compact ? 'headlineMedium' : 'headlineLarge'} accessibilityRole="header">{onBack ? 'Add a TV' : 'Pick your TV'}</Text>
-    <Text variant="bodyLarge" style={[styles.intro, compact && { marginTop: 8, marginBottom: 12 }]}>Your phone and TV need to be on the same Wi-Fi network.</Text>
+    <Text variant={compact ? 'headlineMedium' : 'headlineLarge'} accessibilityRole="header">{onBack ? t('Add a TV') : t('Pick your TV')}</Text>
+    <Text variant="bodyLarge" style={[styles.intro, compact && { marginTop: 8, marginBottom: 12 }]}>{t('Your phone and TV need to be on the same Wi-Fi network.')}</Text>
     {!native ? <Surface elevation={1} style={styles.notice}>
-      <Text variant="titleMedium">Android development build required</Text>
-      <Text variant="bodyMedium" style={styles.secondary}>TV control uses a custom native module. Open the installed Wave Remote app; Expo Go cannot connect to your TV.</Text>
+      <Text variant="titleMedium">{t('Android development build required')}</Text>
+      <Text variant="bodyMedium" style={styles.secondary}>{t('TV control uses a custom native module. Open the installed Wave Remote app; Expo Go cannot connect to your TV.')}</Text>
     </Surface> : null}
     {busy ? <Surface elevation={1} style={styles.notice}>
-      <View style={styles.busyHeading}><ActivityIndicator size={22} /><Text variant="titleMedium">{state.state === 'pairing' ? 'Approve on your TV' : 'Connecting to your TV'}</Text></View>
-      <Text variant="bodyMedium" style={styles.secondary}>{state.state === 'pairing' ? 'Accept the connection request on the TV using its own remote. Keep this screen open.' : `Connecting to ${state.host}…`}</Text>
-      <Button onPress={() => { void run(() => native!.disconnect()); }}>Cancel</Button>
+      <View style={styles.busyHeading}><ActivityIndicator size={22} /><Text variant="titleMedium">{state.state === 'pairing' ? t('Approve on your TV') : t('Connecting to your TV')}</Text></View>
+      <Text variant="bodyMedium" style={styles.secondary}>{state.state === 'pairing' ? t('Accept the connection request on the TV using its own remote. Keep this screen open.') : t('Connecting to {host}…', { host: state.host || '' })}</Text>
+      <Button onPress={() => { void run(() => native!.disconnect()); }}>{t('Cancel')}</Button>
     </Surface> : state.detail && !onBack ? <Surface elevation={1} style={styles.notice}>
-      <Text variant="titleMedium">Couldn’t connect</Text><Text style={styles.secondary}>{state.detail}</Text>
-      <Button icon="refresh" onPress={() => { void run(() => native!.reconnect()); }}>Try again</Button>
+      <Text variant="titleMedium">{t('Couldn’t connect')}</Text><Text style={styles.secondary}>{diagnostic(state.detail, t)}</Text>
+      <Button icon="refresh" onPress={() => { void run(() => native!.reconnect()); }}>{t('Try again')}</Button>
     </Surface> : null}
     {saved.length && !onBack ? <>
-      <Text variant="titleMedium" style={styles.savedHeading} accessibilityRole="header">Your TVs</Text>
+      <Text variant="titleMedium" style={styles.savedHeading} accessibilityRole="header">{t('Your TVs')}</Text>
       <View style={styles.devices}>
         {saved.map((tv) => <List.Item key={tv.host} title={tv.name || 'LG TV'} description={tv.host} accessibilityLabel={`${tv.name || 'LG TV'}, ${tv.host}`} titleNumberOfLines={2} titleStyle={[fonts.titleMedium, styles.deviceTitle]} descriptionStyle={[fonts.bodyMedium, styles.secondary]} left={(props) => <List.Icon {...props} icon="television" />} right={(props) => <List.Icon {...props} icon="chevron-right" />} onPress={() => connect({ host: tv.host, name: tv.name || 'LG TV' })} disabled={busy} style={styles.device} />)}
       </View>
     </> : null}
-    <View style={styles.sectionHeading}><Text variant="titleMedium" accessibilityRole="header">Nearby TVs</Text>
-      {searching ? <ActivityIndicator size={20} /> : <Button icon="refresh" textColor={palette.accentFg} contentStyle={styles.searchAction} onPress={() => void search()} disabled={!native || busy}>Search again</Button>}
+    <View style={styles.sectionHeading}><Text variant="titleMedium" accessibilityRole="header">{t('Nearby TVs')}</Text>
+      {searching ? <ActivityIndicator size={20} /> : <Button icon="refresh" textColor={palette.accentFg} contentStyle={styles.searchAction} onPress={() => void search()} disabled={!native || busy}>{t('Search again')}</Button>}
     </View>
     <View style={styles.devices}>
-      {devices.map((device) => <List.Item key={device.host} title={device.name} description={savedHosts.has(device.host) ? `${device.host} · Paired` : device.host} accessibilityLabel={`${device.name}, ${device.host}${savedHosts.has(device.host) ? ', paired' : ''}`} titleNumberOfLines={2} titleStyle={[fonts.titleMedium, styles.deviceTitle]} descriptionStyle={[fonts.bodyMedium, styles.secondary]} left={(props) => <List.Icon {...props} icon="television" />} right={(props) => <List.Icon {...props} icon="chevron-right" />} onPress={() => connect(device)} disabled={busy} style={styles.device} />)}
-      {searching ? <Text variant="bodyMedium" style={[styles.empty, compact && { paddingVertical: 12 }]}>Looking for LG webOS TVs…</Text> : null}
-      {!searching && !devices.length && searched ? <Text variant="bodyMedium" style={[styles.empty, compact && { paddingVertical: 12 }]}>{searchError || 'No TVs found. Turn your TV on, check Wi-Fi, or enter its IP address below.'}</Text> : null}
+      {devices.map((device) => <List.Item key={device.host} title={device.name} description={savedHosts.has(device.host) ? `${device.host} · ${t('Paired')}` : device.host} accessibilityLabel={`${device.name}, ${device.host}${savedHosts.has(device.host) ? t(', paired') : ''}`} titleNumberOfLines={2} titleStyle={[fonts.titleMedium, styles.deviceTitle]} descriptionStyle={[fonts.bodyMedium, styles.secondary]} left={(props) => <List.Icon {...props} icon="television" />} right={(props) => <List.Icon {...props} icon="chevron-right" />} onPress={() => connect(device)} disabled={busy} style={styles.device} />)}
+      {searching ? <Text variant="bodyMedium" style={[styles.empty, compact && { paddingVertical: 12 }]}>{t('Looking for LG webOS TVs…')}</Text> : null}
+      {!searching && !devices.length && searched ? <Text variant="bodyMedium" style={[styles.empty, compact && { paddingVertical: 12 }]}>{diagnostic(searchError, t) || t('No TVs found. Turn your TV on, check Wi-Fi, or enter its IP address below.')}</Text> : null}
     </View>
     <View style={[styles.manual, compact && styles.compactManual]}>
-      <Text variant="titleMedium" accessibilityRole="header">Connect by IP address</Text>
-      <Text variant="bodyMedium" style={styles.secondary}>Find it in your TV’s Settings → Network.</Text>
-      <TextInput label="TV IP address" placeholder="192.168.0.1" mode="outlined" value={host} onChangeText={(value) => { setHost(value); setInvalid(false); }} keyboardType="decimal-pad" autoCorrect={false} autoCapitalize="none" returnKeyType="go" onSubmitEditing={() => connect()} error={invalid} disabled={!native || busy} style={styles.address} />
-      {invalid ? <HelperText type="error" padding="none">Enter a valid IP address, such as 192.168.0.1.</HelperText> : null}
-      <Button mode="contained" icon="lan-connect" onPress={() => connect()} disabled={!native || busy || !host.trim()} contentStyle={styles.connect}>Connect</Button>
+      <Text variant="titleMedium" accessibilityRole="header">{t('Connect by IP address')}</Text>
+      <Text variant="bodyMedium" style={styles.secondary}>{t('Find it in your TV’s Settings → Network.')}</Text>
+      <TextInput label={t('TV IP address')} placeholder="192.168.0.1" mode="outlined" value={host} onChangeText={(value) => { setHost(value); setInvalid(false); }} keyboardType="decimal-pad" autoCorrect={false} autoCapitalize="none" returnKeyType="go" onSubmitEditing={() => connect()} error={invalid} disabled={!native || busy} style={styles.address} />
+      {invalid ? <HelperText type="error" padding="none">{t('Enter a valid IP address, such as 192.168.0.1.')}</HelperText> : null}
+      <Button mode="contained" icon="lan-connect" onPress={() => connect()} disabled={!native || busy || !host.trim()} contentStyle={styles.connect}>{t('Connect')}</Button>
     </View>
   </ScrollFrame></KeyboardAvoidingView>;
 }

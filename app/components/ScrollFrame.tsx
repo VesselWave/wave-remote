@@ -1,3 +1,4 @@
+import { useTranslate } from '../i18n/context';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Animated, ScrollView, StyleSheet, useAnimatedValue, View, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent, type ScrollViewProps } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -6,6 +7,7 @@ import { palette, radius } from '../theme';
 
 /** Fitting screens stay still; overflowing screens briefly explain that they scroll. */
 export function useScrollCues(endPadding = 0) {
+  const t = useTranslate();
   const [paddingBottom, setPaddingBottom] = useState(endPadding);
   const metrics = useRef({ height: 0, content: 0, offset: 0 });
   const [scrollable, setScrollable] = useState(false);
@@ -43,7 +45,7 @@ export function useScrollCues(endPadding = 0) {
   };
   // This hint never captures a tap or changes the space available to the content.
   const cues = scrollable ? <Animated.View pointerEvents="none" importantForAccessibility="no-hide-descendants" style={[styles.cue, { opacity }]}>
-    <Text style={styles.label}>More below</Text><MaterialCommunityIcons name="chevron-down" size={28} color={palette.text} />
+    <Text style={styles.label}>{t('More below')}</Text><MaterialCommunityIcons name="chevron-down" size={28} color={palette.text} />
   </Animated.View> : null;
   const frameProps = { onLayout: (event: LayoutChangeEvent) => { metrics.current.height = event.nativeEvent.layout.height; update(); } };
   return { props, frameProps, cues, contentStyle: { paddingBottom } };

@@ -31,6 +31,8 @@ Control your LG webOS TV from your Android phone, over your own Wi-Fi. It talks 
 2. Connect to the same network as the TV. Guest Wi-Fi and client isolation can get in the way.
 3. Open the app, pick your TV and accept the prompt on the TV. It may say "LG Mobile" ([why](NOTICE.md)).
 
+Wave Remote follows your Android language preferences and supports English and Russian. On Android 13 and later, you can also select a language in the system settings for Wave Remote.
+
 To turn the TV on from the app, connect once while it's on and enable **Mobile TV On** (or **Turn on via Wi-Fi**) in the TV's settings. Bluetooth wake also needs the Nearby devices permission on Android 12+.
 
 Tested with an LG 65UT7570PUB (webOS 24) and a Pixel 7. Other webOS TVs may work. Stuck? See [troubleshooting](docs/TROUBLESHOOTING.md).

@@ -1,3 +1,4 @@
+import { useTranslate } from '../i18n/context';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, HelperText, IconButton, List, TextInput } from 'react-native-paper';
@@ -9,6 +10,7 @@ export function TvSheet({ state, open, onClose, onAdd, run }: {
   state: RemoteState; open: boolean; onClose: () => void; onAdd: () => void;
   run: (action: () => Promise<unknown>) => Promise<boolean>;
 }) {
+  const t = useTranslate();
   const [editing, setEditing] = useState<SavedTv | null>(null);
   const [label, setLabel] = useState('');
   const close = () => { setEditing(null); onClose(); };
@@ -16,35 +18,35 @@ export function TvSheet({ state, open, onClose, onAdd, run }: {
   const save = (host: string, value: string) => { void run(() => native!.rename(host, value)).then((success) => { if (success) setEditing(null); }); };
   if (editing) {
     const own = editing.tvName || 'LG TV';
-    return <Sheet open={open} onClose={close} title="Rename TV" subtitle={editing.host}>
+    return <Sheet open={open} onClose={close} title={t('Rename TV')} subtitle={editing.host}>
       <View style={styles.form}>
-        <TextInput label="Name on this phone" placeholder={own} mode="outlined" value={label} onChangeText={setLabel} maxLength={40} autoFocus returnKeyType="done" onSubmitEditing={() => save(editing.host, label)} />
-        <HelperText type="info">Leave empty to use the TV’s own name, {own}.</HelperText>
+        <TextInput label={t('Name on this phone')} placeholder={own} mode="outlined" value={label} onChangeText={setLabel} maxLength={40} autoFocus returnKeyType="done" onSubmitEditing={() => save(editing.host, label)} />
+        <HelperText type="info">{t('Leave empty to use the TV’s own name, {name}.', { name: own })}</HelperText>
         <View style={styles.actions}>
-          <Button onPress={() => setEditing(null)}>Cancel</Button>
-          <Button mode="contained" onPress={() => save(editing.host, label)}>Save</Button>
+          <Button onPress={() => setEditing(null)}>{t('Cancel')}</Button>
+          <Button mode="contained" onPress={() => save(editing.host, label)}>{t('Save')}</Button>
         </View>
       </View>
     </Sheet>;
   }
-  return <Sheet open={open} onClose={close} title="Your TVs" subtitle="Pairings for every TV stay on this phone.">
+  return <Sheet open={open} onClose={close} title={t('Your TVs')} subtitle={t('Pairings for every TV stay on this phone.')}>
     <View style={styles.content}>
       {state.tvs.map((tv) => {
         const current = tv.host === state.host;
-        return <List.Item key={tv.host} title={tv.name || 'LG TV'} description={tv.paired ? tv.host : `${tv.host} · Not paired yet`}
+        return <List.Item key={tv.host} title={tv.name || 'LG TV'} description={tv.paired ? tv.host : `${tv.host} · ${t('Not paired yet')}`}
           titleNumberOfLines={2} accessibilityState={{ selected: current }}
-          accessibilityLabel={`${tv.name || 'LG TV'}, ${tv.host}${tv.paired ? '' : ', not paired yet'}${current ? ', current TV' : ''}`}
+          accessibilityLabel={`${tv.name || 'LG TV'}, ${tv.host}${tv.paired ? '' : t(', not paired yet')}${current ? t(', current TV') : ''}`}
           left={(props) => <List.Icon {...props} icon="television" color={current ? palette.accentFg : palette.muted} />}
           right={() => <View style={styles.trailing}>
             {current ? <List.Icon icon="check" color={palette.accentFg} /> : null}
-            <IconButton icon="pencil-outline" accessibilityLabel={`Rename ${tv.name || 'LG TV'}`} onPress={() => edit(tv)} style={styles.rename} />
+            <IconButton icon="pencil-outline" accessibilityLabel={t('Rename {name}', { name: tv.name || 'LG TV' })} onPress={() => edit(tv)} style={styles.rename} />
           </View>}
           onPress={() => {
             if (current) { close(); return; }
             void run(() => native!.connect(tv.host, tv.name || 'LG TV', null)).then((success) => { if (success) close(); });
           }} style={[styles.item, current && styles.current]} />;
       })}
-      <List.Item title="Add a TV" accessibilityLabel="Add a TV" description="Find another TV or enter its IP address" left={(props) => <List.Icon {...props} icon="plus" />} onPress={onAdd} style={styles.item} />
+      <List.Item title={t('Add a TV')} accessibilityLabel={t('Add a TV')} description={t('Find another TV or enter its IP address')} left={(props) => <List.Icon {...props} icon="plus" />} onPress={onAdd} style={styles.item} />
     </View>
   </Sheet>;
 }
