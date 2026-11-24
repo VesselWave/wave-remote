@@ -20,7 +20,7 @@ Control your LG webOS TV from your Android phone, over your own Wi-Fi. It talks 
 - D-pad with hold-to-repeat, or a touchpad with a scroll strip and two-finger scrolling
 - Volume, mute, channels, playback, inputs, apps and keyboard input
 - Your phone's volume buttons control the TV
-- Stays connected with the screen off, with volume and play/pause in a notification
+- Stays connected with the screen off, with volume, play and pause in a notification
 - Turn the TV on (Wake-on-LAN or Bluetooth) and off
 - Finds TVs on your network, or connects by IP address
 - Recovers paired TLS TVs after DHCP address changes without pairing again

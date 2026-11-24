@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Notification text colour. A theme attribute would resolve against the app's light theme, not
+      the shade, so the colour follows the system's night mode through values-night instead.
+    -->
+    <color name="remote_notification_icon">#DE000000</color>
+    <!-- 48dp touch targets. -->
+    <style name="RemoteNotificationButton">
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:background">?android:attr/selectableItemBackgroundBorderless</item>
+        <item name="android:tint">@color/remote_notification_icon</item>
+    </style>
+</resources>

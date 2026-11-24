@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RemoteService's notification body, collapsed and expanded alike: MediaStyle shows at most three
+  buttons when collapsed, and volume down, play, pause and volume up should all stay one tap away.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:minHeight="48dp" android:gravity="center_vertical" android:orientation="horizontal">
+    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+        android:layout_weight="1" android:orientation="vertical">
+        <TextView android:id="@+id/remote_title" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:ellipsize="end" android:maxLines="1"
+            android:textAppearance="@android:style/TextAppearance.Material.Notification.Title" />
+        <TextView android:id="@+id/remote_text" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:ellipsize="end" android:maxLines="1"
+            android:textAppearance="@android:style/TextAppearance.Material.Notification" />
+    </LinearLayout>
+    <LinearLayout android:id="@+id/remote_buttons" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <ImageButton android:id="@+id/remote_volume_down" style="@style/RemoteNotificationButton"
+            android:src="@drawable/remote_volume_down" android:contentDescription="Volume down" />
+        <ImageButton android:id="@+id/remote_play" style="@style/RemoteNotificationButton"
+            android:src="@drawable/remote_play" android:contentDescription="Play" />
+        <ImageButton android:id="@+id/remote_pause" style="@style/RemoteNotificationButton"
+            android:src="@drawable/remote_pause" android:contentDescription="Pause" />
+        <ImageButton android:id="@+id/remote_volume_up" style="@style/RemoteNotificationButton"
+            android:src="@drawable/remote_volume_up" android:contentDescription="Volume up" />
+    </LinearLayout>
+</LinearLayout>

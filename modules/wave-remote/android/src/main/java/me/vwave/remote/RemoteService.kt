@@ -8,9 +8,10 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
-import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.IBinder
+import android.view.View
+import android.widget.RemoteViews
 import me.vwave.remote.module.R
 
 /**
@@ -20,13 +21,13 @@ import me.vwave.remote.module.R
  */
 class RemoteService : Service() {
   /** What the notification shows; null when the module no longer wants the service. */
-  internal data class Status(val title: String, val text: String, val ready: Boolean, val playing: Boolean, val muted: Boolean)
+  internal data class Status(val title: String, val text: String, val ready: Boolean)
 
   companion object {
     const val VOLUME_DOWN = "me.vwave.remote.action.VOLUME_DOWN"
-    const val PLAY_PAUSE = "me.vwave.remote.action.PLAY_PAUSE"
+    const val PLAY = "me.vwave.remote.action.PLAY"
+    const val PAUSE = "me.vwave.remote.action.PAUSE"
     const val VOLUME_UP = "me.vwave.remote.action.VOLUME_UP"
-    const val MUTE = "me.vwave.remote.action.MUTE"
     /** The notification was swiped away, which Android allows for foreground services from 14. */
     const val DISMISSED = "me.vwave.remote.action.DISMISSED"
     private const val CHANNEL = "connection"
@@ -80,7 +81,7 @@ class RemoteService : Service() {
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
     // Android requires startForeground after startForegroundService, even when about to stop.
     val current = status
-    val notification = build(current ?: Status(applicationInfo.loadLabel(packageManager).toString(), "", false, false, false))
+    val notification = build(current ?: Status(applicationInfo.loadLabel(packageManager).toString(), "", false))
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       startForeground(NOTIFICATION, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE)
     } else {
@@ -125,22 +126,19 @@ class RemoteService : Service() {
       .setDeleteIntent(action(DISMISSED))
     if (open != null) builder.setContentIntent(PendingIntent.getActivity(this, 0, open, PendingIntent.FLAG_IMMUTABLE))
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
-    if (status.ready) {
-      builder
-        .addAction(button(R.drawable.remote_volume_down, "Volume down", VOLUME_DOWN))
-        .addAction(if (status.playing) button(R.drawable.remote_pause, "Pause", PLAY_PAUSE)
-          else button(R.drawable.remote_play, "Play", PLAY_PAUSE))
-        .addAction(button(R.drawable.remote_volume_up, "Volume up", VOLUME_UP))
-        .addAction(if (status.muted) button(R.drawable.remote_volume_off, "Unmute", MUTE)
-          else button(R.drawable.remote_volume_mute, "Mute", MUTE))
-        // Volume and play/pause stay visible when collapsed; mute joins them when expanded.
-        .setStyle(Notification.MediaStyle().setShowActionsInCompactView(0, 1, 2))
+    val body = RemoteViews(packageName, R.layout.remote_notification).apply {
+      setTextViewText(R.id.remote_title, status.title)
+      setTextViewText(R.id.remote_text, status.text)
+      setViewVisibility(R.id.remote_buttons, if (status.ready) View.VISIBLE else View.GONE)
+      setOnClickPendingIntent(R.id.remote_volume_down, action(VOLUME_DOWN))
+      setOnClickPendingIntent(R.id.remote_play, action(PLAY))
+      setOnClickPendingIntent(R.id.remote_pause, action(PAUSE))
+      setOnClickPendingIntent(R.id.remote_volume_up, action(VOLUME_UP))
     }
+    // The same row collapsed and expanded, so all four buttons are always one tap away.
+    builder.setStyle(Notification.DecoratedCustomViewStyle()).setCustomContentView(body).setCustomBigContentView(body)
     return builder.build()
   }
-
-  private fun button(icon: Int, label: String, action: String) =
-    Notification.Action.Builder(Icon.createWithResource(this, icon), label, action(action)).build()
 
   private fun action(action: String): PendingIntent = PendingIntent.getService(
     this, action.hashCode(), Intent(this, RemoteService::class.java).setAction(action), PendingIntent.FLAG_IMMUTABLE)

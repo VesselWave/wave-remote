@@ -51,8 +51,6 @@ class WaveRemoteModule : Module() {
    * reconnecting as needed, until the TV turns off, the user leaves, or reconnecting keeps failing.
    */
   private var session = false
-  /** The TV doesn't report playback, so the notification's play/pause guesses from the last command. */
-  private var playing = true
   private val giveUp = Runnable { endSession() }
   private val confirm = Runnable {
     if (quietAttempt && tv.isReady) { quietAttempt = false; onState(Tv.State.READY, null) }
@@ -76,8 +74,6 @@ class WaveRemoteModule : Module() {
   }
 
   companion object {
-    private const val PLAY = "ssap://media.controls/play"
-    private const val PAUSE = "ssap://media.controls/pause"
     private const val WATCH_MS = 3000L
     /** A TV in standby can keep its port open; probing it this often is still cheap. */
     private const val MAX_WATCH_MS = 10000L
@@ -181,7 +177,6 @@ class WaveRemoteModule : Module() {
       var completed = false
       val guardedTimeout = Runnable { if (!completed) { completed = true; timeout.run() } }
       main.postDelayed(guardedTimeout, 12000)
-      if (uri == PLAY || uri == PAUSE) { playing = uri == PLAY; syncService() }
       tv.request(uri, payload?.let { JSONObject(it) }) { result, error ->
         if (!completed) {
           completed = true
@@ -367,7 +362,6 @@ class WaveRemoteModule : Module() {
       failedAttempts = 0
       stopWake()
       main.removeCallbacks(giveUp)
-      playing = true
       if (foreground) beginSession()
       if (prefs.udn() == null || prefs.btMac() == null) {
         val host = prefs.host()
@@ -496,7 +490,7 @@ class WaveRemoteModule : Module() {
       volume >= 0 -> "Volume $volume"
       else -> "Connected"
     }
-    if (!RemoteService.show(context(), RemoteService.Status(name, text, ready, playing, muted))) session = false
+    if (!RemoteService.show(context(), RemoteService.Status(name, text, ready))) session = false
   }
 
   private fun onNotificationAction(action: String) {
@@ -511,8 +505,8 @@ class WaveRemoteModule : Module() {
     when (action) {
       RemoteService.VOLUME_UP -> tv.request("ssap://audio/volumeUp")
       RemoteService.VOLUME_DOWN -> tv.request("ssap://audio/volumeDown")
-      RemoteService.MUTE -> tv.request("ssap://audio/setMute", JSONObject().put("mute", !muted), null)
-      RemoteService.PLAY_PAUSE -> { tv.request(if (playing) PAUSE else PLAY); playing = !playing; syncService() }
+      RemoteService.PLAY -> tv.request("ssap://media.controls/play")
+      RemoteService.PAUSE -> tv.request("ssap://media.controls/pause")
     }
   }
   private fun jsonMap(value: JSONObject): Map<String, Any?> = value.keys().asSequence().associateWith { jsonValue(value.opt(it)) }

@@ -41,7 +41,7 @@ export function SettingsSheet({ state, open, onClose, run }: {
             buttons={[{ value: 'traditional', label: 'Traditional', showSelectedCheck: true, accessibilityLabel: `${group}: Traditional` }, { value: 'natural', label: 'Natural', showSelectedCheck: true, accessibilityLabel: `${group}: Natural` }]} />}
         </View>)}
       <Text variant="titleSmall" style={styles.sectionTitle} accessibilityRole="header">Background</Text>
-      <List.Item title="Stay connected" description="Keeps the TV connected with the screen off, with volume and play/pause in a notification" descriptionNumberOfLines={3}
+      <List.Item title="Stay connected" description="Keeps the TV connected with the screen off, with volume, play and pause in a notification" descriptionNumberOfLines={3}
         accessibilityRole="switch" accessibilityState={{ checked: state.background }} onPress={toggleBackground}
         right={() => <Switch value={state.background} onValueChange={toggleBackground} importantForAccessibility="no" />} style={styles.setting} />
       {state.background && !state.notifications ? <List.Item title="Show notification controls" description="Notifications are off for Wave Remote" descriptionNumberOfLines={2}
