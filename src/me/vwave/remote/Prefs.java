@@ -61,6 +61,10 @@ final class Prefs {
      */
     boolean naturalEdge() { return sp.getBoolean("naturalEdge", false); }
     boolean naturalTwoFinger() { return sp.getBoolean("naturalTwoFinger", false); }
+    /** Keep the connection, with notification controls, while the app is in the background. */
+    boolean background() { return sp.getBoolean("background", true); }
+    /** Android's battery optimization prompt was offered once automatically; later it's on request. */
+    boolean batteryPrompted() { return sp.getBoolean("batteryPrompted", false); }
 
     /** Saved TVs in the order they were added. */
     List<String> hosts() {
@@ -191,6 +195,8 @@ final class Prefs {
     void setTouchpad(boolean on) { sp.edit().putBoolean("touchpad", on).apply(); }
     void setNaturalEdge(boolean on) { sp.edit().putBoolean("naturalEdge", on).apply(); }
     void setNaturalTwoFinger(boolean on) { sp.edit().putBoolean("naturalTwoFinger", on).apply(); }
+    void setBackground(boolean on) { sp.edit().putBoolean("background", on).apply(); }
+    void setBatteryPrompted() { sp.edit().putBoolean("batteryPrompted", true).apply(); }
 
     /** Forgets the selected TV, leaving none selected; other TVs, the wake address and UI settings stay. */
     void forget() {

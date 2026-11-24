@@ -1,7 +1,13 @@
 package me.vwave.remote
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
+import android.provider.Settings
 import android.view.KeyEvent
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.functions.Queues
@@ -40,6 +46,14 @@ class WaveRemoteModule : Module() {
   private var failedAttempts = 0
   /** The user disconnected on purpose (to add another TV); stay disconnected until they connect again. */
   private var paused = false
+  /**
+   * The TV connected while the app was open and RemoteService keeps it connected in the background,
+   * reconnecting as needed, until the TV turns off, the user leaves, or reconnecting keeps failing.
+   */
+  private var session = false
+  /** The TV doesn't report playback, so the notification's play/pause guesses from the last command. */
+  private var playing = true
+  private val giveUp = Runnable { endSession() }
   private val confirm = Runnable {
     if (quietAttempt && tv.isReady) { quietAttempt = false; onState(Tv.State.READY, null) }
   }
@@ -62,6 +76,8 @@ class WaveRemoteModule : Module() {
   }
 
   companion object {
+    private const val PLAY = "ssap://media.controls/play"
+    private const val PAUSE = "ssap://media.controls/pause"
     private const val WATCH_MS = 3000L
     /** A TV in standby can keep its port open; probing it this often is still cheap. */
     private const val MAX_WATCH_MS = 10000L
@@ -72,7 +88,11 @@ class WaveRemoteModule : Module() {
     private const val OFF_QUIET_MS = 12000L
     /** Matches Tv.describe for a refused connection. */
     private const val NOT_REACHABLE = "TV not reachable (is it on?)"
+    /** Awake time a background session keeps trying to reconnect, e.g. after leaving home Wi-Fi. */
+    private const val GIVE_UP_MS = 120000L
     private var active: WeakReference<WaveRemoteModule>? = null
+    /** A tap on RemoteService's notification, or the user closing it. */
+    internal fun notificationAction(action: String) { active?.get()?.onNotificationAction(action) }
     internal fun pointer(action: (Tv) -> Unit) {
       val module = active?.get() ?: return
       if (module::tv.isInitialized && module.tv.isReady) action(module.tv)
@@ -120,6 +140,7 @@ class WaveRemoteModule : Module() {
       prepare()
       require(host.matches(Regex("(?:[0-9]{1,3}\\.){3}[0-9]{1,3}")) && host.split('.').all { it.toInt() in 0..255 }) { "Enter a valid IPv4 address" }
       generation++
+      endSession()
       stopWake()
       stopHeld()
       volume = -1
@@ -138,11 +159,11 @@ class WaveRemoteModule : Module() {
     }.runOnQueue(Queues.MAIN)
 
     AsyncFunction("reconnect") { prepare(); stopWake(); userConnect() }.runOnQueue(Queues.MAIN)
-    AsyncFunction("disconnect") { prepare(); paused = true; quietAttempt = false; watched = false; stopHeld(); stopWake(); tv.disconnect() }.runOnQueue(Queues.MAIN)
+    AsyncFunction("disconnect") { prepare(); paused = true; quietAttempt = false; watched = false; endSession(); stopHeld(); stopWake(); tv.disconnect() }.runOnQueue(Queues.MAIN)
     AsyncFunction("forget") {
       prepare()
       generation++
-      stopHeld(); stopWake(); tv.disconnect(); prefs.forget()
+      endSession(); stopHeld(); stopWake(); tv.disconnect(); prefs.forget()
       volume = -1; muted = false; detail = null; watched = false
       emit()
     }.runOnQueue(Queues.MAIN)
@@ -160,6 +181,7 @@ class WaveRemoteModule : Module() {
       var completed = false
       val guardedTimeout = Runnable { if (!completed) { completed = true; timeout.run() } }
       main.postDelayed(guardedTimeout, 12000)
+      if (uri == PLAY || uri == PAUSE) { playing = uri == PLAY; syncService() }
       tv.request(uri, payload?.let { JSONObject(it) }) { result, error ->
         if (!completed) {
           completed = true
@@ -213,6 +235,32 @@ class WaveRemoteModule : Module() {
       }
     }.runOnQueue(Queues.MAIN)
 
+    AsyncFunction("setBackground") { on: Boolean ->
+      prepare(); prefs.setBackground(on)
+      if (!on) endSession() else if (tv.isReady && !quietAttempt) beginSession()
+      emit()
+    }.runOnQueue(Queues.MAIN)
+    // Asks Android to stop battery optimization from cutting the background connection. Automatic
+    // requests (always = false) happen once; the settings sheet can ask again.
+    AsyncFunction("allowBackground") { always: Boolean ->
+      prepare()
+      if (batteryRestricted() && (always || !prefs.batteryPrompted())) {
+        prefs.setBatteryPrompted()
+        val activity = requireNotNull(appContext.currentActivity) { "Open Wave Remote first" }
+        val ask = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${activity.packageName}"))
+        try { activity.startActivity(ask) }
+        catch (missing: ActivityNotFoundException) {
+          // Some Android builds leave out the prompt; their battery settings list still works.
+          activity.startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+        }
+      }
+    }.runOnQueue(Queues.MAIN)
+    AsyncFunction("openNotificationSettings") {
+      val activity = requireNotNull(appContext.currentActivity) { "Open Wave Remote first" }
+      activity.startActivity(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, activity.packageName)
+        else Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${activity.packageName}")))
+    }.runOnQueue(Queues.MAIN)
     AsyncFunction("setFavorites") { ids: List<String> -> prepare(); prefs.setFavorites(ids); emit() }.runOnQueue(Queues.MAIN)
     AsyncFunction("setHidden") { ids: List<String> -> prepare(); prefs.setHidden(ids); emit() }.runOnQueue(Queues.MAIN)
     AsyncFunction("power") { bluetooth: Boolean, promise: Promise ->
@@ -252,21 +300,31 @@ class WaveRemoteModule : Module() {
       main.post {
         foreground = true
         if (::tv.isInitialized) {
-          if (tv.isReady) tv.checkConnection()
-          else if (!paused && prefs.host() != null && tv.state() == Tv.State.DISCONNECTED) {
-            if (prefs.clientKey() != null) { watched = true; emit() }
+          if (tv.isReady) {
+            tv.checkConnection()
+            if (!quietAttempt) beginSession()
+          } else if (!paused && prefs.host() != null && tv.state() == Tv.State.DISCONNECTED) {
+            if (prefs.clientKey() != null) watched = true
             probe()
           }
+          // Battery and notification permissions may have changed in Settings meanwhile.
+          emit()
+          RemoteService.refresh()
         }
       }
     }
     OnActivityEntersBackground {
-      main.post { foreground = false; watched = false; main.removeCallbacks(watch); if (::tv.isInitialized) { stopHeld(); stopWake() } }
+      main.post {
+        foreground = false; watched = false
+        if (!session) main.removeCallbacks(watch)
+        if (::tv.isInitialized) { stopHeld(); stopWake() }
+      }
     }
     OnDestroy {
       main.post {
         generation++
         foreground = false
+        if (::tv.isInitialized) endSession()
         main.removeCallbacks(watch)
         if (::tv.isInitialized) { stopHeld(); stopWake(); tv.disconnect() }
         if (active?.get() === this@WaveRemoteModule) active = null
@@ -308,6 +366,9 @@ class WaveRemoteModule : Module() {
     if (state == Tv.State.READY) {
       failedAttempts = 0
       stopWake()
+      main.removeCallbacks(giveUp)
+      playing = true
+      if (foreground) beginSession()
       if (prefs.udn() == null || prefs.btMac() == null) {
         val host = prefs.host()
         val token = generation
@@ -326,7 +387,8 @@ class WaveRemoteModule : Module() {
       main.removeCallbacks(reconnect)
       main.postDelayed(reconnect, 2000)
     } else if (state == Tv.State.DISCONNECTED) {
-      if (info == "TV is off") offAt = android.os.SystemClock.uptimeMillis()
+      if (info == "TV is off") { offAt = android.os.SystemClock.uptimeMillis(); endSession() }
+      else if (session) { main.removeCallbacks(giveUp); main.postDelayed(giveUp, GIVE_UP_MS) }
       // The old IP may now belong to another TV. Rediscover using our saved certificate.
       watchSoon()
     }
@@ -356,7 +418,7 @@ class WaveRemoteModule : Module() {
   }
 
   private fun probe() {
-    if (!foreground || paused || probing || !::tv.isInitialized || tv.state() != Tv.State.DISCONNECTED) return
+    if (!(foreground || session) || paused || probing || !::tv.isInitialized || tv.state() != Tv.State.DISCONNECTED) return
     val host = prefs.host() ?: return
     if (prefs.clientKey() == null) return // Pairing needs the user at the TV; don't start it unasked.
     val pin = prefs.certPin()
@@ -369,7 +431,7 @@ class WaveRemoteModule : Module() {
       val resolved = Net.findPaired(requireNotNull(appContext.reactContext), host, pin, udn, btMac, name, PROBE_TIMEOUT_MS)
       main.post {
         probing = false
-        if (token != generation || host != prefs.host() || !foreground || paused) return@post
+        if (token != generation || host != prefs.host() || !(foreground || session) || paused) return@post
         if (tv.state() != Tv.State.DISCONNECTED) return@post
         if (resolved != null) {
           if (resolved != host) { prefs.relocate(resolved); emit() }
@@ -395,11 +457,64 @@ class WaveRemoteModule : Module() {
     "naturalEdge" to prefs.naturalEdge(), "naturalTwoFinger" to prefs.naturalTwoFinger(),
     "waking" to (wakeUntil != 0L), "favorites" to prefs.favorites(), "hidden" to prefs.hidden(),
     "canWakeBluetooth" to (prefs.btMac() != null && prefs.wakeRegistered()),
+    "background" to prefs.background(), "batteryRestricted" to batteryRestricted(),
+    "notifications" to context().getSystemService(android.app.NotificationManager::class.java).areNotificationsEnabled(),
     "tvs" to prefs.hosts().filter { prefs.paired(it) || it == prefs.host() }
       .map { mapOf("host" to it, "name" to (prefs.label(it) ?: prefs.name(it)), "tvName" to prefs.name(it),
         "label" to prefs.label(it), "paired" to prefs.paired(it)) }
   )
-  private fun emit() { sendEvent("onChange", snapshot()) }
+  private fun emit() { syncService(); sendEvent("onChange", snapshot()) }
+
+  private fun context() = requireNotNull(appContext.reactContext)
+  private fun batteryRestricted() =
+    !context().getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(context().packageName)
+
+  /** Only from the foreground: Android doesn't let a background app start a foreground service. */
+  private fun beginSession() { if (prefs.background()) session = true }
+
+  /** Ends the background session; a connection left in the background is closed so it can reconnect later. */
+  private fun endSession() {
+    main.removeCallbacks(giveUp)
+    if (!session) return
+    session = false
+    syncService()
+    if (!foreground) {
+      main.removeCallbacks(watch)
+      quietAttempt = false
+      tv.disconnect()
+    }
+  }
+
+  /** Starts, updates or stops RemoteService to match the session. */
+  private fun syncService() {
+    if (!session || !prefs.background()) { RemoteService.stop(); return }
+    val ready = tv.isReady && !quietAttempt
+    val name = prefs.host()?.let { prefs.label(it) } ?: prefs.name() ?: "LG TV"
+    val text = when {
+      !ready -> "Reconnecting…"
+      muted -> "Muted"
+      volume >= 0 -> "Volume $volume"
+      else -> "Connected"
+    }
+    if (!RemoteService.show(context(), RemoteService.Status(name, text, ready, playing, muted))) session = false
+  }
+
+  private fun onNotificationAction(action: String) {
+    if (!::tv.isInitialized) return
+    if (action == RemoteService.DISMISSED) { endSession(); return }
+    if (!tv.isReady || quietAttempt) {
+      // The connection dropped while the phone slept; a tap is a good moment to try again now.
+      failedAttempts = 0
+      probe()
+      return
+    }
+    when (action) {
+      RemoteService.VOLUME_UP -> tv.request("ssap://audio/volumeUp")
+      RemoteService.VOLUME_DOWN -> tv.request("ssap://audio/volumeDown")
+      RemoteService.MUTE -> tv.request("ssap://audio/setMute", JSONObject().put("mute", !muted), null)
+      RemoteService.PLAY_PAUSE -> { tv.request(if (playing) PAUSE else PLAY); playing = !playing; syncService() }
+    }
+  }
   private fun jsonMap(value: JSONObject): Map<String, Any?> = value.keys().asSequence().associateWith { jsonValue(value.opt(it)) }
   private fun jsonValue(value: Any?): Any? = when (value) {
     JSONObject.NULL -> null

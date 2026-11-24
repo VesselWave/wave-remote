@@ -62,7 +62,10 @@ final class WebSocket {
         return open && !closed;
     }
 
-    /** System.currentTimeMillis() of the last frame received, of any kind. */
+    /**
+     * System.nanoTime() of the last frame received, of any kind. On Android that clock stops while
+     * the phone sleeps, like the Handler that schedules pings, so sleep never counts as silence.
+     */
     long lastHeard() {
         return lastHeard;
     }
@@ -151,7 +154,7 @@ final class WebSocket {
             }
             s.setSoTimeout(0);
             open = true;
-            lastHeard = System.currentTimeMillis();
+            lastHeard = System.nanoTime();
             if (closed) return;
             listener.onOpen();
             readLoop(in);
@@ -195,7 +198,7 @@ final class WebSocket {
             if (mask != null) {
                 for (int i = 0; i < payload.length; i++) payload[i] ^= mask[i & 3];
             }
-            lastHeard = System.currentTimeMillis();
+            lastHeard = System.nanoTime();
 
             switch (op) {
                 case 0x0: // continuation

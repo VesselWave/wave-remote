@@ -5,5 +5,14 @@
   <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
   <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+  <!-- Background connection: a connectedDevice foreground service with notification controls. -->
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
   <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
+  <application>
+    <service android:name="me.vwave.remote.RemoteService" android:exported="false"
+        android:foregroundServiceType="connectedDevice" />
+  </application>
 </manifest>

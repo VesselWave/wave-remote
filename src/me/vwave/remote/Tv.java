@@ -80,7 +80,8 @@ final class Tv {
         @Override public void run() {
             checkingConnection = false;
             if (ws == null || !isReady()) return;
-            if (System.currentTimeMillis() - ws.lastHeard() > SILENCE_MS) {
+            // Awake time only: a phone asleep with the screen off sends no pings, so it can't expect pongs.
+            if (System.nanoTime() - ws.lastHeard() > SILENCE_MS * 1_000_000L) {
                 drop(turningOff ? "TV is off" : "TV stopped responding");
                 return;
             }

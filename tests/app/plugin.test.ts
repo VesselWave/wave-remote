@@ -60,6 +60,15 @@ describe('Android integration plugin', () => {
     expect(second.modResults.contents.match(/override fun dispatchKeyEvent/g)).toHaveLength(1);
     await expect(mod({ modResults: { language: 'kt', contents: 'unknown template' }, modRequest: request() })).rejects.toThrow('Could not install');
   });
+  test('module manifest matches app.json permissions and types its foreground service', async () => {
+    const manifest = await fs.readFile(path.join(projectRoot, 'modules/wave-remote/android/src/main/AndroidManifest.xml'), 'utf8');
+    const app = JSON.parse(await fs.readFile(path.join(projectRoot, 'app.json'), 'utf8'));
+    const declared = [...manifest.matchAll(/uses-permission android:name="android\.permission\.(\w+)"/g)].map((match) => match[1]);
+    expect(declared.sort()).toEqual([...app.expo.android.permissions].sort());
+    // Android 14 refuses to start a foreground service without a declared type and its permission.
+    expect(manifest).toMatch(/<service android:name="me\.vwave\.remote\.RemoteService"[^>]*android:foregroundServiceType="connectedDevice"/);
+    expect(declared).toContain('FOREGROUND_SERVICE_CONNECTED_DEVICE');
+  });
   test('preserves the original icon without overwriting Expo color resources', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'waveremote-plugin-'));
     try {

@@ -35,6 +35,19 @@ export function useRemote() {
     };
   }, [run]);
 
+  // The first connection of each launch sets up the background connection: notification controls,
+  // then (once ever) Android's battery optimization exemption, which keeps the screen-off socket alive.
+  const backgroundAsked = useRef(false);
+  useEffect(() => {
+    if (!native || state.state !== 'ready' || !state.background || backgroundAsked.current) return;
+    backgroundAsked.current = true;
+    const module = native;
+    void run(async () => {
+      if (!state.notifications) await askForNotifications();
+      await module.allowBackground(false);
+    });
+  }, [run, state.state, state.background, state.notifications]);
+
   const power = () => run(async () => {
     if (!native) return;
     const current = await native.snapshot();
@@ -50,4 +63,13 @@ export function useRemote() {
     await native.power(bluetooth);
   });
   return { state, loading, message, setMessage, run, power };
+}
+
+/**
+ * Asks for the notification permission, which Android 13 added. Resolves false when only Settings can
+ * turn notifications on: on older Android, or once the user has declined the prompt for good.
+ */
+export async function askForNotifications(): Promise<boolean> {
+  if (Platform.OS !== 'android' || Number(Platform.Version) < 33) return false;
+  return await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS) !== PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN;
 }
