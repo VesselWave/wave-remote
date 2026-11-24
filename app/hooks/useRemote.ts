@@ -19,10 +19,11 @@ export function useRemote() {
     if (!module) return;
     let changed = false;
     const subscription = module.addListener('onChange', (next) => { changed = true; setState(next); });
-    void module.snapshot().then((next) => {
+    void module.snapshot().then(async (next) => {
       if (!mounted.current) return;
       if (!changed) setState(next);
-      if (next.host) void run(() => module.reconnect());
+      // Hold the loading screen until the reconnect reports itself, so a saved TV never flashes as disconnected.
+      if (next.host) await run(() => module.reconnect());
     }).catch((error: unknown) => setMessage(errorMessage(error))).finally(() => setLoading(false));
     const lifecycle = AppState.addEventListener('change', (next) => {
       if (next !== 'active') void module.stopHeld();

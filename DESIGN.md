@@ -168,7 +168,7 @@ This is a code-derived record of the Expo implementation, not a runtime visual a
 
 `background` is the app canvas; `surface` holds remote buttons and sheets; `raised` separates navigation, selected modes and device summaries. `text` and `muted` distinguish primary labels from explanations. `outline` and `outline-variant` belong to the Material field/divider vocabulary. Tonal elevation colors live in the sidecar.
 
-`power` marks power, active mute and disconnected remote status.
+`power` marks power, active mute and a failed connection: the remote's status line turns `power` at medium weight only once an attempt has settled as disconnected. Connecting, waking and pairing are progress, never errors: muted status text beside a spinner, with pairing's instruction in `text` at medium weight because only the user can finish it. The offline touchpad panel and the Apps, Inputs and Keyboard sheets follow the same split ("Reconnecting…" while busy, the disconnected message only after a failure).
 
 `disabled` and `on-disabled` are the one look for TV controls the TV can't take: every key, rocker (with its VOL/CH label), the OK control and the navigation row switch to them, whatever their usual fill. Power keeps its own look whenever it can act, so it stands alone as the way back. The `error` pair (the family danger red) marks Material errors and the explicit Forget TV action.
 

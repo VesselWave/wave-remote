@@ -59,8 +59,8 @@ const AppIcon = memo(function AppIcon({ app, size, large }: { app: App; size: nu
 /** Browsing opens apps; the two editing modes take over the list until Done (or Back). */
 type Mode = 'browse' | 'arrange' | 'hide';
 
-export function AppsSheet({ onClose, report, ready, favorites: saved, hidden: savedHidden }: {
-  onClose: () => void; report: (message: string) => void; ready: boolean; favorites: string[]; hidden: string[];
+export function AppsSheet({ onClose, report, ready, connecting, favorites: saved, hidden: savedHidden }: {
+  onClose: () => void; report: (message: string) => void; ready: boolean; connecting: boolean; favorites: string[]; hidden: string[];
 }) {
   const [apps, setApps] = useState<App[]>([]);
   const [query, setQuery] = useState('');
@@ -286,7 +286,8 @@ export function AppsSheet({ onClose, report, ready, favorites: saved, hidden: sa
         keyExtractor={(app) => app.id} keyboardShouldPersistTaps="handled"
         extraData={[favorites, hidden, mode, acting, current, pinned.length]}
         ListHeaderComponent={listHeader} ListFooterComponent={footer} renderItem={renderItem}
-        ListEmptyComponent={!ready ? <View style={styles.empty}><Text>Your TV disconnected. Close this menu and reconnect.</Text></View>
+        ListEmptyComponent={!ready && connecting ? <View style={styles.empty}><ActivityIndicator /><Text style={[styles.secondary, styles.center]}>Reconnecting to your TV…</Text></View>
+          : !ready ? <View style={styles.empty}><Text>Your TV disconnected. Close this menu and reconnect.</Text></View>
           : loading ? <View style={styles.empty}><ActivityIndicator /><Text style={[styles.secondary, styles.center]}>Loading from your TV…</Text></View>
           : error ? <View style={styles.empty}><Icon source="wifi-alert" size={36} color={palette.muted} /><Text variant="bodyLarge" style={styles.center}>{error}</Text>
             <Button icon="refresh" onPress={() => { setError(''); setLoading(true); setRetry((value) => value + 1); }} disabled={!ready}>Try again</Button></View>

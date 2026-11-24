@@ -5,7 +5,7 @@ import { Button, HelperText, TextInput } from 'react-native-paper';
 import { errorMessage } from '../lib/remote';
 import { Sheet } from './Sheet';
 
-export function KeyboardSheet({ open, ready, onClose }: { open: boolean; ready: boolean; onClose: () => void }) {
+export function KeyboardSheet({ open, ready, connecting, onClose }: { open: boolean; ready: boolean; connecting: boolean; onClose: () => void }) {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
@@ -30,7 +30,7 @@ export function KeyboardSheet({ open, ready, onClose }: { open: boolean; ready: 
   return <Sheet open={open} onClose={onClose} title="Keyboard" subtitle="Type into the focused field on your TV.">
     <View style={styles.content}>
       <TextInput mode="outlined" label="Text for your TV" placeholder="Search for something to watch" value={text} onChangeText={setText} multiline numberOfLines={3} contentStyle={styles.input} autoFocus={open} disabled={sending || !ready} />
-      <HelperText type={error || !ready ? 'error' : 'info'}>{!ready ? 'Your TV disconnected. Reconnect to send text.' : error || 'Select a text field on the TV before sending.'}</HelperText>
+      <HelperText type={error || (!ready && !connecting) ? 'error' : 'info'}>{!ready ? connecting ? 'Reconnecting to your TV…' : 'Your TV disconnected. Reconnect to send text.' : error || 'Select a text field on the TV before sending.'}</HelperText>
       <View style={styles.actions}>
         <Button mode="outlined" icon="send" disabled={sending || !ready || !text} onPress={() => void send(false)} contentStyle={styles.button}>Send</Button>
         <Button mode="contained" icon="keyboard-return" loading={sending} disabled={sending || !ready} onPress={() => void send(true)} contentStyle={styles.button}>Send + Enter</Button>

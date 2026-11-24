@@ -15,6 +15,7 @@ import { FeedbackContext } from './app/components/Sheet';
 import { KeyboardSheet } from './app/components/KeyboardSheet';
 import { TvSheet } from './app/components/TvSheet';
 import { native } from './modules/wave-remote';
+import { connectionPhase } from './app/lib/remote';
 
 function RemoteApp() {
   const { state, loading, message, setMessage, run, power } = useRemote();
@@ -23,6 +24,8 @@ function RemoteApp() {
   const [adding, setAdding] = useState(false);
   const hasRemote = !!state.host && (state.paired || state.state === 'ready');
   const showRemote = hasRemote && !adding;
+  const ready = state.state === 'ready';
+  const connecting = connectionPhase(state) === 'busy';
   const close = () => setPanel(null);
   const add = () => { setPanel(null); setAdding(true); void run(() => native!.disconnect()); };
   const back = () => { setAdding(false); void run(() => native!.reconnect()); };
@@ -32,9 +35,9 @@ function RemoteApp() {
       : showRemote ? <RemoteScreen state={state} setPanel={setPanel} power={() => void power()} run={run} /> : <SetupScreen state={state} run={run} onConnect={() => setAdding(false)} onBack={adding && hasRemote ? back : undefined} />}
     <TvSheet state={state} open={panel === 'tvs'} onClose={close} onAdd={add} run={run} />
     <SettingsSheet state={state} open={panel === 'settings'} onClose={close} run={run} />
-    {panel === 'apps' ? <AppsSheet key={`apps-${state.host}-${state.state}`} onClose={close} report={setMessage} ready={state.state === 'ready'} favorites={state.favorites} hidden={state.hidden} /> : null}
-    {panel === 'inputs' ? <PickerSheet key={`inputs-${state.host}-${state.state}`} onClose={close} report={setMessage} ready={state.state === 'ready'} /> : null}
-    {panel === 'keyboard' ? <KeyboardSheet open ready={state.state === 'ready'} onClose={close} /> : null}
+    {panel === 'apps' ? <AppsSheet key={`apps-${state.host}-${state.state}`} onClose={close} report={setMessage} ready={ready} connecting={connecting} favorites={state.favorites} hidden={state.hidden} /> : null}
+    {panel === 'inputs' ? <PickerSheet key={`inputs-${state.host}-${state.state}`} onClose={close} report={setMessage} ready={ready} connecting={connecting} /> : null}
+    {panel === 'keyboard' ? <KeyboardSheet open ready={ready} connecting={connecting} onClose={close} /> : null}
     <Snackbar visible={!!message} onDismiss={() => setMessage('')} duration={6500} action={{ label: 'Dismiss', onPress: () => setMessage('') }} style={styles.snackbar}>{message}</Snackbar>
   </SafeAreaView></FeedbackContext.Provider>;
 }

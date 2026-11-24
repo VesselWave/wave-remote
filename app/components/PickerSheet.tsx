@@ -12,8 +12,8 @@ type Choice = { id: string; title: string; description?: string };
 const inputStatus = (input: TvInput) => input.connected === false ? 'Nothing connected'
   : input.connected ? (input.hdmiSignalExist === false ? 'Connected, no signal' : 'Connected') : undefined;
 /** TV inputs. Apps have their own launcher, `AppsSheet`. */
-export function PickerSheet({ onClose, report, ready }: {
-  onClose: () => void; report: (message: string) => void; ready: boolean;
+export function PickerSheet({ onClose, report, ready, connecting }: {
+  onClose: () => void; report: (message: string) => void; ready: boolean; connecting: boolean;
 }) {
   const [items, setItems] = useState<Choice[]>([]);
   const [loading, setLoading] = useState(ready);
@@ -60,7 +60,7 @@ export function PickerSheet({ onClose, report, ready }: {
       ListHeaderComponent={<>{heading}</>}
       renderItem={({ item }) =>
         <List.Item title={item.title} titleNumberOfLines={2} description={item.description} left={(props) => <List.Icon {...props} icon="application-import" />} right={(props) => acting === item.id ? <ActivityIndicator size={20} style={styles.progress} /> : <List.Icon {...props} icon="chevron-right" />} onPress={() => void choose(item)} disabled={!!acting || !ready} style={styles.item} />
-      } ListEmptyComponent={!ready ? <View style={styles.empty}><Text>Your TV disconnected. Close this menu and reconnect.</Text></View> : loading ? <View style={styles.empty}><ActivityIndicator /><Text style={styles.secondary}>Loading from your TV…</Text></View> : error ? <View style={styles.empty}><Icon source="wifi-alert" size={36} color={palette.muted} /><Text variant="bodyLarge" style={styles.center}>{error}</Text><Button icon="refresh" onPress={() => { setError(''); setLoading(true); setRetry((value) => value + 1); }} disabled={!ready}>Try again</Button></View> : <View style={styles.empty}><Icon source="application-import" size={40} color={palette.muted} /><Text variant="titleMedium">No inputs reported</Text><Text style={styles.secondary}>Your TV returned an empty list.</Text></View>} />{scroll.cues}</View>}
+      } ListEmptyComponent={!ready && connecting ? <View style={styles.empty}><ActivityIndicator /><Text style={styles.secondary}>Reconnecting to your TV…</Text></View> : !ready ? <View style={styles.empty}><Text>Your TV disconnected. Close this menu and reconnect.</Text></View> : loading ? <View style={styles.empty}><ActivityIndicator /><Text style={styles.secondary}>Loading from your TV…</Text></View> : error ? <View style={styles.empty}><Icon source="wifi-alert" size={36} color={palette.muted} /><Text variant="bodyLarge" style={styles.center}>{error}</Text><Button icon="refresh" onPress={() => { setError(''); setLoading(true); setRetry((value) => value + 1); }} disabled={!ready}>Try again</Button></View> : <View style={styles.empty}><Icon source="application-import" size={40} color={palette.muted} /><Text variant="titleMedium">No inputs reported</Text><Text style={styles.secondary}>Your TV returned an empty list.</Text></View>} />{scroll.cues}</View>}
   </Sheet>;
 }
 const styles = StyleSheet.create({

@@ -32,6 +32,11 @@ class WaveRemoteModule : Module() {
   private var probing = false
   /** An automatic attempt is open but not yet trusted; the UI keeps showing the TV as disconnected. */
   private var quietAttempt = false
+  /**
+   * Someone is waiting on this attempt: they opened the app or asked to reconnect. Show it as connecting,
+   * then why it failed, instead of the quiet treatment the background watch gets.
+   */
+  private var watched = false
   private var failedAttempts = 0
   /** The user disconnected on purpose (to add another TV); stay disconnected until they connect again. */
   private var paused = false
@@ -65,6 +70,8 @@ class WaveRemoteModule : Module() {
     private const val PROBE_TIMEOUT_MS = 1500
     /** webOS 24 keeps its socket open for about 6 s after "Request Power Off". */
     private const val OFF_QUIET_MS = 12000L
+    /** Matches Tv.describe for a refused connection. */
+    private const val NOT_REACHABLE = "TV not reachable (is it on?)"
     private var active: WeakReference<WaveRemoteModule>? = null
     internal fun pointer(action: (Tv) -> Unit) {
       val module = active?.get() ?: return
@@ -131,12 +138,12 @@ class WaveRemoteModule : Module() {
     }.runOnQueue(Queues.MAIN)
 
     AsyncFunction("reconnect") { prepare(); stopWake(); userConnect() }.runOnQueue(Queues.MAIN)
-    AsyncFunction("disconnect") { prepare(); paused = true; quietAttempt = false; stopHeld(); stopWake(); tv.disconnect() }.runOnQueue(Queues.MAIN)
+    AsyncFunction("disconnect") { prepare(); paused = true; quietAttempt = false; watched = false; stopHeld(); stopWake(); tv.disconnect() }.runOnQueue(Queues.MAIN)
     AsyncFunction("forget") {
       prepare()
       generation++
       stopHeld(); stopWake(); tv.disconnect(); prefs.forget()
-      volume = -1; muted = false; detail = null
+      volume = -1; muted = false; detail = null; watched = false
       emit()
     }.runOnQueue(Queues.MAIN)
 
@@ -221,6 +228,7 @@ class WaveRemoteModule : Module() {
           promise.reject("WAKE_UNAVAILABLE", "Turn on and connect to the TV once to learn its wake-up addresses.", null)
         } else {
           stopWake()
+          watched = false // Waking reports its own progress and failure.
           wakeUntil = System.currentTimeMillis() + 40000
           detail = null
           if (bluetooth && canBle) detail = ble.start(prefs.wakeAddress(), prefs.btMac())
@@ -245,12 +253,15 @@ class WaveRemoteModule : Module() {
         foreground = true
         if (::tv.isInitialized) {
           if (tv.isReady) tv.checkConnection()
-          else if (!paused && prefs.host() != null && tv.state() == Tv.State.DISCONNECTED) probe()
+          else if (!paused && prefs.host() != null && tv.state() == Tv.State.DISCONNECTED) {
+            if (prefs.clientKey() != null) { watched = true; emit() }
+            probe()
+          }
         }
       }
     }
     OnActivityEntersBackground {
-      main.post { foreground = false; main.removeCallbacks(watch); if (::tv.isInitialized) { stopHeld(); stopWake() } }
+      main.post { foreground = false; watched = false; main.removeCallbacks(watch); if (::tv.isInitialized) { stopHeld(); stopWake() } }
     }
     OnDestroy {
       main.post {
@@ -283,13 +294,16 @@ class WaveRemoteModule : Module() {
         Tv.State.DISCONNECTED -> {
           quietAttempt = false
           main.removeCallbacks(confirm)
-          // Didn't hold: the TV is in standby or still shutting down. Keep showing what was there
-          // and back off before verifying its address again.
-          failedAttempts++; watchSoon(); return
+          // Didn't hold: the TV is in standby or still shutting down. Back off before verifying its
+          // address again, and keep showing what was there unless someone is waiting on this attempt.
+          failedAttempts++; watchSoon()
+          if (watched) { watched = false; detail = info ?: NOT_REACHABLE; emit() }
+          return
         }
       }
     }
     detail = info
+    if (state != Tv.State.CONNECTING) watched = false
     if (state != Tv.State.READY) stopHeld()
     if (state == Tv.State.READY) {
       failedAttempts = 0
@@ -327,6 +341,9 @@ class WaveRemoteModule : Module() {
     if (prefs.clientKey() == null) tv.connect()
     else {
       tv.disconnect()
+      // Finding the TV takes a few seconds before its socket opens; that is still connecting.
+      watched = true
+      emit()
       probe()
     }
   }
@@ -360,7 +377,10 @@ class WaveRemoteModule : Module() {
           tv.connect()
         } else if (wakeUntil > System.currentTimeMillis()) {
           main.postDelayed(reconnect, 2000)
-        } else watchSoon()
+        } else {
+          watchSoon()
+          if (watched) { watched = false; detail = NOT_REACHABLE; emit() }
+        }
       }
     }
   }
@@ -369,7 +389,8 @@ class WaveRemoteModule : Module() {
 
   private fun snapshot(): Map<String, Any?> = mapOf(
     "host" to prefs.host(), "name" to (prefs.host()?.let { prefs.label(it) } ?: prefs.name()), "paired" to (prefs.clientKey() != null),
-    "state" to (if (quietAttempt) "disconnected" else tv.state().name.lowercase()), "detail" to detail,
+    "state" to (if (quietAttempt || tv.state() == Tv.State.DISCONNECTED) { if (watched) "connecting" else "disconnected" }
+      else tv.state().name.lowercase()), "detail" to detail,
     "volume" to volume, "muted" to muted, "touchpad" to prefs.touchpad(),
     "naturalEdge" to prefs.naturalEdge(), "naturalTwoFinger" to prefs.naturalTwoFinger(),
     "waking" to (wakeUntil != 0L), "favorites" to prefs.favorites(), "hidden" to prefs.hidden(),

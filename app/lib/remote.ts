@@ -7,6 +7,11 @@ export function normalizeHost(raw: string, near?: string | null): string | null 
   return /^(\d{1,3}\.){3}\d{1,3}$/.test(host) && host.split('.').every((part) => Number(part) <= 255)
     ? host.split('.').map((part) => String(Number(part))).join('.') : null;
 }
+/** `busy` covers every wait the app is already handling, so it must never read as a failure. */
+export function connectionPhase(state: RemoteState): 'ready' | 'busy' | 'offline' {
+  if (state.state === 'ready') return 'ready';
+  return state.waking || state.state === 'connecting' || state.state === 'pairing' ? 'busy' : 'offline';
+}
 export function connectionLabel(state: RemoteState): string {
   if (state.waking) return state.detail ? `Waking TV · ${state.detail}` : 'Waking TV…';
   if (state.state === 'pairing') return 'Accept the connection request on your TV';

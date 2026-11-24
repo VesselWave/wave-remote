@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Apps and Inputs menus recover after the TV disconnects during a selection, without needing to close and reopen the menu.
+- Opening the app or tapping to reconnect shows “Connecting…” with a spinner while it finds the TV, instead of a red “Disconnected” message. Red now means the connection actually failed, and menus say they’re reconnecting rather than disconnected.
 
 ## 0.7.2 — 2026-11-15
 

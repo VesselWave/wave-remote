@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Text, TouchableRipple } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { native, NativeTouchpad, type RemoteState } from '../../modules/wave-remote';
-import { commands, connectionLabel } from '../lib/remote';
+import { commands, connectionLabel, connectionPhase } from '../lib/remote';
 import { palette, radius } from '../theme';
 import { ScrollFrame } from './ScrollFrame';
 import { Dpad, RemoteButton, RemoteScaleContext, Rocker } from './RemoteButton';
@@ -18,15 +18,16 @@ export function RemoteScreen({ state, setPanel, power, run }: {
   // Keep the reference proportions while leaving scrolling for large accessibility text.
   const scale = Math.max(0.8, Math.min(1, viewport.width / 412, viewport.height / 850));
   const styles = makeStyles(scale);
-  const ready = state.state === 'ready';
-  const busy = state.waking || state.state === 'connecting' || state.state === 'pairing';
+  const phase = connectionPhase(state);
+  const ready = phase === 'ready';
+  const busy = phase === 'busy';
   const key = (name: string) => () => { void run(() => native!.button(name)); };
   return <RemoteScaleContext.Provider value={scale}><View style={styles.screen} onLayout={({ nativeEvent: { layout } }) => setViewport({ width: layout.width, height: layout.height })}>
     <ScrollFrame style={styles.scroll} contentContainerStyle={styles.content}>
     <View style={styles.header}>
-      <Pressable accessibilityRole="button" accessibilityLabel={`${state.name || 'LG TV'}. ${connectionLabel(state)}`} accessibilityHint="Reconnect to your TV" style={styles.titles} onPress={() => { if (!ready && !busy) void run(() => native!.reconnect()); }}>
+      <Pressable accessibilityRole="button" accessibilityLabel={`${state.name || 'LG TV'}. ${connectionLabel(state)}`} accessibilityHint={phase === 'offline' ? 'Reconnect to your TV' : undefined} style={styles.titles} onPress={() => { if (phase === 'offline') void run(() => native!.reconnect()); }}>
         <Text style={styles.name} numberOfLines={1}>{state.name || 'LG TV'}</Text>
-        <Text style={[styles.status, !ready && !busy && { color: palette.power }]} numberOfLines={2} accessibilityLiveRegion="polite">{connectionLabel(state)}</Text>
+        <Text style={[styles.status, phase === 'offline' && styles.failed, state.state === 'pairing' && styles.instruction]} numberOfLines={2} accessibilityLiveRegion="polite">{connectionLabel(state)}</Text>
       </Pressable>
       {busy ? <ActivityIndicator size={18} style={styles.activity} /> : null}
       <RemoteButton label={state.tvs.length > 1 ? 'Switch TV' : 'Add or switch TV'} icon="swap-horizontal" onPress={() => setPanel('tvs')} style={styles.more} />
@@ -64,6 +65,7 @@ export function RemoteScreen({ state, setPanel, power, run }: {
       {state.touchpad && NativeTouchpad ? <View style={[styles.touchpad, !ready && styles.offlinePad]}>
         {/* The native pad draws its own hints, so leave it out entirely while it can't be used. */}
         {ready ? <NativeTouchpad style={styles.nativePad} naturalEdge={state.naturalEdge} naturalTwoFinger={state.naturalTwoFinger} />
+          : busy ? <><MaterialCommunityIcons name="television" size={28} color={palette.onDisabled} /><Text variant="bodyMedium" style={styles.offlineText}>{state.state === 'pairing' ? 'Approve the connection on your TV' : state.waking ? 'Waking your TV…' : 'Connecting to your TV…'}</Text></>
           : <><MaterialCommunityIcons name="television-off" size={28} color={palette.onDisabled} /><Text variant="bodyMedium" style={styles.offlineText}>Connect to use the touchpad</Text></>}
       </View> : <Dpad disabled={!ready} />}
     </View>
@@ -82,7 +84,9 @@ const makeStyles = (scale: number) => StyleSheet.create({
   footer: { paddingHorizontal: 16 * scale, paddingTop: 12 * scale, paddingBottom: 12 * scale, maxWidth: 600, width: '100%', alignSelf: 'center' },
   header: { minHeight: 48 * scale, flexDirection: 'row', alignItems: 'center', marginBottom: 12 * scale, gap: 8 * scale },
   titles: { flex: 1, minHeight: 48 * scale, justifyContent: 'center' }, name: { fontSize: 19 * scale, fontWeight: '500', color: palette.text },
-  status: { fontSize: 12 * scale, color: palette.muted, marginTop: 2 * scale }, activity: { marginHorizontal: 4 * scale }, more: { width: 48 * scale },
+  status: { fontSize: 12 * scale, color: palette.muted, marginTop: 2 * scale },
+  // A failure, or a step only the user can take, is the one status that must stand out from the muted progress text.
+  failed: { color: palette.power, fontWeight: '500' }, instruction: { color: palette.text, fontWeight: '500' }, activity: { marginHorizontal: 4 * scale }, more: { width: 48 * scale },
   row: { flexDirection: 'row', gap: 10 * scale, marginHorizontal: 5 * scale, marginBottom: 12 * scale }, weight: { flex: 1 },
   controls: { flexDirection: 'row', marginBottom: 12 * scale }, shortcuts: { flex: 1, marginHorizontal: 12 * scale, gap: 12 * scale }, shortcut: { minHeight: 66 * scale, flex: 1 },
   modes: { flexDirection: 'row', alignSelf: 'stretch', marginHorizontal: 10 * scale, borderRadius: radius.pill, backgroundColor: palette.surface, padding: 4 * scale, marginBottom: 12 * scale },

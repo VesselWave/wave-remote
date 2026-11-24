@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { connectionLabel, normalizeHost } from '../../app/lib/remote';
+import { connectionLabel, connectionPhase, normalizeHost } from '../../app/lib/remote';
 import type { RemoteState } from '../../modules/wave-remote';
 
 const disconnected: RemoteState = {
@@ -30,6 +30,13 @@ describe('connection feedback', () => {
     expect(connectionLabel({ ...disconnected, state: 'pairing' })).toContain('on your TV');
     expect(connectionLabel(disconnected)).toContain('Tap to retry');
     expect(connectionLabel({ ...disconnected, detail: 'TV is off' })).toContain('TV is off');
+  });
+  test('treats every wait as progress and only a settled disconnection as a failure', () => {
+    expect(connectionPhase({ ...disconnected, state: 'connecting' })).toBe('busy');
+    expect(connectionPhase({ ...disconnected, state: 'pairing' })).toBe('busy');
+    expect(connectionPhase({ ...disconnected, waking: true, detail: 'Bluetooth is off' })).toBe('busy');
+    expect(connectionPhase({ ...disconnected, detail: 'TV is off' })).toBe('offline');
+    expect(connectionPhase({ ...disconnected, state: 'ready' })).toBe('ready');
   });
   test('prioritizes wake state and mute over a stale volume value', () => {
     expect(connectionLabel({ ...disconnected, waking: true, detail: 'Bluetooth is off' })).toBe('Waking TV · Bluetooth is off');
