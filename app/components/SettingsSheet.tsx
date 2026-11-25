@@ -16,6 +16,13 @@ export function SettingsSheet({ state, open, onClose, run }: {
   const stackedChoices = (Math.min(width, 600) - 48) / fontScale < 260;
   const close = () => { setConfirmForget(false); onClose(); };
   const toggleBackground = () => { void run(() => native!.setBackground(!state.background)); };
+  const toggleControls = () => {
+    const next = !state.controls;
+    void run(async () => {
+      await native!.setControls(next);
+      if (next && !state.notifications && !(await askForNotifications())) await native!.openNotificationSettings();
+    });
+  };
   const allowNotifications = () => { void run(async () => { if (!(await askForNotifications())) await native!.openNotificationSettings(); }); };
   return <Sheet open={open} onClose={close} title={confirmForget ? 'Forget this TV?' : 'Remote settings'} subtitle={confirmForget ? undefined : 'Make this remote feel right for you.'}>
     {confirmForget ? <View style={styles.confirm}>
@@ -47,15 +54,15 @@ export function SettingsSheet({ state, open, onClose, run }: {
       {/* Separate from staying connected: the connection works without either, so each says what it adds. */}
       {state.background ? <>
         <List.Item title="Notification controls" descriptionNumberOfLines={3}
-          description={state.notifications ? 'Volume, play and pause in a notification. Optional: staying connected doesn’t need it'
-            : 'Staying connected still works; allow notifications to add volume, play and pause'}
-          left={(props) => <List.Icon {...props} icon={state.notifications ? 'bell-outline' : 'bell-off-outline'} />}
-          right={() => <Text variant="labelLarge" style={state.notifications ? styles.granted : styles.allow}>{state.notifications ? 'On' : 'Allow'}</Text>}
-          onPress={state.notifications ? () => { void run(() => native!.openNotificationSettings()); } : allowNotifications} style={styles.setting} />
+          description={!state.controls ? 'Off. While staying connected, Android still shows that the TV is connected'
+            : state.notifications ? 'Volume, play and pause in the notification'
+            : 'Notifications are off for Wave Remote. Tap to allow them'}
+          accessibilityRole="switch" accessibilityState={{ checked: state.controls }}
+          onPress={state.controls && !state.notifications ? allowNotifications : toggleControls}
+          right={() => <Switch value={state.controls} onValueChange={toggleControls} importantForAccessibility="no" />} style={styles.setting} />
         <List.Item title="Unrestricted battery use" descriptionNumberOfLines={3}
           description={state.batteryRestricted ? 'Battery optimization may close the connection while the screen is off'
             : 'Battery optimization won’t close the connection'}
-          left={(props) => <List.Icon {...props} icon={state.batteryRestricted ? 'battery-alert-variant-outline' : 'battery-check-outline'} />}
           right={() => <Text variant="labelLarge" style={state.batteryRestricted ? styles.allow : styles.granted}>{state.batteryRestricted ? 'Allow' : 'On'}</Text>}
           onPress={state.batteryRestricted ? () => { void run(() => native!.allowBackground(true)); } : undefined} style={styles.setting} />
       </> : null}

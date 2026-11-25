@@ -21,7 +21,7 @@ import me.vwave.remote.module.R
  */
 class RemoteService : Service() {
   /** What the notification shows; null when the module no longer wants the service. */
-  internal data class Status(val title: String, val text: String, val ready: Boolean)
+  internal data class Status(val title: String, val text: String, val buttons: Boolean)
 
   companion object {
     const val VOLUME_DOWN = "me.vwave.remote.action.VOLUME_DOWN"
@@ -129,7 +129,7 @@ class RemoteService : Service() {
     val body = RemoteViews(packageName, R.layout.remote_notification).apply {
       setTextViewText(R.id.remote_title, status.title)
       setTextViewText(R.id.remote_text, status.text)
-      setViewVisibility(R.id.remote_buttons, if (status.ready) View.VISIBLE else View.GONE)
+      setViewVisibility(R.id.remote_buttons, if (status.buttons) View.VISIBLE else View.GONE)
       setOnClickPendingIntent(R.id.remote_volume_down, action(VOLUME_DOWN))
       setOnClickPendingIntent(R.id.remote_play, action(PLAY))
       setOnClickPendingIntent(R.id.remote_pause, action(PAUSE))

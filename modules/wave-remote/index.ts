@@ -17,6 +17,8 @@ export interface RemoteState {
   canWakeBluetooth: boolean;
   /** Stay connected in the background, with volume and playback controls in a notification. */
   background: boolean;
+  /** Volume, play and pause buttons in the background notification, which Android shows regardless. */
+  controls: boolean;
   /** Android's battery optimization applies, so it may still cut the background connection. */
   batteryRestricted: boolean;
   /** Wave Remote may post notifications; without it the background connection runs unseen. */
@@ -60,6 +62,7 @@ declare class WaveRemoteNative extends NativeModule<Events> {
   icon(url: string): Promise<string>;
   preferences(touchpad: boolean, naturalEdge: boolean, naturalTwoFinger: boolean): Promise<void>;
   setBackground(on: boolean): Promise<void>;
+  setControls(on: boolean): Promise<void>;
   /** Asks Android to exempt the app from battery optimization; with `always` false, only the first time. */
   allowBackground(always: boolean): Promise<void>;
   openNotificationSettings(): Promise<void>;
@@ -71,5 +74,5 @@ export const NativeTouchpad = native
 export const initialState: RemoteState = {
   host: null, name: null, paired: false, state: 'disconnected', detail: null,
   volume: -1, muted: false, touchpad: false, naturalEdge: false, naturalTwoFinger: false,
-  waking: false, canWakeBluetooth: false, background: true, batteryRestricted: false, notifications: true, favorites: [], hidden: [], tvs: [],
+  waking: false, canWakeBluetooth: false, background: true, controls: true, batteryRestricted: false, notifications: true, favorites: [], hidden: [], tvs: [],
 };
