@@ -1,11 +1,22 @@
 import { useState } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
-import { Button, Divider, Icon, List, RadioButton, SegmentedButtons, Switch, Text } from 'react-native-paper';
+import { Button, Divider, Icon, List, RadioButton, SegmentedButtons, Text } from 'react-native-paper';
 import { native, type RemoteState } from '../../modules/wave-remote';
 import { askForNotifications } from '../hooks/useRemote';
 import { connectionLabel } from '../lib/remote';
 import { palette, radius } from '../theme';
 import { Sheet } from './Sheet';
+import { Toggle } from './Toggle';
+
+// A switch shows the new value as soon as it is pressed and keeps it while the native side saves it;
+// a failed save puts it back. Every state event then agrees with it, so it moves exactly once.
+function useSwitch(saved: boolean, save: (next: boolean) => Promise<boolean>) {
+  const [shown, setShown] = useState(saved);
+  const [lastSaved, setLastSaved] = useState(saved);
+  if (saved !== lastSaved) { setLastSaved(saved); setShown(saved); }
+  const toggle = () => { const next = !shown; setShown(next); void save(next).then((success) => { if (!success) setShown(!next); }); };
+  return [shown, toggle] as const;
+}
 
 export function SettingsSheet({ state, open, onClose, run }: {
   state: RemoteState; open: boolean; onClose: () => void;
@@ -15,14 +26,11 @@ export function SettingsSheet({ state, open, onClose, run }: {
   const { width, fontScale } = useWindowDimensions();
   const stackedChoices = (Math.min(width, 600) - 48) / fontScale < 260;
   const close = () => { setConfirmForget(false); onClose(); };
-  const toggleBackground = () => { void run(() => native!.setBackground(!state.background)); };
-  const toggleControls = () => {
-    const next = !state.controls;
-    void run(async () => {
-      await native!.setControls(next);
-      if (next && !state.notifications && !(await askForNotifications())) await native!.openNotificationSettings();
-    });
-  };
+  const [background, toggleBackground] = useSwitch(state.background, (next) => run(() => native!.setBackground(next)));
+  const [controls, toggleControls] = useSwitch(state.controls, (next) => run(async () => {
+    await native!.setControls(next);
+    if (next && !state.notifications && !(await askForNotifications())) await native!.openNotificationSettings();
+  }));
   const allowNotifications = () => { void run(async () => { if (!(await askForNotifications())) await native!.openNotificationSettings(); }); };
   return <Sheet open={open} onClose={close} title={confirmForget ? 'Forget this TV?' : 'Remote settings'} subtitle={confirmForget ? undefined : 'Make this remote feel right for you.'}>
     {confirmForget ? <View style={styles.confirm}>
@@ -49,24 +57,26 @@ export function SettingsSheet({ state, open, onClose, run }: {
         </View>)}
       <Text variant="titleSmall" style={styles.sectionTitle} accessibilityRole="header">Background</Text>
       <List.Item title="Stay connected" description="Keeps the TV connected while the screen is off or you’re in another app" descriptionNumberOfLines={3}
-        accessibilityRole="switch" accessibilityState={{ checked: state.background }} onPress={toggleBackground}
-        right={() => <Switch value={state.background} onValueChange={toggleBackground} importantForAccessibility="no" />} style={styles.setting} />
-      {/* Part of Stay connected: indented beneath it, and only there while it is on. */}
-      {state.background ? <View style={styles.nested}>
+        accessibilityRole="switch" accessibilityState={{ checked: background }} onPress={toggleBackground}
+        right={() => <Toggle value={background} />} style={styles.setting} />
+      <List.Item title="Notification controls" descriptionNumberOfLines={3}
+        description={!controls ? 'Off. While staying connected, Android still shows that the TV is connected'
+          : state.notifications ? 'Volume, play and pause in the notification'
+          : 'Notifications are off for Wave Remote. Tap to allow them'}
+        accessibilityRole="switch" accessibilityState={{ checked: controls }}
+        onPress={controls && !state.notifications ? allowNotifications : toggleControls}
+        right={() => <Toggle value={controls} />} style={styles.setting} />
+      {/* Always shown: whether Android may cut the background connection is worth knowing before turning it on. */}
+      <View style={styles.battery}>
         <List.Item title="Unrestricted battery use" descriptionNumberOfLines={3}
           description={state.batteryRestricted ? 'Battery optimization may close the connection while the screen is off'
             : 'Battery optimization won’t close the connection'}
-          right={() => <Text variant="labelLarge" style={state.batteryRestricted ? styles.allow : styles.granted}>{state.batteryRestricted ? 'Allow' : 'On'}</Text>}
-          onPress={state.batteryRestricted ? () => { void run(() => native!.allowBackground(true)); } : undefined} style={styles.nestedItem} />
-      </View> : null}
-      {/* Its own setting: the connection works with or without these buttons. */}
-      <List.Item title="Notification controls" descriptionNumberOfLines={3}
-        description={!state.controls ? 'Off. While staying connected, Android still shows that the TV is connected'
-          : state.notifications ? 'Volume, play and pause in the notification'
-          : 'Notifications are off for Wave Remote. Tap to allow them'}
-        accessibilityRole="switch" accessibilityState={{ checked: state.controls }}
-        onPress={state.controls && !state.notifications ? allowNotifications : toggleControls}
-        right={() => <Switch value={state.controls} onValueChange={toggleControls} importantForAccessibility="no" />} style={styles.setting} />
+          left={(props) => <List.Icon {...props} color={palette.accentFg} icon={state.batteryRestricted ? 'battery-alert-variant-outline' : 'battery-check-outline'} />}
+          right={() => state.batteryRestricted ? <Text variant="labelLarge" style={styles.allow}>Allow</Text>
+            : <View style={styles.granted}><Icon source="check-circle" size={24} color={palette.accentFg} /></View>}
+          accessibilityRole={state.batteryRestricted ? 'button' : undefined}
+          onPress={state.batteryRestricted ? () => { void run(() => native!.allowBackground(true)); } : undefined} style={styles.batteryItem} />
+      </View>
       <Divider style={styles.divider} />
       <List.Item title="Reconnect" description="Start a fresh connection to this TV" left={(props) => <List.Icon {...props} icon="refresh" />} onPress={() => { void run(() => native!.reconnect()).then((success) => { if (success) close(); }); }} style={styles.action} />
       <List.Item title="Forget this TV" titleStyle={{ color: palette.danger }} description="Remove its saved pairing" left={(props) => <List.Icon {...props} color={palette.danger} icon="link-off" />} onPress={() => setConfirmForget(true)} style={styles.action} />
@@ -78,7 +88,8 @@ const styles = StyleSheet.create({
   deviceInfo: { flex: 1, gap: 4 }, secondary: { color: palette.muted }, sectionTitle: { marginTop: 28, marginBottom: 8, marginHorizontal: 24, color: palette.accentFg },
   explanation: { marginHorizontal: 24, color: palette.muted, marginBottom: 8 }, scrollSetting: { marginHorizontal: 24, marginTop: 12, gap: 8 },
   divider: { marginHorizontal: 24, marginVertical: 20 }, setting: { paddingHorizontal: 12 },
-  nested: { marginLeft: 36, borderLeftWidth: 2, borderLeftColor: palette.accent }, nestedItem: { paddingLeft: 12, paddingRight: 24 },
-  allow: { color: palette.accentFg, alignSelf: 'center', marginLeft: 12 }, granted: { color: palette.muted, alignSelf: 'center', marginLeft: 12 }, action: { paddingHorizontal: 12, minHeight: 80 },
+  battery: { marginHorizontal: 24, marginTop: 12, borderRadius: radius.md, backgroundColor: palette.accentSoft, overflow: 'hidden' },
+  batteryItem: { paddingLeft: 8, paddingRight: 16, paddingVertical: 12 },
+  allow: { color: palette.accentFg, alignSelf: 'center', marginLeft: 12 }, granted: { alignSelf: 'center', marginLeft: 12 }, action: { paddingHorizontal: 12, minHeight: 80 },
   confirm: { paddingHorizontal: 24, gap: 24 }, actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, flexWrap: 'wrap' }, choice: { paddingHorizontal: 0 },
 });
