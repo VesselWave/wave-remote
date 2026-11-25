@@ -2,8 +2,8 @@
 
 ## Unreleased
 
-- Stays connected to the TV in the background and with the screen off. A notification shows the volume and has volume down, play, pause and volume up buttons, also on the lock screen. It goes away when the TV turns off, when you swipe the app away, or after two minutes of failing to reconnect. Turn it off under Remote settings → Background.
-- The first connection asks to allow notifications and to let the app run unrestricted in the background, so Android's battery optimization doesn't cut the connection. If either is declined, Remote settings says what's missing, with an Allow button: without notifications the controls can't appear, and battery optimization may close the connection.
+- Stays connected to the TV in the background and with the screen off. A notification shows the volume and has volume down, play, pause and volume up buttons, also on the lock screen. The background connection and its notification stop when the TV turns off, when you swipe the app away, or after two minutes of failing to reconnect. Turn it off under Remote settings → Background.
+- The first connection asks to allow notifications and to let the app run unrestricted in the background, so Android's battery optimization doesn't cut the connection. Both are optional and shown separately under Remote settings → Background: staying connected works without notifications, which only add the controls, while battery optimization may close the connection on some phones.
 - Fixes the connection dropping as "TV stopped responding" after the phone slept: time asleep no longer counts as the TV going silent.
 
 ## 0.7.3 — 2026-11-24

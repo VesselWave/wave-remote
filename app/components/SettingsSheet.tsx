@@ -41,17 +41,24 @@ export function SettingsSheet({ state, open, onClose, run }: {
             buttons={[{ value: 'traditional', label: 'Traditional', showSelectedCheck: true, accessibilityLabel: `${group}: Traditional` }, { value: 'natural', label: 'Natural', showSelectedCheck: true, accessibilityLabel: `${group}: Natural` }]} />}
         </View>)}
       <Text variant="titleSmall" style={styles.sectionTitle} accessibilityRole="header">Background</Text>
-      <List.Item title="Stay connected" description="Keeps the TV connected with the screen off, with volume, play and pause in a notification" descriptionNumberOfLines={3}
+      <List.Item title="Stay connected" description="Keeps the TV connected while the screen is off or you’re in another app" descriptionNumberOfLines={3}
         accessibilityRole="switch" accessibilityState={{ checked: state.background }} onPress={toggleBackground}
         right={() => <Switch value={state.background} onValueChange={toggleBackground} importantForAccessibility="no" />} style={styles.setting} />
-      {state.background && (!state.notifications || state.batteryRestricted) ? <View style={styles.warnings}>
-        {!state.notifications ? <List.Item title="Notifications are off" description="Volume, play and pause can’t appear until you allow notifications" descriptionNumberOfLines={3}
-          left={(props) => <List.Icon {...props} icon="bell-off-outline" />} right={() => <Text variant="labelLarge" style={styles.allow}>Allow</Text>}
-          onPress={allowNotifications} style={styles.warning} /> : null}
-        {state.batteryRestricted ? <List.Item title="Battery optimization is on" description="Android may close the background connection while the screen is off" descriptionNumberOfLines={3}
-          left={(props) => <List.Icon {...props} icon="battery-alert-variant-outline" />} right={() => <Text variant="labelLarge" style={styles.allow}>Allow</Text>}
-          onPress={() => { void run(() => native!.allowBackground(true)); }} style={styles.warning} /> : null}
-      </View> : null}
+      {/* Separate from staying connected: the connection works without either, so each says what it adds. */}
+      {state.background ? <>
+        <List.Item title="Notification controls" descriptionNumberOfLines={3}
+          description={state.notifications ? 'Volume, play and pause in a notification. Optional: staying connected doesn’t need it'
+            : 'Staying connected still works; allow notifications to add volume, play and pause'}
+          left={(props) => <List.Icon {...props} icon={state.notifications ? 'bell-outline' : 'bell-off-outline'} />}
+          right={() => <Text variant="labelLarge" style={state.notifications ? styles.granted : styles.allow}>{state.notifications ? 'On' : 'Allow'}</Text>}
+          onPress={state.notifications ? () => { void run(() => native!.openNotificationSettings()); } : allowNotifications} style={styles.setting} />
+        <List.Item title="Unrestricted battery use" descriptionNumberOfLines={3}
+          description={state.batteryRestricted ? 'Battery optimization may close the connection while the screen is off'
+            : 'Battery optimization won’t close the connection'}
+          left={(props) => <List.Icon {...props} icon={state.batteryRestricted ? 'battery-alert-variant-outline' : 'battery-check-outline'} />}
+          right={() => <Text variant="labelLarge" style={state.batteryRestricted ? styles.allow : styles.granted}>{state.batteryRestricted ? 'Allow' : 'On'}</Text>}
+          onPress={state.batteryRestricted ? () => { void run(() => native!.allowBackground(true)); } : undefined} style={styles.setting} />
+      </> : null}
       <Divider style={styles.divider} />
       <List.Item title="Reconnect" description="Start a fresh connection to this TV" left={(props) => <List.Icon {...props} icon="refresh" />} onPress={() => { void run(() => native!.reconnect()).then((success) => { if (success) close(); }); }} style={styles.action} />
       <List.Item title="Forget this TV" titleStyle={{ color: palette.danger }} description="Remove its saved pairing" left={(props) => <List.Icon {...props} color={palette.danger} icon="link-off" />} onPress={() => setConfirmForget(true)} style={styles.action} />
@@ -63,7 +70,6 @@ const styles = StyleSheet.create({
   deviceInfo: { flex: 1, gap: 4 }, secondary: { color: palette.muted }, sectionTitle: { marginTop: 28, marginBottom: 8, marginHorizontal: 24, color: palette.accentFg },
   explanation: { marginHorizontal: 24, color: palette.muted, marginBottom: 8 }, scrollSetting: { marginHorizontal: 24, marginTop: 12, gap: 8 },
   divider: { marginHorizontal: 24, marginVertical: 20 }, setting: { paddingHorizontal: 12 },
-  warnings: { marginHorizontal: 24, marginTop: 8, borderRadius: radius.md, backgroundColor: palette.raised, overflow: 'hidden' },
-  warning: { paddingLeft: 8, paddingRight: 16 }, allow: { color: palette.accentFg, alignSelf: 'center', marginLeft: 12 }, action: { paddingHorizontal: 12, minHeight: 80 },
+  allow: { color: palette.accentFg, alignSelf: 'center', marginLeft: 12 }, granted: { color: palette.muted, alignSelf: 'center', marginLeft: 12 }, action: { paddingHorizontal: 12, minHeight: 80 },
   confirm: { paddingHorizontal: 24, gap: 24 }, actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, flexWrap: 'wrap' }, choice: { paddingHorizontal: 0 },
 });
