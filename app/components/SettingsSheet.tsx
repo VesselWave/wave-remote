@@ -51,21 +51,22 @@ export function SettingsSheet({ state, open, onClose, run }: {
       <List.Item title="Stay connected" description="Keeps the TV connected while the screen is off or you’re in another app" descriptionNumberOfLines={3}
         accessibilityRole="switch" accessibilityState={{ checked: state.background }} onPress={toggleBackground}
         right={() => <Switch value={state.background} onValueChange={toggleBackground} importantForAccessibility="no" />} style={styles.setting} />
-      {/* Separate from staying connected: the connection works without either, so each says what it adds. */}
-      {state.background ? <>
-        <List.Item title="Notification controls" descriptionNumberOfLines={3}
-          description={!state.controls ? 'Off. While staying connected, Android still shows that the TV is connected'
-            : state.notifications ? 'Volume, play and pause in the notification'
-            : 'Notifications are off for Wave Remote. Tap to allow them'}
-          accessibilityRole="switch" accessibilityState={{ checked: state.controls }}
-          onPress={state.controls && !state.notifications ? allowNotifications : toggleControls}
-          right={() => <Switch value={state.controls} onValueChange={toggleControls} importantForAccessibility="no" />} style={styles.setting} />
+      {/* Part of Stay connected: indented beneath it, and only there while it is on. */}
+      {state.background ? <View style={styles.nested}>
         <List.Item title="Unrestricted battery use" descriptionNumberOfLines={3}
           description={state.batteryRestricted ? 'Battery optimization may close the connection while the screen is off'
             : 'Battery optimization won’t close the connection'}
           right={() => <Text variant="labelLarge" style={state.batteryRestricted ? styles.allow : styles.granted}>{state.batteryRestricted ? 'Allow' : 'On'}</Text>}
-          onPress={state.batteryRestricted ? () => { void run(() => native!.allowBackground(true)); } : undefined} style={styles.setting} />
-      </> : null}
+          onPress={state.batteryRestricted ? () => { void run(() => native!.allowBackground(true)); } : undefined} style={styles.nestedItem} />
+      </View> : null}
+      {/* Its own setting: the connection works with or without these buttons. */}
+      <List.Item title="Notification controls" descriptionNumberOfLines={3}
+        description={!state.controls ? 'Off. While staying connected, Android still shows that the TV is connected'
+          : state.notifications ? 'Volume, play and pause in the notification'
+          : 'Notifications are off for Wave Remote. Tap to allow them'}
+        accessibilityRole="switch" accessibilityState={{ checked: state.controls }}
+        onPress={state.controls && !state.notifications ? allowNotifications : toggleControls}
+        right={() => <Switch value={state.controls} onValueChange={toggleControls} importantForAccessibility="no" />} style={styles.setting} />
       <Divider style={styles.divider} />
       <List.Item title="Reconnect" description="Start a fresh connection to this TV" left={(props) => <List.Icon {...props} icon="refresh" />} onPress={() => { void run(() => native!.reconnect()).then((success) => { if (success) close(); }); }} style={styles.action} />
       <List.Item title="Forget this TV" titleStyle={{ color: palette.danger }} description="Remove its saved pairing" left={(props) => <List.Icon {...props} color={palette.danger} icon="link-off" />} onPress={() => setConfirmForget(true)} style={styles.action} />
@@ -77,6 +78,7 @@ const styles = StyleSheet.create({
   deviceInfo: { flex: 1, gap: 4 }, secondary: { color: palette.muted }, sectionTitle: { marginTop: 28, marginBottom: 8, marginHorizontal: 24, color: palette.accentFg },
   explanation: { marginHorizontal: 24, color: palette.muted, marginBottom: 8 }, scrollSetting: { marginHorizontal: 24, marginTop: 12, gap: 8 },
   divider: { marginHorizontal: 24, marginVertical: 20 }, setting: { paddingHorizontal: 12 },
+  nested: { marginLeft: 36, borderLeftWidth: 2, borderLeftColor: palette.accent }, nestedItem: { paddingLeft: 12, paddingRight: 24 },
   allow: { color: palette.accentFg, alignSelf: 'center', marginLeft: 12 }, granted: { color: palette.muted, alignSelf: 'center', marginLeft: 12 }, action: { paddingHorizontal: 12, minHeight: 80 },
   confirm: { paddingHorizontal: 24, gap: 24 }, actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, flexWrap: 'wrap' }, choice: { paddingHorizontal: 0 },
 });
