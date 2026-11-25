@@ -1,10 +1,11 @@
 import { memo, useEffect, useRef, useState, type ReactNode } from 'react';
-import { AccessibilityInfo, FlatList, Image, LayoutAnimation, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { FlatList, Image, LayoutAnimation, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { ActivityIndicator, Button, Icon, IconButton, Searchbar, Text, TouchableRipple } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
 import { native, type TvApp } from '../../modules/wave-remote';
 import { commands, errorMessage } from '../lib/remote';
 import { request } from '../lib/transport';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import { palette, radius } from '../theme';
 import { Sheet, SHEET_END_PADDING } from './Sheet';
 import { useScrollCues } from './ScrollFrame';
@@ -85,7 +86,7 @@ export function AppsSheet({ onClose, report, ready, connecting, favorites: saved
   const [hidden, setHidden] = useState(savedHidden);
   const [seenHidden, setSeenHidden] = useState(savedHidden);
   if (seenHidden !== savedHidden) { setSeenHidden(savedHidden); setHidden(savedHidden); }
-  const [reducedMotion, setReducedMotion] = useState(true);
+  const reducedMotion = useReducedMotion();
   /** The sheet's height while browsing; the editing modes keep it, so the sheet doesn't jump on Edit or Done. */
   const [browseHeight, setBrowseHeight] = useState(0);
   const generation = useRef(0);
@@ -94,7 +95,6 @@ export function AppsSheet({ onClose, report, ready, connecting, favorites: saved
   const scroll = useScrollCues(SHEET_END_PADDING);
   const { width, fontScale } = useWindowDimensions();
 
-  useEffect(() => { void AccessibilityInfo.isReduceMotionEnabled().then(setReducedMotion); }, []);
   useEffect(() => {
     const token = ++generation.current;
     // A disconnect invalidates the old action's finally block too. Release its

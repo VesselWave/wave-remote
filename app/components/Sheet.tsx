@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { AccessibilityInfo, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { createContext, useContext, type ReactNode } from 'react';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { IconButton, Snackbar, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import { palette, radius } from '../theme';
 import { ScrollFrame } from './ScrollFrame';
 
@@ -18,12 +19,7 @@ export function Sheet({ title, subtitle, open, onClose, onBack, children }: {
 }) {
   const insets = useSafeAreaInsets();
   const feedback = useContext(FeedbackContext);
-  const [reducedMotion, setReducedMotion] = useState(true);
-  useEffect(() => {
-    void AccessibilityInfo.isReduceMotionEnabled().then(setReducedMotion);
-    const listener = AccessibilityInfo.addEventListener('reduceMotionChanged', setReducedMotion);
-    return () => listener.remove();
-  }, []);
+  const reducedMotion = useReducedMotion();
   const heading = <><View style={styles.handle} />
     <View style={styles.heading}>
       <View style={styles.title}><Text variant="headlineSmall" accessibilityRole="header">{title}</Text>

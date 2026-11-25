@@ -1,18 +1,14 @@
-import { useEffect, useState } from 'react';
-import { AccessibilityInfo, Animated, Easing, StyleSheet, useAnimatedValue } from 'react-native';
+import { useEffect } from 'react';
+import { Animated, Easing, StyleSheet, useAnimatedValue } from 'react-native';
 import { Icon } from 'react-native-paper';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import { palette, radius } from '../theme';
 
 // A Material 3 switch drawn in JS. The row around it owns the press and the accessibility role, so this
 // only shows `value`; unlike the native controlled Switch it never moves on its own and snaps back.
 export function Toggle({ value }: { value: boolean }) {
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const reducedMotion = useReducedMotion();
   const progress = useAnimatedValue(value ? 1 : 0);
-  useEffect(() => {
-    void AccessibilityInfo.isReduceMotionEnabled().then(setReducedMotion);
-    const listener = AccessibilityInfo.addEventListener('reduceMotionChanged', setReducedMotion);
-    return () => listener.remove();
-  }, []);
   useEffect(() => {
     const animation = Animated.timing(progress, {
       toValue: value ? 1 : 0, duration: reducedMotion ? 0 : 200, easing: Easing.bezier(0.2, 0, 0, 1), useNativeDriver: false,
