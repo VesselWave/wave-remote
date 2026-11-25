@@ -44,10 +44,14 @@ export function SettingsSheet({ state, open, onClose, run }: {
       <List.Item title="Stay connected" description="Keeps the TV connected with the screen off, with volume, play and pause in a notification" descriptionNumberOfLines={3}
         accessibilityRole="switch" accessibilityState={{ checked: state.background }} onPress={toggleBackground}
         right={() => <Switch value={state.background} onValueChange={toggleBackground} importantForAccessibility="no" />} style={styles.setting} />
-      {state.background && !state.notifications ? <List.Item title="Show notification controls" description="Notifications are off for Wave Remote" descriptionNumberOfLines={2}
-        left={(props) => <List.Icon {...props} icon="bell-off-outline" />} onPress={allowNotifications} style={styles.setting} /> : null}
-      {state.background && state.batteryRestricted ? <List.Item title="Allow background battery use" description="Battery optimization can drop the connection while the screen is off" descriptionNumberOfLines={3}
-        left={(props) => <List.Icon {...props} icon="battery-alert-variant-outline" />} onPress={() => { void run(() => native!.allowBackground(true)); }} style={styles.setting} /> : null}
+      {state.background && (!state.notifications || state.batteryRestricted) ? <View style={styles.warnings}>
+        {!state.notifications ? <List.Item title="Notifications are off" description="Volume, play and pause can’t appear until you allow notifications" descriptionNumberOfLines={3}
+          left={(props) => <List.Icon {...props} icon="bell-off-outline" />} right={() => <Text variant="labelLarge" style={styles.allow}>Allow</Text>}
+          onPress={allowNotifications} style={styles.warning} /> : null}
+        {state.batteryRestricted ? <List.Item title="Battery optimization is on" description="Android may close the background connection while the screen is off" descriptionNumberOfLines={3}
+          left={(props) => <List.Icon {...props} icon="battery-alert-variant-outline" />} right={() => <Text variant="labelLarge" style={styles.allow}>Allow</Text>}
+          onPress={() => { void run(() => native!.allowBackground(true)); }} style={styles.warning} /> : null}
+      </View> : null}
       <Divider style={styles.divider} />
       <List.Item title="Reconnect" description="Start a fresh connection to this TV" left={(props) => <List.Icon {...props} icon="refresh" />} onPress={() => { void run(() => native!.reconnect()).then((success) => { if (success) close(); }); }} style={styles.action} />
       <List.Item title="Forget this TV" titleStyle={{ color: palette.danger }} description="Remove its saved pairing" left={(props) => <List.Icon {...props} color={palette.danger} icon="link-off" />} onPress={() => setConfirmForget(true)} style={styles.action} />
@@ -58,6 +62,8 @@ const styles = StyleSheet.create({
   device: { flexDirection: 'row', gap: 16, padding: 20, marginHorizontal: 24, borderRadius: radius.md, backgroundColor: palette.raised },
   deviceInfo: { flex: 1, gap: 4 }, secondary: { color: palette.muted }, sectionTitle: { marginTop: 28, marginBottom: 8, marginHorizontal: 24, color: palette.accentFg },
   explanation: { marginHorizontal: 24, color: palette.muted, marginBottom: 8 }, scrollSetting: { marginHorizontal: 24, marginTop: 12, gap: 8 },
-  divider: { marginHorizontal: 24, marginVertical: 20 }, setting: { paddingHorizontal: 12 }, action: { paddingHorizontal: 12, minHeight: 80 },
+  divider: { marginHorizontal: 24, marginVertical: 20 }, setting: { paddingHorizontal: 12 },
+  warnings: { marginHorizontal: 24, marginTop: 8, borderRadius: radius.md, backgroundColor: palette.raised, overflow: 'hidden' },
+  warning: { paddingLeft: 8, paddingRight: 16 }, allow: { color: palette.accentFg, alignSelf: 'center', marginLeft: 12 }, action: { paddingHorizontal: 12, minHeight: 80 },
   confirm: { paddingHorizontal: 24, gap: 24 }, actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, flexWrap: 'wrap' }, choice: { paddingHorizontal: 0 },
 });
