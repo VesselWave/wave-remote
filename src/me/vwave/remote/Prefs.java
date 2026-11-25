@@ -63,8 +63,6 @@ final class Prefs {
     boolean naturalTwoFinger() { return sp.getBoolean("naturalTwoFinger", false); }
     /** Keep the connection, with notification controls, while the app is in the background. */
     boolean background() { return sp.getBoolean("background", true); }
-    /** Volume, play and pause buttons in the background connection's notification. */
-    boolean controls() { return sp.getBoolean("controls", true); }
     /** Android's battery optimization prompt was offered once automatically; later it's on request. */
     boolean batteryPrompted() { return sp.getBoolean("batteryPrompted", false); }
 
@@ -198,7 +196,6 @@ final class Prefs {
     void setNaturalEdge(boolean on) { sp.edit().putBoolean("naturalEdge", on).apply(); }
     void setNaturalTwoFinger(boolean on) { sp.edit().putBoolean("naturalTwoFinger", on).apply(); }
     void setBackground(boolean on) { sp.edit().putBoolean("background", on).apply(); }
-    void setControls(boolean on) { sp.edit().putBoolean("controls", on).apply(); }
     void setBatteryPrompted() { sp.edit().putBoolean("batteryPrompted", true).apply(); }
 
     /** Forgets the selected TV, leaving none selected; other TVs, the wake address and UI settings stay. */

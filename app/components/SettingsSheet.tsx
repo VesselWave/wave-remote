@@ -27,10 +27,6 @@ export function SettingsSheet({ state, open, onClose, run }: {
   const stackedChoices = (Math.min(width, 600) - 48) / fontScale < 260;
   const close = () => { setConfirmForget(false); onClose(); };
   const [background, toggleBackground] = useSwitch(state.background, (next) => run(() => native!.setBackground(next)));
-  const [controls, toggleControls] = useSwitch(state.controls, (next) => run(async () => {
-    await native!.setControls(next);
-    if (next && !state.notifications && !(await askForNotifications())) await native!.openNotificationSettings();
-  }));
   const allowNotifications = () => { void run(async () => { if (!(await askForNotifications())) await native!.openNotificationSettings(); }); };
   return <Sheet open={open} onClose={close} title={confirmForget ? 'Forget this TV?' : 'Remote settings'} subtitle={confirmForget ? undefined : 'Make this remote feel right for you.'}>
     {confirmForget ? <View style={styles.confirm}>
@@ -56,43 +52,42 @@ export function SettingsSheet({ state, open, onClose, run }: {
             buttons={[{ value: 'traditional', label: 'Traditional', showSelectedCheck: true, accessibilityLabel: `${group}: Traditional` }, { value: 'natural', label: 'Natural', showSelectedCheck: true, accessibilityLabel: `${group}: Natural` }]} />}
         </View>)}
       <Text variant="titleSmall" style={styles.sectionTitle} accessibilityRole="header">Background</Text>
-      <List.Item title="Stay connected" description="Keeps the TV connected while the screen is off or you’re in another app" descriptionNumberOfLines={3}
+      <List.Item title="Stay connected" descriptionNumberOfLines={3}
+        description="Keeps the TV connected while the screen is off or you’re in another app, with volume, play and pause in a notification"
         accessibilityRole="switch" accessibilityState={{ checked: background }} onPress={toggleBackground}
         right={() => <Toggle value={background} />} style={styles.setting} />
-      {/* The controls live in the stay-connected notification, so without it the row keeps its value but can't act. */}
-      <List.Item title="Notification controls" descriptionNumberOfLines={3}
-        description={!background ? 'Available while staying connected'
-          : !controls ? 'Off. While staying connected, Android still shows that the TV is connected'
-          : state.notifications ? 'Volume, play and pause in the notification'
-          : 'Notifications are off for Wave Remote. Tap to allow them'}
-        titleStyle={background ? undefined : styles.unavailable} descriptionStyle={background ? undefined : styles.unavailable}
-        accessibilityRole="switch" accessibilityState={{ checked: controls }}
-        onPress={!background ? undefined : controls && !state.notifications ? allowNotifications : toggleControls}
-        right={() => <Toggle value={controls} disabled={!background} />} style={styles.setting} />
       {/* Always shown: whether Android may cut the background connection is worth knowing before turning it on. */}
-      <View style={styles.battery}>
-        <List.Item title="Unrestricted battery use" descriptionNumberOfLines={3}
-          description={state.batteryRestricted ? 'Battery optimization may close the connection while the screen is off'
-            : 'Battery optimization won’t close the connection'}
-          left={(props) => <List.Icon {...props} color={palette.accentFg} icon={state.batteryRestricted ? 'battery-alert-variant-outline' : 'battery-check-outline'} />}
-          right={() => state.batteryRestricted ? <Text variant="labelLarge" style={styles.allow}>Allow</Text>
-            : <View style={styles.granted}><Icon source="check-circle" size={24} color={palette.accentFg} /></View>}
-          accessibilityRole={state.batteryRestricted ? 'button' : undefined}
-          onPress={state.batteryRestricted ? () => { void run(() => native!.allowBackground(true)); } : undefined} style={styles.batteryItem} />
-      </View>
+      <Callout title="Unrestricted battery use" granted={!state.batteryRestricted}
+        icon={state.batteryRestricted ? 'battery-alert-variant-outline' : 'battery-check-outline'}
+        description={state.batteryRestricted ? 'Battery optimization may close the connection while the screen is off'
+          : 'Battery optimization won’t close the connection'}
+        onAllow={() => { void run(() => native!.allowBackground(true)); }} />
+      {/* Staying connected works without notifications; they only make the controls visible. */}
+      {background && !state.notifications ? <Callout title="Notifications are off" granted={false} icon="bell-off-outline"
+        description="Staying connected still works, but volume, play and pause can’t appear" onAllow={allowNotifications} /> : null}
       <Divider style={styles.divider} />
       <List.Item title="Reconnect" description="Start a fresh connection to this TV" left={(props) => <List.Icon {...props} icon="refresh" />} onPress={() => { void run(() => native!.reconnect()).then((success) => { if (success) close(); }); }} style={styles.action} />
       <List.Item title="Forget this TV" titleStyle={{ color: palette.danger }} description="Remove its saved pairing" left={(props) => <List.Icon {...props} color={palette.danger} icon="link-off" />} onPress={() => setConfirmForget(true)} style={styles.action} />
     </View>}
   </Sheet>;
 }
+// A blue card for a permission the background connection uses: Allow while it's missing, a check once granted.
+function Callout({ title, description, icon, granted, onAllow }: { title: string; description: string; icon: string; granted: boolean; onAllow: () => void }) {
+  return <View style={styles.callout}>
+    <List.Item title={title} description={description} descriptionNumberOfLines={3}
+      left={(props) => <List.Icon {...props} color={palette.accentFg} icon={icon} />}
+      right={() => granted ? <View style={styles.granted}><Icon source="check-circle" size={24} color={palette.accentFg} /></View>
+        : <Text variant="labelLarge" style={styles.allow}>Allow</Text>}
+      accessibilityRole={granted ? undefined : 'button'} onPress={granted ? undefined : onAllow} style={styles.calloutItem} />
+  </View>;
+}
 const styles = StyleSheet.create({
   device: { flexDirection: 'row', gap: 16, padding: 20, marginHorizontal: 24, borderRadius: radius.md, backgroundColor: palette.raised },
   deviceInfo: { flex: 1, gap: 4 }, secondary: { color: palette.muted }, sectionTitle: { marginTop: 28, marginBottom: 8, marginHorizontal: 24, color: palette.accentFg },
   explanation: { marginHorizontal: 24, color: palette.muted, marginBottom: 8 }, scrollSetting: { marginHorizontal: 24, marginTop: 12, gap: 8 },
-  divider: { marginHorizontal: 24, marginVertical: 20 }, setting: { paddingHorizontal: 12 }, unavailable: { color: palette.onDisabled },
-  battery: { marginHorizontal: 24, marginTop: 12, borderRadius: radius.md, backgroundColor: palette.accentSoft, overflow: 'hidden' },
-  batteryItem: { paddingLeft: 8, paddingRight: 16, paddingVertical: 12 },
+  divider: { marginHorizontal: 24, marginVertical: 20 }, setting: { paddingHorizontal: 12 },
+  callout: { marginHorizontal: 24, marginTop: 12, borderRadius: radius.md, backgroundColor: palette.accentSoft, overflow: 'hidden' },
+  calloutItem: { paddingLeft: 8, paddingRight: 16, paddingVertical: 12 },
   allow: { color: palette.accentFg, alignSelf: 'center', marginLeft: 12 }, granted: { alignSelf: 'center', marginLeft: 12 }, action: { paddingHorizontal: 12, minHeight: 80 },
   confirm: { paddingHorizontal: 24, gap: 24 }, actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, flexWrap: 'wrap' }, choice: { paddingHorizontal: 0 },
 });

@@ -2,8 +2,8 @@
 
 ## Unreleased
 
-- Stays connected to the TV in the background and with the screen off. A notification shows the volume and has volume down, play, pause and volume up buttons, also on the lock screen. The background connection and its notification stop when the TV turns off, when you swipe the app away, or after two minutes of failing to reconnect. Remote settings → Background has separate switches to stay connected and to show the notification buttons, which are greyed out while the app doesn't stay connected; Android still shows a plain notification while connected in the background.
-- The first connection asks to allow notifications and to let the app run unrestricted in the background, so Android's battery optimization doesn't cut the connection. Both are optional and shown separately under Remote settings → Background: staying connected works without notifications, which only add the controls, while battery optimization may close the connection on some phones. Unrestricted battery use always shows its state in its own blue card, with Allow while it is off.
+- Stays connected to the TV in the background and with the screen off. A notification shows the volume and has volume down, play, pause and volume up buttons, also on the lock screen. The background connection and its notification stop when the TV turns off, when you swipe the app away, or after two minutes of failing to reconnect. Turn it off under Remote settings → Background → Stay connected.
+- The first connection asks to allow notifications and to let the app run unrestricted in the background, so Android's battery optimization doesn't cut the connection. Both are optional: staying connected works without notifications, which only make the controls visible, while battery optimization may close the connection on some phones. Remote settings → Background shows each one in a blue card with Allow while it is missing; unrestricted battery use is always shown.
 - Settings switches move once when tapped instead of flickering back before they settle.
 - Fixes the connection dropping as "TV stopped responding" after the phone slept: time asleep no longer counts as the TV going silent.
 

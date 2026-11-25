@@ -230,7 +230,6 @@ class WaveRemoteModule : Module() {
       }
     }.runOnQueue(Queues.MAIN)
 
-    AsyncFunction("setControls") { on: Boolean -> prepare(); prefs.setControls(on); emit() }.runOnQueue(Queues.MAIN)
     AsyncFunction("setBackground") { on: Boolean ->
       prepare(); prefs.setBackground(on)
       if (!on) endSession() else if (tv.isReady && !quietAttempt) beginSession()
@@ -452,7 +451,7 @@ class WaveRemoteModule : Module() {
     "naturalEdge" to prefs.naturalEdge(), "naturalTwoFinger" to prefs.naturalTwoFinger(),
     "waking" to (wakeUntil != 0L), "favorites" to prefs.favorites(), "hidden" to prefs.hidden(),
     "canWakeBluetooth" to (prefs.btMac() != null && prefs.wakeRegistered()),
-    "background" to prefs.background(), "controls" to prefs.controls(), "batteryRestricted" to batteryRestricted(),
+    "background" to prefs.background(), "batteryRestricted" to batteryRestricted(),
     "notifications" to context().getSystemService(android.app.NotificationManager::class.java).areNotificationsEnabled(),
     "tvs" to prefs.hosts().filter { prefs.paired(it) || it == prefs.host() }
       .map { mapOf("host" to it, "name" to (prefs.label(it) ?: prefs.name(it)), "tvName" to prefs.name(it),
@@ -491,7 +490,7 @@ class WaveRemoteModule : Module() {
       volume >= 0 -> "Volume $volume"
       else -> "Connected"
     }
-    if (!RemoteService.show(context(), RemoteService.Status(name, text, ready && prefs.controls()))) session = false
+    if (!RemoteService.show(context(), RemoteService.Status(name, text, ready))) session = false
   }
 
   private fun onNotificationAction(action: String) {

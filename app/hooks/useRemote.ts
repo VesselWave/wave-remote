@@ -43,10 +43,10 @@ export function useRemote() {
     backgroundAsked.current = true;
     const module = native;
     void run(async () => {
-      if (state.controls && !state.notifications) await askForNotifications();
+      if (!state.notifications) await askForNotifications();
       await module.allowBackground(false);
     });
-  }, [run, state.state, state.background, state.controls, state.notifications]);
+  }, [run, state.state, state.background, state.notifications]);
 
   const power = () => run(async () => {
     if (!native) return;
