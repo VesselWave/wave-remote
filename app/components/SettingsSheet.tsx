@@ -59,13 +59,16 @@ export function SettingsSheet({ state, open, onClose, run }: {
       <List.Item title="Stay connected" description="Keeps the TV connected while the screen is off or you’re in another app" descriptionNumberOfLines={3}
         accessibilityRole="switch" accessibilityState={{ checked: background }} onPress={toggleBackground}
         right={() => <Toggle value={background} />} style={styles.setting} />
+      {/* The controls live in the stay-connected notification, so without it the row keeps its value but can't act. */}
       <List.Item title="Notification controls" descriptionNumberOfLines={3}
-        description={!controls ? 'Off. While staying connected, Android still shows that the TV is connected'
+        description={!background ? 'Available while staying connected'
+          : !controls ? 'Off. While staying connected, Android still shows that the TV is connected'
           : state.notifications ? 'Volume, play and pause in the notification'
           : 'Notifications are off for Wave Remote. Tap to allow them'}
+        titleStyle={background ? undefined : styles.unavailable} descriptionStyle={background ? undefined : styles.unavailable}
         accessibilityRole="switch" accessibilityState={{ checked: controls }}
-        onPress={controls && !state.notifications ? allowNotifications : toggleControls}
-        right={() => <Toggle value={controls} />} style={styles.setting} />
+        onPress={!background ? undefined : controls && !state.notifications ? allowNotifications : toggleControls}
+        right={() => <Toggle value={controls} disabled={!background} />} style={styles.setting} />
       {/* Always shown: whether Android may cut the background connection is worth knowing before turning it on. */}
       <View style={styles.battery}>
         <List.Item title="Unrestricted battery use" descriptionNumberOfLines={3}
@@ -87,7 +90,7 @@ const styles = StyleSheet.create({
   device: { flexDirection: 'row', gap: 16, padding: 20, marginHorizontal: 24, borderRadius: radius.md, backgroundColor: palette.raised },
   deviceInfo: { flex: 1, gap: 4 }, secondary: { color: palette.muted }, sectionTitle: { marginTop: 28, marginBottom: 8, marginHorizontal: 24, color: palette.accentFg },
   explanation: { marginHorizontal: 24, color: palette.muted, marginBottom: 8 }, scrollSetting: { marginHorizontal: 24, marginTop: 12, gap: 8 },
-  divider: { marginHorizontal: 24, marginVertical: 20 }, setting: { paddingHorizontal: 12 },
+  divider: { marginHorizontal: 24, marginVertical: 20 }, setting: { paddingHorizontal: 12 }, unavailable: { color: palette.onDisabled },
   battery: { marginHorizontal: 24, marginTop: 12, borderRadius: radius.md, backgroundColor: palette.accentSoft, overflow: 'hidden' },
   batteryItem: { paddingLeft: 8, paddingRight: 16, paddingVertical: 12 },
   allow: { color: palette.accentFg, alignSelf: 'center', marginLeft: 12 }, granted: { alignSelf: 'center', marginLeft: 12 }, action: { paddingHorizontal: 12, minHeight: 80 },
